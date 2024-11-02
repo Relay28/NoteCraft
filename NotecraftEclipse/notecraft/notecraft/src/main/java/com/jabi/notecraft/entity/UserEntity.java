@@ -1,12 +1,18 @@
 package com.jabi.notecraft.entity;
 
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class UserEntity {
@@ -25,7 +31,18 @@ public class UserEntity {
     
     @Lob
     private String profileImg;
-    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<NoteEntity> notes;
+
+    // Getters and setters for 'notes' field
+    public List<NoteEntity> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(List<NoteEntity> notes) {
+        this.notes = notes;
+    }
   
     public int getId() {
 		return id;
