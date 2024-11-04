@@ -4,6 +4,8 @@ import { Button, TextField, Box, Typography, Dialog, DialogContent } from "@mui/
 import axios from "axios";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+// import 'quill/dist/quill.snow.css';
+
 import { createQuillModules } from './quillModules';
 
 export default function NoteForm() {
@@ -136,7 +138,7 @@ export default function NoteForm() {
                 <Button variant="contained" color="primary" onClick={handleSaveNote} disabled={!note.title.trim() || !note.content.trim()} sx={{ backgroundColor: "#487d4b", padding: "10px 25px" }}>
                     Save
                 </Button>
-                <Button variant="outlined" color="secondary" onClick={() => navigate("/")}>
+                <Button variant="outlined" color="secondary" onClick={() => navigate("/note")}>
                     Cancel
                 </Button>
             </Box>

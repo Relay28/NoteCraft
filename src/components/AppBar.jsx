@@ -15,6 +15,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 
 const Search = styled('div')(({ theme }) => ({
@@ -57,12 +58,25 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar() {
+export default function PrimarySearchAppBar(props) {
+  let loc = useLocation();
+  const navigate = useNavigate(); // Initialize navigate
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const personalInfo = props.personalInfo; // Update this line
+
+  const handleMyProfileClick = () => {
+    navigate('/home/myprofile', { state: { account: personalInfo } });
+    handleMenuClose(); // Close the menu after navigation
+  };
+
+  const handleLogout = () => {
+    navigate('/login', { state: { personalInfo } });
+    handleMenuClose(); // Close the menu after navigation
+  };
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -99,8 +113,8 @@ export default function PrimarySearchAppBar() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={handleMyProfileClick}>My Profile</MenuItem>
+      <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   );
 
@@ -175,6 +189,12 @@ export default function PrimarySearchAppBar() {
             noWrap
             component="div"
             sx={{ display: { xs: 'none', sm: 'block' } }}
+            onClick={() => navigate("/home")}
+            style={{
+
+              cursor: "pointer"
+          }}
+            
           >
            NoteCraft
           </Typography>
