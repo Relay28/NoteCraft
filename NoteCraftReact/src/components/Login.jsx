@@ -39,7 +39,7 @@ export default function Login() {
                 const token = loginResponse.data.token;
                 localStorage.setItem('token', token);
 
-                alert(`Your token: ${token}`);
+                console.log(`Your token: ${token}`);
 
                 const allUsersResponse = await axios.get('http://localhost:8080/api/user/getAllUsers', {
                     headers: { Authorization: `Bearer ${token}` },

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 export default function SignIn() {
-    
-    
     const [personalInfo, setPersonalInfo] = useState({
         name: '',
         email: '',
@@ -17,7 +15,6 @@ export default function SignIn() {
         password: '',
         email: '',
         name: '',
-       
     });
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
@@ -58,7 +55,6 @@ export default function SignIn() {
             console.error('Error creating user:', error);
         }
     };
-    
 
     return (
         <div style={{
@@ -89,11 +85,13 @@ export default function SignIn() {
 
                 <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
                     <input
-                        type="text"
+                        type="email"
                         name="email"
                         placeholder="Email"
                         value={personalInfo.email}
                         onChange={handleChange}
+                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                        required
                         style={{
                             width: '100%',
                             padding: '12px',
@@ -110,6 +108,7 @@ export default function SignIn() {
                         placeholder="Full Name"
                         value={personalInfo.name}
                         onChange={handleChange}
+                        required
                         style={{
                             width: '100%',
                             padding: '12px',
@@ -126,6 +125,7 @@ export default function SignIn() {
                         placeholder="Username"
                         value={personalInfo.username}
                         onChange={handleChange}
+                        required
                         style={{
                             width: '100%',
                             padding: '12px',
@@ -156,6 +156,7 @@ export default function SignIn() {
                             placeholder="Password"
                             value={personalInfo.password}
                             onChange={handleChange}
+                            required
                             style={{
                                 width: '100%',
                                 padding: '12px',
@@ -206,6 +207,4 @@ export default function SignIn() {
             </div>
         </div>
     );
-    
-    
 }

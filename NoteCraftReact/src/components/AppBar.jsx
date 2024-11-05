@@ -1,4 +1,5 @@
-import * as React from 'react';
+import React, { useState } from 'react';
+
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -15,6 +16,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 
 
@@ -66,17 +68,9 @@ export default function PrimarySearchAppBar(props) {
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  
+  // Access the personalInfo prop correctly
   const personalInfo = props.personalInfo; // Update this line
-
-  const handleMyProfileClick = () => {
-    navigate('/home/myprofile', { state: { account: personalInfo } });
-    handleMenuClose(); // Close the menu after navigation
-  };
-
-  const handleLogout = () => {
-    navigate('/login', { state: { personalInfo } });
-    handleMenuClose(); // Close the menu after navigation
-  };
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -91,6 +85,26 @@ export default function PrimarySearchAppBar(props) {
     handleMobileMenuClose();
   };
 
+  const handleMyProfileClick = () => {
+    navigate('/home/myprofile', { state: { account: personalInfo } });
+    handleMenuClose(); // Close the menu after navigation
+  };
+
+  const handleLogout = () => {
+    // Assuming the token is stored in local storage
+    const token = localStorage.getItem('token'); // Retrieve the token
+    localStorage.removeItem('token'); // Remove the token from local storage
+    
+    // Log the token value before removing it
+    console.log(`Token ${token} removed from local storage.`);
+
+    // Navigate to login
+    navigate('/login'); // You might not need to pass personalInfo anymore
+    handleMenuClose(); // Close the menu after navigation
+};
+
+
+
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
@@ -102,7 +116,6 @@ export default function PrimarySearchAppBar(props) {
       anchorOrigin={{
         vertical: 'top',
         horizontal: 'right',
-        backgroundColor : '#ced1d6',
       }}
       id={menuId}
       keepMounted
@@ -171,87 +184,72 @@ export default function PrimarySearchAppBar(props) {
   );
 
   return (
-    <Box sx={{ flexGrow: 1, 
-            
-    }}>
+    <>
+      <Box sx={{ flexGrow: 1 }}>
       <AppBar position="fixed" sx={{ backgroundColor: '#579A59', color: "black" }}>
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            sx={{ mr: 2 }}
-          >
-          </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-            onClick={() => navigate("/home")}
-            style={{
-
-              cursor: "pointer"
-          }}
-            
-          >
-           NoteCraft
-          </Typography>
-
-          {/* <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </Search> */}
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-              <Badge badgeContent={3} color="error">
-                <MailIcon />
-              </Badge>
-            </IconButton>
+          <Toolbar>
             <IconButton
               size="large"
-              aria-label="show 17 new notifications"
+              edge="start"
               color="inherit"
+              aria-label="open drawer"
+              sx={{ mr: 2 }}
             >
-              <Badge badgeContent={2} color="error">
-                <NotificationsIcon />
-              </Badge>
             </IconButton>
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{ display: { xs: 'none', sm: 'block' } }}
             >
-              <AccountCircle />
-            </IconButton>
-          </Box>
-          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-      {renderMobileMenu}
-      {renderMenu}
-    </Box>
+              test
+            </Typography>
+            <Box sx={{ flexGrow: 1 }} />
+            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+              <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+                <Badge badgeContent={3} color="error">
+                  <MailIcon />
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                aria-label="show 17 new notifications"
+                color="inherit"
+              >
+                <Badge badgeContent={2} color="error">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                edge="end"
+                aria-label="account of current user"
+                aria-controls={menuId}
+                aria-haspopup="true"
+                onClick={handleProfileMenuOpen}
+                color="inherit"
+              >
+                <AccountCircle />
+              </IconButton>
+            </Box>
+            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+              <IconButton
+                size="large"
+                aria-label="show more"
+                aria-controls={mobileMenuId}
+                aria-haspopup="true"
+                onClick={handleMobileMenuOpen}
+                color="inherit"
+              >
+                <MoreIcon />
+              </IconButton>
+            </Box>
+          </Toolbar>
+        </AppBar>
+        {renderMobileMenu}
+        {renderMenu}
+      </Box>
+    </>
   );
 }
+
