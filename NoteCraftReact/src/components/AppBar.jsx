@@ -108,6 +108,11 @@ export default function PrimarySearchAppBar(props) {
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
+  const goHome = () => {
+    console.log("Navigating to /home");
+    navigate('/home', { state: { account: personalInfo } });
+  };
+  
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -197,13 +202,15 @@ export default function PrimarySearchAppBar(props) {
             >
             </IconButton>
             <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{ display: { xs: 'none', sm: 'block' } }}
-            >
-              test
-            </Typography>
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ display: { xs: 'none', sm: 'block' }, cursor: 'pointer' }} // Add cursor pointer for feedback
+            onClick={goHome} // onClick is placed here
+          >
+            NoteCraft
+          </Typography>
+
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
               <IconButton size="large" aria-label="show 4 new mails" color="inherit">
