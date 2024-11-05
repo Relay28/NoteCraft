@@ -8,9 +8,15 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FolderIcon from '@mui/icons-material/Folder';
 import MessageIcon from '@mui/icons-material/Message';
+import { useNavigate } from 'react-router-dom';
 
 export default function NestedList({ open, toggleNestedList }) { 
   const [isOpen, setIsOpen] = React.useState(true);
+  const navigate=useNavigate();
+
+  const handleMessagesClick = () => {
+    navigate('/messages'); // Programmatically navigate to /messages
+  };
 
   const handleClick = () => {
     setIsOpen(!isOpen);
@@ -67,7 +73,7 @@ export default function NestedList({ open, toggleNestedList }) {
         <ListItemText primary="Files" />
       </ListItemButton>
 
-      <ListItemButton sx={{ mb: 2 }}> {/* Added marginBottom for spacing */}
+      <ListItemButton sx={{ mb: 2 }} onClick={handleMessagesClick}> {/* Added marginBottom for spacing */}
         <ListItemIcon sx={{ minWidth: '40px', color:"#579A59" }}>
           <MessageIcon sx={{ fontSize: '30px' }} />
         </ListItemIcon>
