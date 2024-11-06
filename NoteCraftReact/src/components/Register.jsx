@@ -157,6 +157,8 @@ export default function SignIn() {
                             value={personalInfo.password}
                             onChange={handleChange}
                             required
+                            pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                            title="Password must be at least 8 characters, include one special character, one uppercase letter, and one number."
                             style={{
                                 width: '100%',
                                 padding: '12px',
