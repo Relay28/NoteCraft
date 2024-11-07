@@ -11,13 +11,13 @@ function App() {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <Stack direction="row" sx={{ mt: 5, height: 'calc(100vh - 64px)', width: '90vw' }}>
+    <Stack direction="row" sx={{ mt: 5, height: '100vh', width: '90vw' }}>
       {/* Conditionally render AppBar and Sidebar */}
       {!isAuthPage && <PrimarySearchAppBar />}
       {!isAuthPage && <NestedList sx={{ maxWidth: '20%' }} />}
 
       {/* Main content area with flexGrow and full width */}
-      <Box sx={{ flexGrow: 6, p: 4, margin: 0, overflowY: 'hidden' }}>
+      <Box sx={{ flexGrow: 6, p: 4, margin: 0, overflowY: 'auto' }}>
         <TheRoutes />
       </Box>
     </Stack>
