@@ -1,29 +1,56 @@
+// Note.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { List, ListItem, ListItemText, Button, Card, CardContent, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { 
+    List, 
+    ListItem, 
+    ListItemText, 
+    Button, 
+    Card, 
+    CardContent, 
+    Box, 
+    Typography, 
+    Dialog, 
+    DialogTitle, 
+    DialogContent, 
+    DialogActions 
+} from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Note() {
+
     const [notes, setNotes] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [noteToDelete, setNoteToDelete] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
-    // Fetch notes from the API
+    // Retrieve user info from route state
+    const personalInfo = location.state?.user || { id: '', username: '' };
+    console.log(personalInfo.id);
+    // Fetch notes from the API based on user ID
     useEffect(() => {
-        axios.get('http://localhost:8080/api/note/getAllNotes')
-            .then(response => {
-                setNotes(response.data);
+        if (personalInfo.id) {
+            axios.get(`http://localhost:8080/api/note/getNotesByUser`, {
+                params: { userId: personalInfo.id }
             })
-            .catch(error => {
-                console.error("There was an error fetching the notes!", error);
-            });
-    }, []);
+                .then(response => {
+                    setNotes(response.data);
+                })
+                .catch(error => {
+                    console.error("There was an error fetching the notes!", error);
+                });
+        } else {
+            // Handle the case where user ID is not available
+            console.warn("No user ID found. Redirecting to login.");
+            navigate('/login');
+        }
+    }, [personalInfo.id, navigate]);
 
     // Edit a note
     const handleEditNote = (index) => {
         const noteId = notes[index].noteid;
-        navigate(`/edit-note/${noteId}`, { state: { noteData: notes[index] } });
+        navigate(`/edit-note/${noteId}`, { state: { noteData: notes[index], user: personalInfo.id } });
     };
 
     // Open the delete confirmation dialog
@@ -96,7 +123,7 @@ export default function Note() {
                 <Button
                     variant="contained"
                     color="success"
-                    onClick={() => navigate("/new-note")}
+                    onClick={() => navigate("/new-note", { state: { user: personalInfo } })}
                 >
                     Add New Note
                 </Button>
@@ -110,7 +137,7 @@ export default function Note() {
                 ) : (
                     notes.map((note, index) => (
                         <Card
-                            key={index}
+                            key={note.noteid} // Use noteid as the key for better performance
                             sx={{
                                 marginBottom: "15px",
                                 backgroundColor: "#f0f0f0",
@@ -125,16 +152,23 @@ export default function Note() {
                                 <Typography variant="body2" color="textSecondary">
                                     {note.description}
                                 </Typography>
-                                <Typography variant="body1" dangerouslySetInnerHTML={{ __html: styleNoteContent(note.content).split("\n")[0] }} />
+                                <Typography 
+                                    variant="body1" 
+                                    dangerouslySetInnerHTML={{ __html: styleNoteContent(note.content).split("\n")[0] }} 
+                                />
 
                                 <Box sx={{ marginTop: "10px", textAlign: "right" }}>
                                     <Button
                                         variant="outlined"
                                         color="secondary"
                                         onClick={() => handleEditNote(index)}
-                                        sx={{ marginRight: "10px" , 
-                                            color:"#f0f0f0",
-                                             backgroundColor:"#579A59"
+                                        sx={{ 
+                                            marginRight: "10px",
+                                            color: "#f0f0f0",
+                                            backgroundColor: "#579A59",
+                                            '&:hover': {
+                                                backgroundColor: "#487d4b",
+                                            }
                                         }}
                                     >
                                         Edit
@@ -143,9 +177,13 @@ export default function Note() {
                                         variant="outlined"
                                         color="error"
                                         onClick={() => openDeleteDialog(note.noteid, index)}
-                                        sx={{ marginRight: "10px" , 
-                                            color:"#f0f0f0",
-                                             backgroundColor:"red"
+                                        sx={{ 
+                                            marginRight: "10px",
+                                            color: "#f0f0f0",
+                                            backgroundColor: "red",
+                                            '&:hover': {
+                                                backgroundColor: "#c62828",
+                                            }
                                         }}
                                     >
                                         Delete
@@ -167,13 +205,24 @@ export default function Note() {
                     <Typography>Are you sure you want to delete this note?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={closeDeleteDialog} color="primary" sx={{
-                        color:"#f0f0f0",
-                        backgroundColor:"#579A59",
-                    }}>
+                    <Button 
+                        onClick={closeDeleteDialog} 
+                        color="primary" 
+                        sx={{
+                            color: "#f0f0f0",
+                            backgroundColor: "#579A59",
+                            '&:hover': {
+                                backgroundColor: "#487d4b",
+                            }
+                        }}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleDeleteNote} color="error" variant="contained">
+                    <Button 
+                        onClick={handleDeleteNote} 
+                        color="error" 
+                        variant="contained"
+                    >
                         Delete
                     </Button>
                 </DialogActions>

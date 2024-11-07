@@ -17,9 +17,17 @@ public class NoteController {
 
     // Insert a note with mixed content (text and embedded images)
     @PostMapping("/insertNote")
-    public NoteEntity insertNote(@RequestBody NoteEntity note, @RequestParam int userId) {
+    public NoteEntity insertNote(@RequestBody NoteEntity note, @RequestParam("userId") int userId) {
         return noteService.insertNote(note, userId);
     }
+
+    
+ // Fetch notes specific to a user by userId
+    @GetMapping("/getNotesByUser")
+    public List<NoteEntity> getNotesByUser(@RequestParam int userId) {
+        return noteService.getNotesByUserId(userId);
+    }
+
 
     // Get all notes
     @GetMapping("/getAllNotes")

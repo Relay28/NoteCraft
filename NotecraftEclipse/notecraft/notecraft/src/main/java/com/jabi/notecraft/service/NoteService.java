@@ -27,6 +27,14 @@ public class NoteService {
         return noteRepository.save(note);
     }
 
+    	
+ // Fetch all notes belonging to a specific user by userId
+    public List<NoteEntity> getNotesByUserId(int userId) {
+        UserEntity user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+        return noteRepository.findByUser(user);
+    }
+
     public List<NoteEntity> getAllNotes() {
         return noteRepository.findAll();
     }

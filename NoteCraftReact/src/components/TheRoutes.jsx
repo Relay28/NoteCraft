@@ -15,7 +15,7 @@ import TaskDetail from './TaskDetail';
 const TheRoutes = () => {
   return (
     <Routes>
-      <Route path="/note" element={<Note />} />
+      <Route path="/notes" element={<Note />} />
       <Route path="/new-note" element={<NoteForm />} />
       <Route path="/edit-note/:noteId" element={<NoteForm />} />
       <Route path="/login" element={<Login />} />

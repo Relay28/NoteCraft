@@ -4,7 +4,6 @@ import { Button, TextField, Box, Typography, Dialog, DialogContent } from "@mui/
 import axios from "axios";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-// import 'quill/dist/quill.snow.css';
 
 import { createQuillModules } from './quillModules';
 
@@ -14,18 +13,30 @@ export default function NoteForm() {
     const location = useLocation();
     const quillRef = useRef(null);
 
-    const [note, setNote] = useState(location.state?.noteData || { title: "", description: "", content: "", dateCreated: "" });
+    // Retrieve token from localStorage
+    const token = localStorage.getItem('token');
+    const user = location.state?.user || null ;
+    const [note, setNote] = useState(location.state?.noteData || { 
+        title: "", 
+        description: "", 
+        content: "", 
+        dateCreated: "", 
+        userId: location.state?.user.id || null  // Set userId from location.state.user
+    });
+
     const [openImagePreview, setOpenImagePreview] = useState(false);
     const [previewImageUrl, setPreviewImageUrl] = useState("");
     const BASE_URL = "http://localhost:8080";
 
     useEffect(() => {
         if (noteId && !location.state?.noteData) {
-            axios.get(`${BASE_URL}/api/note/getNoteById/${noteId}`)
-                .then(response => setNote(response.data))
-                .catch(error => console.error("Error fetching note:", error));
+            axios.get(`${BASE_URL}/api/note/getNoteById/${noteId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(response => setNote({ ...response.data, userId: location.state?.user }))
+            .catch(error => console.error("Error fetching note:", error));
         }
-    }, [noteId, location.state]);
+    }, [noteId, location.state, token]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -68,7 +79,7 @@ export default function NoteForm() {
     const formats = [
         'header', 'bold', 'italic', 'underline', 'strike', 'blockquote',
         'list', 'bullet', 'indent', 'link', 'image', 'color', 'align', 'background',
-        'script'  // Add this to support subscript and superscript
+        'script'  
     ];
 
     const handleSaveNote = async () => {
@@ -76,18 +87,22 @@ export default function NoteForm() {
             alert("Title and Content are required to save the note.");
             return;
         }
-
-        const apiEndpoint = noteId 
-            ? `${BASE_URL}/api/note/updateNote?noteid=${noteId}`
-            : `${BASE_URL}/api/note/insertNote`;
-        const httpMethod = noteId ? 'put' : 'post';
-
+    
+        const apiEndpoint = noteId
+            ? `${BASE_URL}/api/note/updateNote?noteid=${noteId}&userId=${note.userId}`
+            : `${BASE_URL}/api/note/insertNote?userId=${note.userId}`;
+        
+        const requestMethod = noteId ? 'put' : 'post';
+    
         try {
-            await axios[httpMethod](apiEndpoint, {
+            await axios[requestMethod](apiEndpoint, {
                 ...note,
-                dateCreated: noteId ? note.dateCreated : new Date().toISOString()
+                dateCreated: noteId ? note.dateCreated : new Date().toISOString(),
+                userId: note.userId
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            navigate("/");
+            navigate("/notes",{ state: { user}});  // Redirect after saving
         } catch (error) {
             console.error("Error saving note:", error);
         }
@@ -143,7 +158,6 @@ export default function NoteForm() {
                 </Button>
             </Box>
 
-            {/* Dialog for image preview */}
             <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="lg">
                 <DialogContent>
                     <img src={previewImageUrl} alt="Preview" style={{ width: '100%', height: 'auto' }} />

@@ -29,6 +29,8 @@ public class UserService {
     public UserEntity insertUserRecord(UserEntity user) {
         return urepo.save(user);
     }
+    
+    
 
     // Read of CRUD
     public List<UserEntity> getAllUsers() {

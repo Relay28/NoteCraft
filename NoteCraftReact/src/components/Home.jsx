@@ -30,24 +30,23 @@
 //     );
 // }
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
-import NestedList from "./SideBar";
-import Note from "./Note";
-import NoteForm from "./NoteForm";
 import PrimarySearchAppBar from "./AppBar";
+import SideBar from "./SideBar";
 
 export default function Home() {
     const location = useLocation();
-    const navigate = useNavigate();
 
     // Get account data from location.state or set default values
-    const personalInfo = location.state?.account || { id: '', username: '', email: '' };  
+    const personalInfo = location.state?.account || { id: '', username: '', email: '' };
 
     return (
         <div>
             <PrimarySearchAppBar personalInfo={personalInfo} /> {/* Pass personalInfo as prop */}
-        
+            <SideBar personalInfo={personalInfo} /> {/* Pass personalInfo to SideBar */}
+            
+            {/* Make personalInfo available to nested components */}
             <Outlet context={personalInfo} />
         </div>
     );
