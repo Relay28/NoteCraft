@@ -27,8 +27,7 @@ export default function Note() {
 
     // Retrieve user info from route state
     const personalInfo = location.state?.user || { id: '', username: '' };
-    console.log(personalInfo.id);
-    // Fetch notes from the API based on user ID
+  
     useEffect(() => {
         if (personalInfo.id) {
             axios.get(`http://localhost:8080/api/note/getNotesByUser`, {
@@ -41,7 +40,7 @@ export default function Note() {
                     console.error("There was an error fetching the notes!", error);
                 });
         } else {
-            // Handle the case where user ID is not available
+           
             console.warn("No user ID found. Redirecting to login.");
             navigate('/login');
         }
