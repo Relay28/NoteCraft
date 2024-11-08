@@ -11,6 +11,7 @@ import Files from './Files'; // Import the File component
 import Todolist from './Todolist';
 import AddTask from './AddTask';
 import TaskDetail from './TaskDetail';
+import Messages from './Messages';
 
 const TheRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const TheRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<SignIn />} />
       <Route path="/files" element={<Files />} /> {/* Add route for the File component */}
+      <Route path="/messages" element={<Messages />} />
       
       <Route path="/home" element={<Home />}>
         <Route path="myprofile" element={<Profile />} />

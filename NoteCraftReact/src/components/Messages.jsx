@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Grid,List,ListItem,ListItemAvatar,Avatar,ListItemText,TextField,Typography,Paper,IconButton,Box,} from '@mui/material';
+import {Grid, List, ListItem, ListItemAvatar, Avatar, ListItemText, TextField, Typography, Paper, IconButton, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button} from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
 import axios from 'axios';
@@ -15,6 +15,9 @@ export default function Messages() {
   const [editMessageContent, setEditMessageContent] = React.useState("");
   const [isReceiverFinalized, setIsReceiverFinalized] = React.useState(false);
   
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState({chatId:null, messageId:null});
+
   React.useEffect(() => {
     const loadChats = async () => {
       try {
@@ -54,7 +57,7 @@ export default function Messages() {
         sender: 'default', // Adjust this as needed
         recipient: selectedConversation.receiver,
         messageContent: newMessage.trim(),
-        date: '2024-11-01', // Use a dynamic date if needed
+        date: '2024-11-05', // Use a dynamic date if needed
       };
   
       try {
@@ -138,7 +141,18 @@ export default function Messages() {
     }
   };
 
-  const handleDeleteClick = async (chatId, messageId = null) => {
+  const openConfirmationDialog = (chatId, messageId = null) => {
+    setDeleteTarget({ chatId, messageId });
+    setOpenDialog(true);
+  };
+
+  const closeConfirmationDialog = () => {
+    setOpenDialog(false);
+    setDeleteTarget({ chatId: null, messageId: null });
+  };
+
+  const handleDeleteClick = async () => {
+    const {chatId, messageId} = deleteTarget;
     try {
       if (messageId) {
         // Check if the message exists in the selected conversation
@@ -170,26 +184,37 @@ export default function Messages() {
           setSelectedConversation(null);
         }
       }
+      closeConfirmationDialog();
     } catch (error) {
       console.error("Error deleting:", error);
     }
   }; 
 
   return (
-    <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column', width: '95vh', paddingLeft:'10px'}}>
+    <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column', width: '95vh', paddingLeft:'60px',marginLeft:30}}>
+      {/* Dialog for Delete Confirmation */}
+      <Dialog open={openDialog} onClose={closeConfirmationDialog}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>Are you sure you want to delete this {deleteTarget.messageId ? "message" : "chat"}?</DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={closeConfirmationDialog} color="error">Cancel</Button>
+          <Button variant="contained" onClick={handleDeleteClick} color="primary">Yes</Button>
+        </DialogActions>
+      </Dialog>
+
       <Grid container sx={{ flex: 1 }}>
         {/* Left column - Conversations List */}
         <Grid item xs={4} sx={{ borderRight: '1px solid #ccc', padding: '10px' }}>
           <List>
             {chats.map((conversation) => (
-              <ListItem key={conversation.chatId} button={true} onClick={() => handleChatClick(conversation)}>
+              <ListItem key={conversation.chatId} button onClick={() => handleChatClick(conversation)}>
                 <ListItemAvatar>
                   <Avatar alt={conversation.receiver} />
                 </ListItemAvatar>
                 <ListItemText primary={conversation.receiver} secondary={conversation.lastMessage} />
                 <IconButton color="secondary" onClick={(e) => {
                   e.stopPropagation(); // Prevent the click from triggering the ListItem onClick
-                  handleDeleteClick(conversation.chatId);
+                  openConfirmationDialog(conversation.chatId);
                 }}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
@@ -271,7 +296,7 @@ export default function Messages() {
                         ) : (
                           <>
                             <span style={{ cursor: 'pointer' }} onClick={() => handleEditClick(msg.messageId, msg.messageContent)}>Edit</span>
-                            <span style={{ cursor: 'pointer' }} onClick={() => handleDeleteClick(selectedConversation.chatId, msg.messageId)}>Delete</span>
+                            <span style={{ cursor: 'pointer' }} onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}>Delete</span>
                           </>
                         )}
                       </Box>
