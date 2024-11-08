@@ -112,12 +112,12 @@ const TaskDetail = () => {
                         {/* Legends for Calendar Colors */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-evenly', width: '100%', marginTop: '20px' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'red', marginRight: '5px' }}></Box>
+                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(255, 99, 71, 0.5)', marginRight: '5px' }}></Box>
                                 <Typography variant="body1">= deadline</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'green', marginRight: '5px' }}></Box>
+                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(144, 238, 144, 0.5)', marginRight: '5px' }}></Box>
                                 <Typography variant="body1">= date started</Typography>
                             </Box>
                         </Box>
@@ -125,12 +125,12 @@ const TaskDetail = () => {
                         <Box sx={{ display: 'flex', justifyContent: 'space-evenly', width: '100%', marginTop: '20px' }}>
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'yellow', marginRight: '5px' }}></Box>
+                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(255, 255, 153, 0.5)', marginRight: '5px' }}></Box>
                                 <Typography variant="body1">= current date</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'blue', marginRight: '5px' }}></Box>
+                                <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(173, 216, 230, 0.5)', marginRight: '5px' }}></Box>
                                 <Typography variant="body1">= date ended</Typography>
                             </Box>
                         </Box>
@@ -140,25 +140,25 @@ const TaskDetail = () => {
 
             <style>
             {`
-                .task-started { background-color: green !important; color: white !important; }
-                .task-ended { background-color: blue !important; color: white !important; }
-                .deadline { background-color: red !important; color: white !important; }
-                .today { background-color: yellow !important; color: gray !important; }
+                .task-started { background-color: rgba(144, 238, 144, 0.5) !important; color: black !important; }
+                .task-ended { background-color: rgba(173, 216, 230, 0.5) !important; color: black !important; }
+                .deadline { background-color: rgba(255, 99, 71, 0.5) !important; color: black !important; }
+                .today { background-color: rgba(255, 255, 153, 0.5) !important; color: gray !important; }
 
                 /* Double border styles for special cases */
                 .today-deadline {
-                    background-color: yellow !important;
-                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px red;
+                    background-color: rgba(255, 255, 153, 0.5) !important;
+                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(255, 99, 71, 0.5);
                     color: gray !important;
                 }
                 .today-started {
-                    background-color: yellow !important;
-                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px green;
+                    background-color: rgba(255, 255, 153, 0.5) !important;
+                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(144, 238, 144, 0.5);
                     color: gray !important;
                 }
                 .today-ended {
-                    background-color: yellow !important;
-                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px blue;
+                    background-color: rgba(255, 255, 153, 0.5) !important;
+                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(173, 216, 230, 0.5);
                     color: gray !important;
                 }
 

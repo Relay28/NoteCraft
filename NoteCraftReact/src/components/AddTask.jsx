@@ -58,12 +58,12 @@ const AddTask = () => {
         };
 
         axios.post('http://localhost:8081/api/todolist/postToDoListRecord', taskWithDates)
-            .then(response => {
-                navigate('/todolist');  // Redirect back to Todolist page
-            })
-            .catch(error => {
-                console.error("Error creating task!", error);
-            });
+        .then(() => {
+            navigate('/todolist');  // Redirect back to Todolist page
+        })
+        .catch(error => {
+            console.error("Error creating task!", error);
+        });
     };
 
     const handleBack = () => {
