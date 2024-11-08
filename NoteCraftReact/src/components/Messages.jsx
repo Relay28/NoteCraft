@@ -17,6 +17,7 @@ export default function Messages() {
   
   const [openDialog, setOpenDialog] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState({chatId:null, messageId:null});
+  const [openEditConfirmDialog, setOpenEditConfirmDialog] = React.useState(false);
 
   React.useEffect(() => {
     const loadChats = async () => {
@@ -112,9 +113,17 @@ export default function Messages() {
   };
 
   const handleEditSubmit = async () => {
+    setOpenEditConfirmDialog(true);
+  };
+
+  const handleEditCancel = () => {
+    setEditMessageId(null);
+    setEditMessageContent("");
+  };
+
+  const confirmEditSubmit = async () => {
     if (selectedConversation && editMessageContent && editMessageId) {
       try {
-        // Perform the update with the edited message content
         const updatedMessages = selectedConversation.messages.map((msg) =>
           msg.messageId === editMessageId ? { ...msg, messageContent: editMessageContent } : msg
         );
@@ -128,17 +137,24 @@ export default function Messages() {
         setSelectedConversation(updatedChat);
         setEditMessageId(null);
         setEditMessageContent("");
-        
-        // Update the chat list to reflect the edited message
+  
+        // Update chat list with edited message
         setChats((prevChats) =>
           prevChats.map((chat) =>
             chat.chatId === selectedConversation.chatId ? updatedChat : chat
           )
         );
+  
+        // Close confirmation dialog
+        setOpenEditConfirmDialog(false);
       } catch (error) {
         console.error("Error updating message:", error);
       }
     }
+  };
+
+  const closeEditConfirmDialog = () => {
+    setOpenEditConfirmDialog(false);
   };
 
   const openConfirmationDialog = (chatId, messageId = null) => {
@@ -191,14 +207,24 @@ export default function Messages() {
   }; 
 
   return (
-    <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column', width: '95vh', paddingLeft:'60px',marginLeft:30}}>
+    <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column', width: '100vh', paddingLeft:'60px',marginLeft:30}}>
       {/* Dialog for Delete Confirmation */}
       <Dialog open={openDialog} onClose={closeConfirmationDialog}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>Are you sure you want to delete this {deleteTarget.messageId ? "message" : "chat"}?</DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={closeConfirmationDialog} color="error">Cancel</Button>
           <Button variant="contained" onClick={handleDeleteClick} color="primary">Yes</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Confirmation Dialog */}
+      <Dialog open={openEditConfirmDialog} onClose={closeEditConfirmDialog}>
+        <DialogTitle>Confirm Edit</DialogTitle>
+        <DialogContent>Are you sure you want to edit this message?</DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => { handleEditCancel(); closeEditConfirmDialog(); }} color="error">Cancel</Button>
+          <Button variant="contained" onClick={confirmEditSubmit} color="primary">Yes</Button>
         </DialogActions>
       </Dialog>
 
@@ -259,7 +285,8 @@ export default function Messages() {
                       alignItems: msg.sender === selectedConversation.sender ? 'flex-end' : 'flex-start',
                       marginBottom: '10px',
                       maxWidth: '100%',
-                      marginRight: msg.sender === selectedConversation.sender ? '20px' : '0px'
+                      marginRight: msg.sender === selectedConversation.sender ? '20px' : '0px',
+                      padding:'10px'
                     }}>
                       
                       {/* Sender/Receiver Name */}
@@ -269,31 +296,37 @@ export default function Messages() {
 
                       {/* Message Content */}
                       <Box sx={{
-                        padding: '10px',
-                        borderRadius: '10px',
-                        backgroundColor: msg.sender === selectedConversation.sender ? '#D1C4E9' : '#C8E6C9',
-                      }}>
-                        {editMessageId === msg.messageId ? (
-                          <TextField
-                            value={editMessageContent}
-                            onChange={handleEditChange}
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            sx={{ marginBottom: '5px' }}
-                          />
-                        ) : (
-                          <Typography variant="body1">{msg.messageContent}</Typography>
-                        )}
-                      </Box>
+                          padding: '10px',
+                          borderRadius: '10px',
+                          backgroundColor: msg.sender === selectedConversation.sender ? '#D1C4E9' : '#C8E6C9',
+                        }}>
+                          {editMessageId === msg.messageId ? (
+                            <>
+                              <TextField
+                                value={editMessageContent}
+                                onChange={handleEditChange}
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                sx={{ marginBottom: '5px' }}
+                              />
+                              <Box sx={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                                <Button variant='contained' onClick={handleEditCancel} color="error" size="small">
+                                  Cancel
+                                </Button>
+                                <IconButton color="primary" onClick={handleEditSubmit}>
+                                  <SendIcon fontSize="small" />
+                                </IconButton>
+                              </Box>
+                            </>
+                          ) : (
+                            <Typography variant="body1">{msg.messageContent}</Typography>
+                          )}
+                        </Box>
 
                       {/* Edit and Delete Options */}
                       <Box sx={{ color: 'gray', display: 'flex', gap: '10px', marginTop: '5px' }}>
-                        {editMessageId === msg.messageId ? (
-                          <IconButton color="primary" onClick={handleEditSubmit}>
-                            <SendIcon fontSize="small" />
-                          </IconButton>
-                        ) : (
+                        {editMessageId === msg.messageId ? null : (
                           <>
                             <span style={{ cursor: 'pointer' }} onClick={() => handleEditClick(msg.messageId, msg.messageContent)}>Edit</span>
                             <span style={{ cursor: 'pointer' }} onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}>Delete</span>
