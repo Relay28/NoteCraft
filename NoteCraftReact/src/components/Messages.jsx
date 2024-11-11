@@ -58,7 +58,7 @@ export default function Messages() {
         sender: 'default', // Adjust this as needed
         recipient: selectedConversation.receiver,
         messageContent: newMessage.trim(),
-        date: '2024-11-05', // Use a dynamic date if needed
+        date: '2024-11-11', // Use a dynamic date if needed
       };
   
       try {
@@ -207,7 +207,7 @@ export default function Messages() {
   }; 
 
   return (
-    <Paper sx={{ height: '70vh', display: 'flex', flexDirection: 'column', width: '100vh', paddingLeft:'60px',marginLeft:30}}>
+    <Paper sx={{ height: '82vh', display: 'flex', flexDirection: 'column', paddingLeft:'60px', marginLeft:30, width:'130vh'}}>
       {/* Dialog for Delete Confirmation */}
       <Dialog open={openDialog} onClose={closeConfirmationDialog}>
         <DialogTitle>Confirm Delete</DialogTitle>
@@ -228,9 +228,9 @@ export default function Messages() {
         </DialogActions>
       </Dialog>
 
-      <Grid container sx={{ flex: 1 }}>
+      <Grid container sx={{ flex: 1, overflow:'auto' }}>
         {/* Left column - Conversations List */}
-        <Grid item xs={4} sx={{ borderRight: '1px solid #ccc', padding: '10px' }}>
+        <Grid item xs={4} sx={{ borderRight: '1px solid #ccc', padding: '10px', overflow:'auto', height:'100%' }}>
           <List>
             {chats.map((conversation) => (
               <ListItem key={conversation.chatId} button onClick={() => handleChatClick(conversation)}>
@@ -253,7 +253,7 @@ export default function Messages() {
         </Grid>
 
         {/* Right column - Messages List */}
-        <Grid item xs={8} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid item xs={8} sx={{ display: 'flex', flexDirection: 'column', height:'100%' }}>
           <div style={{ padding: '10px', backgroundColor: '#E8F5E9', overflowY: 'auto', flexGrow: 1 }}>
             
             {isAddingChat && !isReceiverFinalized ? (
@@ -283,7 +283,7 @@ export default function Messages() {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: msg.sender === selectedConversation.sender ? 'flex-end' : 'flex-start',
-                      marginBottom: '10px',
+                      marginBottom: '3px',
                       maxWidth: '100%',
                       marginRight: msg.sender === selectedConversation.sender ? '20px' : '0px',
                       padding:'10px'
@@ -342,7 +342,7 @@ export default function Messages() {
           
           {/* Bottom section - New Message Box */}
           {(selectedConversation && (isReceiverFinalized || selectedConversation.receiver)) && (
-            <Box sx={{ display: 'flex', p: 2, borderTop: '1px solid #ccc' }}>
+            <Box sx={{ display: 'flex', padding: 2, borderTop: '1px solid #ccc' }}>
               <TextField
                 variant="outlined"
                 placeholder="Type a message"
