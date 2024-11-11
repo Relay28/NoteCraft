@@ -4,7 +4,7 @@ import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api/chat';
+const API_BASE_URL = 'http://localhost:8081/api/chat';
 
 export default function Messages() {
   const [chats, setChats] = React.useState([]);

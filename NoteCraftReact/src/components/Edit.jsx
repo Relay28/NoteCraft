@@ -48,7 +48,7 @@ export default function EditProfile({ personalInfo, onUpdate, onCancel, token })
 
         try {
             const response = await axios.put(
-                `http://localhost:8080/api/user/putUserDetails?id=${formData.id}`,
+                `http://localhost:8081/api/user/putUserDetails?id=${formData.id}`,
                 updatedFormData,
                 {
                     headers: {

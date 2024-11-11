@@ -30,7 +30,7 @@ export default function Note() {
   
     useEffect(() => {
         if (personalInfo.id) {
-            axios.get(`http://localhost:8080/api/note/getNotesByUser`, {
+            axios.get(`http://localhost:8081/api/note/getNotesByUser`, {
                 params: { userId: personalInfo.id }
             })
                 .then(response => {
@@ -68,7 +68,7 @@ export default function Note() {
     const handleDeleteNote = () => {
         if (noteToDelete) {
             const { id, index } = noteToDelete;
-            axios.delete(`http://localhost:8080/api/note/deleteNote/${id}`)
+            axios.delete(`http://localhost:8081/api/note/deleteNote/${id}`)
                 .then(() => {
                     const updatedNotes = notes.filter((_, i) => i !== index);
                     setNotes(updatedNotes);

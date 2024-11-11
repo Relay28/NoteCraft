@@ -35,7 +35,7 @@ export default function SignIn() {
         e.preventDefault();
         try {
             // Send a POST request to the API
-            const response = await axios.post('http://localhost:8080/api/user/insertUserRecord', personalInfo);
+            const response = await axios.post('http://localhost:8081/api/user/insertUserRecord', personalInfo);
             
             // Log the response to check the structure
             console.log('Response data:', response.data);

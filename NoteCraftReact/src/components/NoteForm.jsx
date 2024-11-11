@@ -26,7 +26,7 @@ export default function NoteForm() {
 
     const [openImagePreview, setOpenImagePreview] = useState(false);
     const [previewImageUrl, setPreviewImageUrl] = useState("");
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = "http://localhost:8081";
 
     useEffect(() => {
         if (noteId && !location.state?.noteData) {

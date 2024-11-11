@@ -26,7 +26,7 @@ export default function Profile({ userId, token }) {
 
         try {
             const response = await axios.put(
-                `http://localhost:8080/api/user/putUserDetails?id=${personalInfo.id}`,
+                `http://localhost:8081/api/user/putUserDetails?id=${personalInfo.id}`,
                 {
                     ...updatedInfo,
                     id: personalInfo.id,
@@ -55,7 +55,7 @@ export default function Profile({ userId, token }) {
         if (!confirmDelete) return;
 
         try {
-            await axios.delete(`http://localhost:8080/api/user/deleteUserDetails/${personalInfo.id}`, {
+            await axios.delete(`http://localhost:8081/api/user/deleteUserDetails/${personalInfo.id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -75,7 +75,7 @@ export default function Profile({ userId, token }) {
                 
                 {personalInfo.profileImg ? (
                     <img
-                        src={`http://localhost:8080/profileImages/${personalInfo.profileImg}`}
+                        src={`http://localhost:8081/profileImages/${personalInfo.profileImg}`}
                         alt="Profile"
                         style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
                     />

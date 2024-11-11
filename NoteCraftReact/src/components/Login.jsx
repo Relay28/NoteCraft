@@ -30,7 +30,7 @@ export default function Login() {
         console.log("Submitting login with:", personalInfo); // Log data being sent
 
         try {
-            const loginResponse = await axios.post('http://localhost:8080/api/user/login', {
+            const loginResponse = await axios.post('http://localhost:8081/api/user/login', {
                 username: personalInfo.username,
                 password: personalInfo.password,
             });
@@ -41,7 +41,7 @@ export default function Login() {
 
                 console.log(`Your token: ${token}`);
 
-                const allUsersResponse = await axios.get('http://localhost:8080/api/user/getAllUsers', {
+                const allUsersResponse = await axios.get('http://localhost:8081/api/user/getAllUsers', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
