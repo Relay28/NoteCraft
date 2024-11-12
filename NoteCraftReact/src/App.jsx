@@ -11,7 +11,7 @@ function App() {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <Stack direction="row" sx={{ mt: 5, height: '100vh', width: '90vw' }}>
+    <Stack direction="row" sx={{ mt: 5, height: '80vh', width: '90vw' }}>
       {/* Conditionally render AppBar and Sidebar */}
       {!isAuthPage && <PrimarySearchAppBar />}
       {!isAuthPage && <NestedList sx={{ maxWidth: '20%' }} />}

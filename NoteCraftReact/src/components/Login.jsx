@@ -85,6 +85,7 @@ export default function Login() {
             display: 'flex',
             height: '70vh',
             width: '150vh',
+            marginLeft:"60px",
             fontFamily: 'Arial, sans-serif',
             background: '#ffffff',
             border: "1px solid #579A59",
