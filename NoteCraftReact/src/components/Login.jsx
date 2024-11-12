@@ -2,6 +2,8 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { PersonalInfoContext } from './PersonalInfoProvider';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 
 export default function Login() {
     const [hover, setHover] = useState(false);
@@ -9,7 +11,7 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const { setPersonalInfo } = useContext(PersonalInfoContext); // Use setPersonalInfo from context
-
+    const [errorMessage, setErrorMessage] = useState('');
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
     const handleChange = (e) => {
@@ -40,14 +42,14 @@ export default function Login() {
                     localStorage.setItem('userId', userData.id);
                     navigate('/home');
                 } else {
-                    alert('User not found after login');
+                    setErrorMessage('User not found after login');
                 }
             } else {
-                alert('Invalid username or password');
+                setErrorMessage('Invalid username or password');
             }
         } catch (error) {
             console.error('Error logging in:', error.response?.data || error.message);
-            alert('Login failed');
+            setErrorMessage('Invalid Credentials');
         }
     };
 
@@ -112,19 +114,19 @@ export default function Login() {
                         }}
                     />
                     <div style={{ position: "relative", marginBottom: "15px" }}>
-                        <span
-                            onClick={togglePasswordVisibility}
-                            style={{
-                                position: "absolute",
-                                right: "10px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                cursor: "pointer",
-                                fontSize: '20px',
-                            }}
-                        >
-                            {showPassword ? '🙈' : '👁️'}
-                        </span>
+                    <IconButton 
+                        onClick={togglePasswordVisibility} 
+                        style={{
+                            position: 'absolute', 
+                            top: '10px', 
+                            right: '-13px', 
+                            backgroundColor: 'transparent', 
+                            padding: '0', 
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
                         <input
                             type={showPassword ? 'text' : 'password'}
                             name="password"
@@ -141,19 +143,30 @@ export default function Login() {
                             }}
                         />
                     </div>
-                    <h4
-                        style={{
-                            color: '#579A59',
-                            cursor: "pointer",
-                            fontSize: '14px',
-                            textDecoration: 'underline',
-                            marginLeft: "10px",
-                            marginBottom: '15px',
-                        }}
-                        onClick={() => navigate('/register')}
-                    >
-                        No Account Yet? Register here!
-                    </h4>
+
+                    <div style={{
+                        height: '20px', // Fixed height to prevent shifting
+                        color: 'red',
+                        fontSize: '14px',
+                        marginBottom: '10px',
+                    }}>
+                        {errorMessage}
+                    </div>
+
+                    <div style={{ marginBottom: '15px' }}>
+                        <h4
+                            style={{
+                                color: '#579A59',
+                                cursor: "pointer",
+                                fontSize: '14px',
+                                textDecoration: 'underline',
+                                marginLeft:"10px"
+                            }}
+                            onClick={() => navigate('/register')}
+                        >
+                            No Account Yet? Register here!
+                        </h4>
+                    </div>
                     <button type="submit" style={{
                         width: '100%',
                         padding: '12px',

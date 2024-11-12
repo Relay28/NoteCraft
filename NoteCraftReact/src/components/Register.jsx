@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 
 export default function SignIn() {
     const [personalInfo, setPersonalInfo] = useState({
@@ -19,6 +21,8 @@ export default function SignIn() {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
+    const [usernameError, setUsernameError] = useState('');
+    const [emailError, setEmailError] = useState('');
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -33,12 +37,28 @@ export default function SignIn() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setUsernameError('');
+        setEmailError('');
+
         try {
-            const response = await axios.post('http://localhost:8081/api/user/insertUserRecord', personalInfo);
-            const userData = response.data;
-            const userId = userData.id;
-            setAcc(userData);
-            navigate('/login', { state: { account: userData } });
+            const usernameResponse = await axios.get('http://localhost:8081/api/user/checkAvailability', {
+                params: { username: personalInfo.username },
+            });
+            const emailResponse = await axios.get('http://localhost:8081/api/user/checkAvailability', {
+                params: { email: personalInfo.email },
+            });
+
+            if (!usernameResponse.data.available) {
+                setUsernameError('Username is taken');
+            }
+            if (!emailResponse.data.available) {
+                setEmailError('Email is taken');
+            }
+
+            if (usernameResponse.data.available && emailResponse.data.available) {
+                const response = await axios.post('http://localhost:8081/api/user/insertUserRecord', personalInfo);
+                navigate('/login', { state: { account: response.data } });
+            }
         } catch (error) {
             console.error('Error creating user:', error);
         }
@@ -73,24 +93,6 @@ export default function SignIn() {
 
                 <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
                     <input
-                        type="email"
-                        name="email"
-                        placeholder="Email"
-                        value={personalInfo.email}
-                        onChange={handleChange}
-                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                        required
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            marginBottom: '15px',
-                            borderRadius: '5px',
-                            border: '1px solid #ced4da',
-                            outline: 'none',
-                            fontSize: '16px',
-                        }}
-                    />
-                    <input
                         type="text"
                         name="name"
                         placeholder="Full Name"
@@ -100,53 +102,22 @@ export default function SignIn() {
                         style={{
                             width: '100%',
                             padding: '12px',
-                            marginBottom: '15px',
+                            marginBottom: '3.5vh',
                             borderRadius: '5px',
                             border: '1px solid #ced4da',
                             outline: 'none',
                             fontSize: '16px',
                         }}
                     />
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        value={personalInfo.username}
-                        onChange={handleChange}
-                        required
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            marginBottom: '15px',
-                            borderRadius: '5px',
-                            border: '1px solid #ced4da',
-                            outline: 'none',
-                            fontSize: '16px',
-                        }}
-                    />
-                    <div style={{ position: "relative", marginBottom: "15px" }}>
-                        <span
-                            onClick={togglePasswordVisibility}
-                            style={{
-                                position: "absolute",
-                                right: "10px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                cursor: "pointer",
-                                fontSize: '20px',
-                            }}
-                        >
-                            {showPassword ? '🙈' : '👁️'}
-                        </span>
+                    <div style={{ position: 'relative', height: '50px', marginBottom: '30px' }}>
                         <input
-                            type={showPassword ? 'text' : 'password'}
-                            name="password"
-                            placeholder="Password"
-                            value={personalInfo.password}
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={personalInfo.email}
                             onChange={handleChange}
+                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                             required
-                            pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-                            title="Password must be at least 8 characters, include one special character, one uppercase letter, and one number."
                             style={{
                                 width: '100%',
                                 padding: '12px',
@@ -156,7 +127,71 @@ export default function SignIn() {
                                 fontSize: '16px',
                             }}
                         />
+                        {emailError && (
+                            <div style={{ color: 'red', textAlign: 'left', fontSize:'15px', marginTop: '5px' }}>
+                                {emailError}
+                            </div>
+                        )}
                     </div>
+                    
+                    <div style={{ position: 'relative', height: '50px', marginBottom: '30px' }}>
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Username"
+                            value={personalInfo.username}
+                            onChange={handleChange}
+                            required
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                borderRadius: '5px',
+                                border: '1px solid #ced4da',
+                                outline: 'none',
+                                fontSize: '16px',
+                            }}
+                        />
+                        {usernameError && (
+                            <div style={{ color: 'red', textAlign: 'left', fontSize:'15px', marginTop: '5px' }}>
+                                {usernameError}
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '400px', marginBottom: '30px' }}>
+                    <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        placeholder="Password"
+                        value={personalInfo.password}
+                        onChange={handleChange}
+                        required
+                        pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                        title="Password must be at least 8 characters, include one special character, one uppercase letter, and one number."
+                        style={{
+                            width: '106.5%',
+                            padding: '12px',
+                            borderRadius: '5px',
+                            border: '1px solid #ced4da',
+                            outline: 'none',
+                            fontSize: '16px',
+                            boxSizing: 'border-box',
+                        }}
+                    />
+                    <IconButton 
+                        onClick={togglePasswordVisibility} 
+                        style={{
+                            position: 'absolute', 
+                            top: '10px', 
+                            right: '-13px', 
+                            backgroundColor: 'transparent', 
+                            padding: '0', 
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                </div>
 
                     <button type="submit" style={{
                         width: '100%',

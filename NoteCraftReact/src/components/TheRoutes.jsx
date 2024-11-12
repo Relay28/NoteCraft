@@ -19,6 +19,7 @@ const TheRoutes = () => {
     <Routes>
       {/* Login as the index route */}
       <Route path="/login" element={<Login />} index />
+      <Route path="/register" element={<SignIn />} index />
 
       {/* Authenticated routes with Home layout */}
       <Route element={<Home />}>
