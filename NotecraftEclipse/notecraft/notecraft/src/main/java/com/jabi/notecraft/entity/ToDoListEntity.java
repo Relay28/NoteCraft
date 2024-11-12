@@ -1,9 +1,14 @@
 package com.jabi.notecraft.entity;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class ToDoListEntity {
@@ -21,13 +26,16 @@ public class ToDoListEntity {
 	private boolean isCompleted;
 	private String category;
 	
+	@OneToMany(mappedBy = "toDoList", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	public List<SubTaskEntity> subTasks;
+	
 	public ToDoListEntity() {
 		super();
 	}
 	
 	public ToDoListEntity(int taskID, String taskName, String description, String deadline,
 			String taskStarted, String taskEnded, boolean isCompleted,
-			String category) {
+			String category, List<SubTaskEntity> subTasks) {
 		super();
 		this.taskID = taskID;
 		this.taskName = taskName;
@@ -37,6 +45,7 @@ public class ToDoListEntity {
 		this.taskEnded = taskEnded;
 		this.isCompleted = isCompleted;
 		this.category = category;
+		this.subTasks = subTasks;
 	}
 	
 	public int getTaskID() {
@@ -97,5 +106,13 @@ public class ToDoListEntity {
 	
 	public void setCategory(String category) {
 		this.category = category;
+	}
+	
+	public List<SubTaskEntity> getSubTasks() {
+		return subTasks;
+	}
+
+	public void setSubTasks(List<SubTaskEntity> subTasks) {
+		this.subTasks = subTasks;
 	}
 }
