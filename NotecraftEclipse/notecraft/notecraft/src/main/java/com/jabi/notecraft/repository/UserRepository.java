@@ -12,4 +12,6 @@ import com.jabi.notecraft.entity.UserEntity;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     Optional<UserEntity> findByUsernameAndPassword(String username, String password);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

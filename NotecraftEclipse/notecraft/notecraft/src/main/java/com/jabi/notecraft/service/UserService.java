@@ -25,73 +25,29 @@ public class UserService {
         super();
     }
 
-    // Create of CRUD
     public UserEntity insertUserRecord(UserEntity user) {
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
+        }
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+
+        if (isUsernameTaken(user.getUsername())) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+        if (isEmailTaken(user.getEmail())) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+
         return urepo.save(user);
     }
-    
-    
 
     // Read of CRUD
     public List<UserEntity> getAllUsers() {
         return urepo.findAll();
     }
 
-//    @SuppressWarnings("finally")
-//    public UserEntity putUserDetails(int id, UserEntity newUserDetails) {
-//        UserEntity user = new UserEntity();
-//        try {
-//            user = urepo.findById(id).get();
-//            user.setName(newUserDetails.getName());
-//            user.setUsername(newUserDetails.getUsername());
-//            user.setPassword(newUserDetails.getPassword());
-//            user.setEmail(newUserDetails.getEmail());
-//            user.setProfileImg(newUserDetails.getProfileImg());
-//        } catch (NoSuchElementException nex) {
-//            throw new NameNotFoundException("User " + id + " not found");
-//        } finally {
-//            return urepo.save(user);
-//        }
-//    }
-//    public UserEntity putUserDetails(int id, UserEntity newUserDetails, MultipartFile profileImg) {
-//        UserEntity user = new UserEntity();
-//        try {
-//            // Retrieve the existing user
-//            user = urepo.findById(id).orElseThrow(() -> new NoSuchElementException("User " + id + " not found"));
-//
-//            // Update user details from newUserDetails
-//            if (newUserDetails.getName() != null) {
-//                user.setName(newUserDetails.getName());
-//            }
-//            if (newUserDetails.getUsername() != null) {
-//                user.setUsername(newUserDetails.getUsername());
-//            }
-//            if (newUserDetails.getPassword() != null) {
-//                user.setPassword(newUserDetails.getPassword());
-//            }
-//            if (newUserDetails.getEmail() != null) {
-//                user.setEmail(newUserDetails.getEmail());
-//            }
-//
-//            // Save profile image if provided
-//            if (profileImg != null && !profileImg.isEmpty()) {
-//                String folder = "uploads/profileImgs/"; // Define where to save profile images
-//                Path path = Paths.get(folder + profileImg.getOriginalFilename());
-//                Files.createDirectories(path.getParent()); // Ensure the directory exists
-//                Files.write(path, profileImg.getBytes()); // Save the image
-//
-//                user.setProfileImg(path.toString()); // Set the path to the saved image in profileImg
-//            }
-//
-//        } catch (NoSuchElementException ex) {
-//            throw new RuntimeException("User " + id + " not found", ex);
-//        } catch (IOException e) {
-//            throw new RuntimeException("Failed to save profile image", e);
-//        }
-//
-//        // Save the updated user entity to the repository
-//        return urepo.save(user);
-//    }
     
     public UserEntity putUserDetails(int id, UserEntity newUserDetails, MultipartFile profileImg) {
         UserEntity user = urepo.findById(id).orElseThrow(() -> new NoSuchElementException("User " + id + " not found"));
@@ -135,14 +91,6 @@ public class UserService {
     }
 
 
-
-
-
-
-    
-
-
-
     public String deleteUser(int id) {
         String msg = "";
         if (urepo.findById(id) != null) {
@@ -158,4 +106,24 @@ public class UserService {
     public Optional<UserEntity> findByUsernameAndPassword(String username, String password) {
         return urepo.findByUsernameAndPassword(username, password);
     }
+    
+    public boolean isUsernameTaken(String username) {
+        return urepo.existsByUsername(username);
+    }
+
+    public boolean isEmailTaken(String email) {
+        return urepo.existsByEmail(email);
+    }
+
+    public UserEntity insertUserRecord1(UserEntity user) {
+        if (isUsernameTaken(user.getUsername())) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+        if (isEmailTaken(user.getEmail())) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+        return urepo.save(user);
+    }
+
+	
 }
