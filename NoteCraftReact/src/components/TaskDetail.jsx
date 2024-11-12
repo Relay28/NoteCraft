@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
@@ -16,15 +17,33 @@ const TaskDetail = () => {
         taskStarted: '',
         taskEnded: '',
         isCompleted: false,
-        category: ''
+        category: '',
+        subtasks: []
     });
     const [date, setDate] = useState(new Date());
 
     useEffect(() => {
         if (!location.state?.task) {
             navigate('/todolist');
+        } else {
+            const taskId = location.state.task.id; // Assuming the task object has an 'id'
+            fetchSubtasks(taskId); // Fetch subtasks using the taskId
         }
     }, [location, navigate]);
+
+    const fetchSubtasks = async (taskId) => {
+        try {
+            const response = await axios.get(`http://localhost:8081/api/subtask/getSubTasksByTaskId`, {
+                params: { taskId: taskId }
+            });
+            setTaskData(prevTaskData => ({
+                ...prevTaskData,
+                subtasks: response.data || []
+            }));
+        } catch (error) {
+            console.error('Error fetching subtasks:', error);
+        }
+    };
 
     const handleBack = () => {
         navigate('/todolist');
@@ -103,6 +122,19 @@ const TaskDetail = () => {
                         <Typography variant="h5" gutterBottom>Category: {taskData.category || "N/A"}</Typography>
                         <Typography variant="h6" gutterBottom> {taskData.description || "N/A"}</Typography>
                         <Typography variant="h5" gutterBottom>Status: {taskData.isCompleted ? "Completed" : "Incomplete"}</Typography>
+
+                        <Typography variant="h6" gutterBottom>
+                            Subtasks:
+                        </Typography>
+                        <ul>
+                            {taskData.subtasks && taskData.subtasks.length > 0 ? (
+                                taskData.subtasks.map((subtask, index) => (
+                                    <li key={index}>{subtask.SubTaskName}</li>
+                                ))
+                            ) : (
+                                <li>No subtasks available</li>
+                            )}
+                        </ul>
                     </Box>
 
                     <Box sx={{ width: "45%", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

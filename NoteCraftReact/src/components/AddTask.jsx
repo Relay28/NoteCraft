@@ -19,7 +19,7 @@ const AddTask = () => {
         isCompleted: false,
         category: ''
     });
-    
+    const [subtasks, setSubtasks] = useState(['']);
     const [errors, setErrors] = useState({
         taskName: false,
         deadline: false,
@@ -51,19 +51,32 @@ const AddTask = () => {
         }
     };
 
+    const handleSubtaskChange = (index, value) => {
+        const newSubtasks = [...subtasks];
+        newSubtasks[index] = value;
+        setSubtasks(newSubtasks);
+    };
+
+    const addSubtaskField = () => {
+        setSubtasks([...subtasks, '']);
+    };
+
     const handleSaveTask = () => {
         const taskWithDates = {
             ...taskData,
             dateCreated: new Date().toISOString().split('T')[0],
+            subtasks: subtasks
+                .filter(subtask => subtask.trim() !== '') // Filter out empty subtasks
+                .map(subtaskName => ({ SubTaskName: subtaskName })) // Only pass SubTaskName
         };
-
+    
         axios.post('http://localhost:8081/api/todolist/postToDoListRecord', taskWithDates)
-        .then(() => {
-            navigate('/todolist');  // Redirect back to Todolist page
-        })
-        .catch(error => {
-            console.error("Error creating task!", error);
-        });
+            .then(() => {
+                navigate('/todolist');  // Redirect back to Todolist page
+            })
+            .catch(error => {
+                console.error("Error creating task or subtasks!", error);
+            });
     };
 
     const handleBack = () => {
@@ -83,7 +96,7 @@ const AddTask = () => {
     return (
         <Box sx={{
             padding: '20px',
-            marginLeft: "200px"
+            marginLeft: "200px",
         }}>
             <Typography variant="h4" component="h2" marginBottom="20px" sx={{ color: "black" }}>
                 {isEditing ? "Edit Task" : "Add New Task"}
@@ -157,6 +170,26 @@ const AddTask = () => {
                     fullWidth 
                     margin="normal" 
                 />
+
+                {/* Subtasks Section */}
+                <Box marginTop="20px">
+                    <Typography variant="h6" marginBottom="10px">
+                        Subtasks
+                    </Typography>
+                    {subtasks.map((subtask, index) => (
+                        <TextField 
+                            key={index}
+                            label={`Subtask ${index + 1}`}
+                            value={subtask}
+                            onChange={(e) => handleSubtaskChange(index, e.target.value)}
+                            fullWidth
+                            margin="normal"
+                        />
+                    ))}
+                    <Button variant="outlined" color="primary" onClick={addSubtaskField}>
+                        Add Subtask
+                    </Button>
+                </Box>
                 
                 <Box display="flex" justifyContent="space-between" marginTop="20px">
                     <Button 

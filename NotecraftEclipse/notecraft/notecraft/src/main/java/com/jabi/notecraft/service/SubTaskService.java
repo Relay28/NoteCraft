@@ -29,6 +29,11 @@ public class SubTaskService {
 	public List<SubTaskEntity> getAllSubTasks() {
 		return subTaskRepo.findAll();
 	}
+	
+	// Retrieve SubTasks by taskId
+    public List<SubTaskEntity> getSubTasksByTaskId(int taskId) {
+        return subTaskRepo.findByToDoList_taskID(taskId); // Calls the custom query method to filter by task ID
+    }
 
 	// Update an existing SubTask record
 	@SuppressWarnings("finally")

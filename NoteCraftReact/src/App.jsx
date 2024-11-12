@@ -17,7 +17,7 @@ function App() {
       {!isAuthPage && <NestedList sx={{ maxWidth: '20%' }} />}
 
       {/* Main content area with flexGrow and full width */}
-      <Box sx={{ flexGrow: 6, p: 4, margin: 0, overflowY: 'hidden' }}>
+      <Box sx={{ flexGrow: 6, p: 4, margin: 0 }}>
         <TheRoutes />
       </Box>
     </Stack>

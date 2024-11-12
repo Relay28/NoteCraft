@@ -14,7 +14,7 @@ public class SubTaskEntity {
 	private int subTaskID;
 
 	private String subTaskName;
-	private boolean isSubTaskCompleted;
+	private Boolean isSubTaskCompleted = null;
 
 	@ManyToOne
 	@JoinColumn(name = "taskID", nullable = false)

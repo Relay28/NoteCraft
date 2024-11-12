@@ -1,5 +1,7 @@
 package com.jabi.notecraft.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,9 +33,9 @@ public class SubTaskController {
     }
 
     // Endpoint to retrieve all SubTasks
-    @GetMapping("/getAllSubTasks")
-    public List<SubTaskEntity> getAllSubTasks() {
-        return subTaskService.getAllSubTasks();
+    @GetMapping("/getSubTasksByTaskId")
+    public List<SubTaskEntity> getSubTasksByTaskId(@RequestParam int taskId) {
+        return subTaskService.getSubTasksByTaskId(taskId);
     }
 
     // Endpoint to update an existing SubTask
