@@ -9,10 +9,12 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FolderIcon from '@mui/icons-material/Folder';
 import MessageIcon from '@mui/icons-material/Message';
 import { useNavigate } from 'react-router-dom';
+import { PersonalInfoContext } from './PersonalInfoProvider';
 
-export default function NestedList({ open, toggleNestedList, personalInfo }) { 
+export default function NestedList({ open, toggleNestedList }) {
   const [isOpen, setIsOpen] = React.useState(true);
   const navigate = useNavigate();
+  const { personalInfo } = React.useContext(PersonalInfoContext);
 
   const handleMessagesClick = () => {
     navigate('/messages');
@@ -38,7 +40,7 @@ export default function NestedList({ open, toggleNestedList, personalInfo }) {
 
   return (
     <List
-      sx={{ 
+      sx={{
         width: '20%', 
         height: "100%",
         bgcolor: ' ',

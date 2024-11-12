@@ -16,6 +16,8 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
+import { useContext } from 'react';
+import { PersonalInfoContext } from './PersonalInfoProvider';
 
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -70,7 +72,7 @@ export default function PrimarySearchAppBar(props) {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
   
   // Access the personalInfo prop correctly
-  const personalInfo = props.personalInfo; // Update this line
+  const { personalInfo } = useContext(PersonalInfoContext);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);

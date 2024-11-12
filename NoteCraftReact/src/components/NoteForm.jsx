@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, useContext } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button, TextField, Box, Typography, Dialog, DialogContent } from "@mui/material";
+import { PersonalInfoContext } from './PersonalInfoProvider';
 import axios from "axios";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -12,17 +13,23 @@ export default function NoteForm() {
     const { noteId } = useParams();
     const location = useLocation();
     const quillRef = useRef(null);
-
-    // Retrieve token from localStorage
+    const { personalInfo } = useContext(PersonalInfoContext);
     const token = localStorage.getItem('token');
-    const user = location.state?.user || null ;
+    const user = personalInfo;
+
     const [note, setNote] = useState(location.state?.noteData || { 
         title: "", 
         description: "", 
         content: "", 
         dateCreated: "", 
-        userId: location.state?.user.id || null  // Set userId from location.state.user
+        userId: user ? user : null 
     });
+    console.log(note.userId);
+    useEffect(() => {
+        if (user && user.id) {
+            setNote(prevNote => ({ ...prevNote, userId: user.id }));
+        }
+    }, [user]);
 
     const [openImagePreview, setOpenImagePreview] = useState(false);
     const [previewImageUrl, setPreviewImageUrl] = useState("");
@@ -33,10 +40,10 @@ export default function NoteForm() {
             axios.get(`${BASE_URL}/api/note/getNoteById/${noteId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-            .then(response => setNote({ ...response.data, userId: location.state?.user }))
+            .then(response => setNote({ ...response.data, userId: user ? user.id : null }))
             .catch(error => console.error("Error fetching note:", error));
         }
-    }, [noteId, location.state, token]);
+    }, [noteId, location.state, token, user]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -79,7 +86,7 @@ export default function NoteForm() {
     const formats = [
         'header', 'bold', 'italic', 'underline', 'strike', 'blockquote',
         'list', 'bullet', 'indent', 'link', 'image', 'color', 'align', 'background',
-        'script'  
+        'script'
     ];
 
     const handleSaveNote = async () => {
@@ -87,13 +94,13 @@ export default function NoteForm() {
             alert("Title and Content are required to save the note.");
             return;
         }
-    
+
         const apiEndpoint = noteId
             ? `${BASE_URL}/api/note/updateNote?noteid=${noteId}&userId=${note.userId}`
             : `${BASE_URL}/api/note/insertNote?userId=${note.userId}`;
-        
+
         const requestMethod = noteId ? 'put' : 'post';
-    
+
         try {
             await axios[requestMethod](apiEndpoint, {
                 ...note,
@@ -102,7 +109,7 @@ export default function NoteForm() {
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            navigate("/notes",{ state: { user}});  // Redirect after saving
+            navigate("/notes", { state: { user } });  // Redirect after saving
         } catch (error) {
             console.error("Error saving note:", error);
         }
