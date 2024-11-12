@@ -26,6 +26,10 @@ export default function NestedList({ open, toggleNestedList, personalInfo }) {
     setIsOpen(!isOpen);
   };
 
+  const handleTodolistClick = () => {
+    navigate('/todolist');
+  };
+
   React.useEffect(() => {
     if (!open) {
       setIsOpen(false);
@@ -63,7 +67,7 @@ export default function NestedList({ open, toggleNestedList, personalInfo }) {
           <ListItemText primary="Notes" />
         </ListItemButton>
 
-        <ListItemButton sx={{ mb: 2 }}>
+        <ListItemButton sx={{ mb: 2 }} onClick={handleTodolistClick}>
           <ListItemIcon sx={{ minWidth: '40px', color: "#579A59" }}>
             <FormatListBulletedIcon sx={{ fontSize: '30px' }} />
           </ListItemIcon>
