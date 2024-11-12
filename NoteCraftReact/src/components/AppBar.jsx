@@ -112,7 +112,7 @@ export default function PrimarySearchAppBar(props) {
   };
   const goHome = () => {
     console.log("Navigating to /home");
-    navigate('/home', { state: { account: personalInfo } });
+    navigate('/home');
   };
   
 

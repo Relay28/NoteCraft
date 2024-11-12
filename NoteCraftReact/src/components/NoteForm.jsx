@@ -5,7 +5,6 @@ import { PersonalInfoContext } from './PersonalInfoProvider';
 import axios from "axios";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-
 import { createQuillModules } from './quillModules';
 
 export default function NoteForm() {
@@ -24,7 +23,7 @@ export default function NoteForm() {
         dateCreated: "", 
         userId: user ? user : null 
     });
-    console.log(note.userId);
+
     useEffect(() => {
         if (user && user.id) {
             setNote(prevNote => ({ ...prevNote, userId: user.id }));
