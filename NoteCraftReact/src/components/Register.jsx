@@ -34,22 +34,10 @@ export default function SignIn() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Send a POST request to the API
             const response = await axios.post('http://localhost:8081/api/user/insertUserRecord', personalInfo);
-            
-            // Log the response to check the structure
-            console.log('Response data:', response.data);
-    
-            // Adjust this based on the actual response structure
             const userData = response.data;
-    
-            // If userId is directly inside response.data:
-            const userId = userData.id; // Adjust this as needed
-            setAcc(userData); // Set the entire user data to account
-            
-            console.log('User created with ID:', userId);
-    
-            // Redirect to the Profile page with account data
+            const userId = userData.id;
+            setAcc(userData);
             navigate('/login', { state: { account: userData } });
         } catch (error) {
             console.error('Error creating user:', error);
@@ -68,7 +56,6 @@ export default function SignIn() {
             borderRadius: "20px",
             overflow: "hidden"
         }}>
-            {/* Left section for the registration form */}
             <div style={{
                 flex: '1',
                 display: 'flex',
@@ -184,12 +171,21 @@ export default function SignIn() {
                     }}>
                         Sign Up
                     </button>
+                    
+                    <div style={{ marginTop: '15px', fontSize: '14px', color: '#579A59' }}>
+                        Already have an account?{' '}
+                        <span
+                            onClick={() => navigate('/login')}
+                            style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
+                        >
+                            Sign in
+                        </span>
+                    </div>
                 </form>
             </div>
 
-            {/* Right section for the image */}
             <div
-                className="transition-section-register" // Use right-to-left animation
+                className="transition-section-register"
                 style={{
                     height: '100%',
                     width: 'calc(50% - 10px)',
@@ -205,7 +201,7 @@ export default function SignIn() {
                 }}
             >
                 <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>
-                Stay Organized, Stay Creative: NoteCraft Makes It Easy.
+                    Stay Organized, Stay Creative: NoteCraft Makes It Easy.
                 </h1>
             </div>
         </div>
