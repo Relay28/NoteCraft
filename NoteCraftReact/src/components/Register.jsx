@@ -64,6 +64,7 @@ export default function SignIn() {
             fontFamily: 'Arial, sans-serif',
             background: '#ffffff',
             border: "1px solid black",
+            marginLeft:"85px",
             borderRadius: "20px",
             overflow: "hidden"
         }}>
