@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import com.jabi.notecraft.entity.SubTaskEntity;
 import com.jabi.notecraft.repository.SubTaskRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class SubTaskService {
 	@Autowired
@@ -22,46 +24,47 @@ public class SubTaskService {
 
 	// Create a new SubTask record
 	public SubTaskEntity postSubTaskRecord(SubTaskEntity subTask) {
-		return subTaskRepo.save(subTask);
-	}
+        // Set the default value of isSubTaskCompleted to false for new subtasks
+        subTask.setIsSubTaskCompleted(false);
+        return subTaskRepo.save(subTask);
+    }
 
 	// Retrieve all SubTask records
 	public List<SubTaskEntity> getAllSubTasks() {
-		return subTaskRepo.findAll();
-	}
+        return subTaskRepo.findAll();
+    }
 	
 	// Retrieve SubTasks by taskId
-    public List<SubTaskEntity> getSubTasksByTaskId(int taskId) {
-        return subTaskRepo.findByToDoList_taskID(taskId); // Calls the custom query method to filter by task ID
+	public List<SubTaskEntity> getSubTasksByTaskId(int taskId) {
+        return subTaskRepo.findByToDoList_taskID(taskId);
     }
 
 	// Update an existing SubTask record
-	@SuppressWarnings("finally")
-	public SubTaskEntity putSubTaskDetails(int id, SubTaskEntity newSubTaskDetails) {
-		SubTaskEntity subTask = new SubTaskEntity();
-		
-		try {
-			subTask = subTaskRepo.findById(id).get();
-			subTask.setSubTaskName(newSubTaskDetails.getSubTaskName());
-			subTask.setSubTaskCompleted(newSubTaskDetails.isSubTaskCompleted());
-		} catch (NoSuchElementException nex) {
-			throw new NameNotFoundException("SubTask record not found");
-		} finally {
-			return subTaskRepo.save(subTask);
-		}
-	}
+	public SubTaskEntity putSubTaskDetails(int id, SubTaskEntity newSubTaskDetails) throws NameNotFoundException {
+        SubTaskEntity subTask = subTaskRepo.findById(id)
+                .orElseThrow(() -> new NameNotFoundException("SubTask record not found"));
+        
+        subTask.setSubTaskName(newSubTaskDetails.getSubTaskName());
+        
+        return subTaskRepo.save(subTask);
+    }
 
 	// Delete a SubTask record
 	public String deleteSubTask(int id) {
-		String msg = "";
+        if (subTaskRepo.findById(id).isPresent()) {
+            subTaskRepo.deleteById(id);
+            return "SubTask record successfully deleted!";
+        } else {
+            return "SubTask record not found!";
+        }
+    }
+	
+	public SubTaskEntity toggleSubTaskCompletion(int subTaskId) {
+        SubTaskEntity subTask = subTaskRepo.findById(subTaskId)
+                .orElseThrow(() -> new EntityNotFoundException("SubTask not found with id: " + subTaskId));
 
-		if (subTaskRepo.findById(id).isPresent()) {
-			subTaskRepo.deleteById(id);
-			msg = "SubTask record successfully deleted!";
-		} else {
-			msg = "SubTask record not found!";
-		}
-
-		return msg;
-	}
+        // Toggle the completion status
+        subTask.setIsSubTaskCompleted(!subTask.getIsSubTaskCompleted());
+        return subTaskRepo.save(subTask);
+    }
 }

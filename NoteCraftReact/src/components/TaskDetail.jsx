@@ -1,7 +1,7 @@
 // npm install react-calendar
 // npm install @mui/icons-material
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton, FormControlLabel, Radio } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Calendar from 'react-calendar';
@@ -22,28 +22,15 @@ const TaskDetail = () => {
     });
     const [date, setDate] = useState(new Date());
 
+    console.log("Task Data in TaskDetail:", taskData);
+
     useEffect(() => {
         if (!location.state?.task) {
             navigate('/todolist');
         } else {
             const taskId = location.state.task.id; // Assuming the task object has an 'id'
-            fetchSubtasks(taskId); // Fetch subtasks using the taskId
         }
     }, [location, navigate]);
-
-    const fetchSubtasks = async (taskId) => {
-        try {
-            const response = await axios.get(`http://localhost:8081/api/subtask/getSubTasksByTaskId`, {
-                params: { taskId: taskId }
-            });
-            setTaskData(prevTaskData => ({
-                ...prevTaskData,
-                subtasks: response.data || []
-            }));
-        } catch (error) {
-            console.error('Error fetching subtasks:', error);
-        }
-    };
 
     const handleBack = () => {
         navigate('/todolist');
@@ -98,6 +85,22 @@ const TaskDetail = () => {
         return remainingDays <= 5 ? 'red' : 'black';
     };
 
+    const toggleSubtaskCompletion = async (index, subTaskId) => {
+        try {
+            // Send a PUT request to toggle completion status
+            const response = await axios.put(`http://localhost:8080/api/subtask/toggleCompletion/${subTaskId}`);
+    
+            // Update local state with the response data
+            setTaskData(prevTaskData => {
+                const updatedSubtasks = [...prevTaskData.subTasks];
+                updatedSubtasks[index] = response.data; // Update with latest subtask data from server
+                return { ...prevTaskData, subTasks: updatedSubtasks };
+            });
+        } catch (error) {
+            console.error("Error toggling subtask completion:", error);
+        }
+    };
+
     return (
         <Box sx={{
             padding: '20px',
@@ -126,15 +129,35 @@ const TaskDetail = () => {
                         <Typography variant="h6" gutterBottom>
                             Subtasks:
                         </Typography>
-                        <ul>
-                            {taskData.subtasks && taskData.subtasks.length > 0 ? (
-                                taskData.subtasks.map((subtask, index) => (
-                                    <li key={index}>{subtask.SubTaskName}</li>
-                                ))
-                            ) : (
-                                <li>No subtasks available</li>
-                            )}
-                        </ul>
+                        {taskData.subTasks && taskData.subTasks.length > 0 ? (
+                            <ul>
+                                {taskData.subTasks.map((subtask, subIndex) => (
+                                    <li key={subIndex} style={{ display: 'flex', alignItems: 'center' }}>
+                                        <FormControlLabel
+                                            control={
+                                                <Radio
+                                                    checked={subtask.isCompleted}
+                                                    onChange={() => toggleSubtaskCompletion(subIndex, subtask.id)}
+                                                />
+                                            }
+                                            label={
+                                                <Typography
+                                                    variant="body2"
+                                                    sx={{
+                                                        textDecoration: subtask.isCompleted ? 'line-through' : 'none',
+                                                        color: subtask.isCompleted ? 'gray' : 'inherit'
+                                                    }}
+                                                >
+                                                    {subtask.subTaskName}
+                                                </Typography>
+                                            }
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <Typography variant="body2">No subtasks available</Typography>
+                        )}
                     </Box>
 
                     <Box sx={{ width: "45%", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

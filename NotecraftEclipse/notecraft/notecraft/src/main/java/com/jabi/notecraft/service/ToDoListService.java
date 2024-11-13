@@ -21,7 +21,11 @@ public class ToDoListService {
 	}
 	
 	public ToDoListEntity postToDoListRecord(ToDoListEntity toDoList) {
-		return tdlrepo.save(toDoList);
+	    if (toDoList.getSubTasks() != null) {
+	        // Make sure each subtask has the correct toDoList reference
+	        toDoList.getSubTasks().forEach(subTask -> subTask.setToDoList(toDoList));
+	    }
+	    return tdlrepo.save(toDoList);
 	}
 	
 	public List<ToDoListEntity>getAllToDoList(){

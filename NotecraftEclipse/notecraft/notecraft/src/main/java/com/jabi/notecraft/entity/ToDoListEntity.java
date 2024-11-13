@@ -2,6 +2,8 @@ package com.jabi.notecraft.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,6 +29,7 @@ public class ToDoListEntity {
 	private String category;
 	
 	@OneToMany(mappedBy = "toDoList", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	public List<SubTaskEntity> subTasks;
 	
 	public ToDoListEntity() {

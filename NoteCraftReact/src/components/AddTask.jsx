@@ -17,21 +17,31 @@ const AddTask = () => {
         taskStarted: new Date().toISOString().split('T')[0],
         taskEnded: '',
         isCompleted: false,
-        category: ''
+        category: '',
+        subTasks: [{ SubTaskName: '' }] // Initialize with an empty subtask if none exist
     });
-    const [subtasks, setSubtasks] = useState(['']);
     const [errors, setErrors] = useState({
         taskName: false,
         deadline: false,
-        description: false // New error state for description
+        description: false,
+        subTasks: false
     });
 
     // Prevent editing of taskStarted in edit mode
     useEffect(() => {
         if (isEditing) {
-            setTaskData(prevData => ({ ...prevData, taskStarted: location.state.task.taskStarted }));
+            setTaskData(prevData => ({
+                ...prevData,
+                taskName: location.state.task.taskName,
+                description: location.state.task.description,
+                deadline: location.state.task.deadline,
+                taskStarted: location.state.task.taskStarted,
+                taskEnded: location.state.task.taskEnded,
+                category: location.state.task.category,
+                subTasks: location.state.task.subTasks || [{ SubTaskName: '' }] // Make sure subTasks are properly set
+            }));
         }
-    }, [isEditing, location.state?.task.taskStarted]);
+    }, [isEditing, location.state?.task]); // Watch for changes in the task being edited
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -52,31 +62,31 @@ const AddTask = () => {
     };
 
     const handleSubtaskChange = (index, value) => {
-        const newSubtasks = [...subtasks];
-        newSubtasks[index] = value;
-        setSubtasks(newSubtasks);
+        const newSubtasks = [...taskData.subTasks]; // Create a copy of the current subtask list
+        newSubtasks[index] = { SubTaskName: value };
+        setTaskData({ ...taskData, subTasks: newSubtasks });
     };
 
     const addSubtaskField = () => {
-        setSubtasks([...subtasks, '']);
+        setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            subTasks: [...prevTaskData.subTasks, { SubTaskName: '' }] // Add new subtask
+        }));
     };
 
     const handleSaveTask = () => {
         const taskWithDates = {
             ...taskData,
             dateCreated: new Date().toISOString().split('T')[0],
-            subtasks: subtasks
-                .filter(subtask => subtask.trim() !== '') // Filter out empty subtasks
-                .map(subtaskName => ({ SubTaskName: subtaskName })) // Only pass SubTaskName
+            subTasks: taskData.subTasks
+                .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '') // Filter out empty subtasks
+                .map(subtask => ({ subTaskName: subtask.SubTaskName?.trim() || '' })) // Safely access SubTaskName
         };
-    
+        console.log("Task with Subtasks to Save:", taskWithDates); // Check taskWithDates structure
+        
         axios.post('http://localhost:8081/api/todolist/postToDoListRecord', taskWithDates)
-            .then(() => {
-                navigate('/todolist');  // Redirect back to Todolist page
-            })
-            .catch(error => {
-                console.error("Error creating task or subtasks!", error);
-            });
+            .then(() => navigate('/todolist'))
+            .catch(error => console.error("Error creating task or subtasks!", error));
     };
 
     const handleBack = () => {
@@ -176,14 +186,16 @@ const AddTask = () => {
                     <Typography variant="h6" marginBottom="10px">
                         Subtasks
                     </Typography>
-                    {subtasks.map((subtask, index) => (
+                    {taskData.subTasks.map((subtask, index) => (
                         <TextField 
                             key={index}
                             label={`Subtask ${index + 1}`}
-                            value={subtask}
+                            value={subtask.SubTaskName}
                             onChange={(e) => handleSubtaskChange(index, e.target.value)}
                             fullWidth
                             margin="normal"
+                            error={errors.subTasks && subtask.SubTaskName.trim() === ''}
+                            helperText={errors.subTasks && subtask.SubTaskName.trim() === '' ? "Subtask is required." : ""}
                         />
                     ))}
                     <Button variant="outlined" color="primary" onClick={addSubtaskField}>
@@ -201,7 +213,7 @@ const AddTask = () => {
                     >
                         Save Task
                     </Button>
-                    <Button variant="outlined" color="secondary" onClick={handleBack}>
+                    <Button variant="outlined" onClick={handleBack}>
                         Back
                     </Button>
                 </Box>

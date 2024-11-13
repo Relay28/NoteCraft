@@ -1,5 +1,7 @@
 package com.jabi.notecraft.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,10 +16,11 @@ public class SubTaskEntity {
 	private int subTaskID;
 
 	private String subTaskName;
-	private Boolean isSubTaskCompleted = null;
+	private Boolean isSubTaskCompleted = false;
 
 	@ManyToOne
 	@JoinColumn(name = "taskID", nullable = false)
+	@JsonBackReference
 	private ToDoListEntity toDoList;
 
 	public SubTaskEntity() {
@@ -48,11 +51,11 @@ public class SubTaskEntity {
 		this.subTaskName = subTaskName;
 	}
 
-	public boolean isSubTaskCompleted() {
+	public boolean getIsSubTaskCompleted() {
 		return isSubTaskCompleted;
 	}
 
-	public void setSubTaskCompleted(boolean isSubTaskCompleted) {
+	public void setIsSubTaskCompleted(boolean isSubTaskCompleted) {
 		this.isSubTaskCompleted = isSubTaskCompleted;
 	}
 

@@ -2,6 +2,8 @@ package com.jabi.notecraft.controller;
 
 import java.util.List;
 
+import javax.naming.NameNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,25 +28,27 @@ public class SubTaskController {
     @Autowired
     SubTaskService subTaskService;
 
-    // Endpoint to create a new SubTask
     @PostMapping("/postSubTaskRecord")
     public SubTaskEntity postSubTaskRecord(@RequestBody SubTaskEntity subTask) {
-        return subTaskService.postSubTaskRecord(subTask);
+        SubTaskEntity createdSubTask = subTaskService.postSubTaskRecord(subTask);
+        return createdSubTask;
     }
 
-    // Endpoint to retrieve all SubTasks
     @GetMapping("/getSubTasksByTaskId")
     public List<SubTaskEntity> getSubTasksByTaskId(@RequestParam int taskId) {
         return subTaskService.getSubTasksByTaskId(taskId);
     }
 
-    // Endpoint to update an existing SubTask
     @PutMapping("/putSubTaskDetails")
-    public SubTaskEntity putSubTaskDetails(@RequestParam int id, @RequestBody SubTaskEntity newSubTaskDetails) {
+    public SubTaskEntity putSubTaskDetails(@RequestParam int id, @RequestBody SubTaskEntity newSubTaskDetails) throws NameNotFoundException {
         return subTaskService.putSubTaskDetails(id, newSubTaskDetails);
     }
+    
+    @PutMapping("/toggleCompletion/{id}")
+    public SubTaskEntity toggleSubTaskCompletion(@PathVariable int id) {
+        return subTaskService.toggleSubTaskCompletion(id);
+    }
 
-    // Endpoint to delete a SubTask by ID
     @DeleteMapping("/deleteSubTask/{id}")
     public String deleteSubTask(@PathVariable int id) {
         return subTaskService.deleteSubTask(id);

@@ -5,37 +5,34 @@ import { useNavigate } from 'react-router-dom';
 
 const Todolist = () => {
     const [tasks, setTasks] = useState([]);
-    const [taskData, setTaskData] = useState({
-        taskName: '',
-        description: '',
-        deadline: '',
-        taskStarted: '',
-        taskEnded: '',
-        isCompleted: false,
-        category: ''
-    });
-    const navigate = useNavigate();
-    const [openDialog, setOpenDialog] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState(null);
+    const [openDialog, setOpenDialog] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get('http://localhost:8081/api/todolist/getAllToDoList')
             .then(response => {
-                if (Array.isArray(response.data)){
+                console.log('Fetched Tasks:', response.data); // Log the fetched data to check the structure
+                if (Array.isArray(response.data)) {
                     setTasks(response.data);
-                }
-                else{
-                    setTasks([]);
+                } else {
+                    setTasks([]); // If response is not an array, set empty tasks
                 }
             })
             .catch(error => {
                 console.error('Error fetching tasks', error);
-                setTasks([]);
+                setTasks([]); // Set tasks to empty array on error
             });
     }, []);
 
     const handleEdit = (task) => {
-        navigate(`/edit-task`, { state: { task } });
+        console.log('Editing task:', task); // Log task to verify it's correct
+
+        // Create a deep copy of the task data (including subtasks)
+        const taskCopy = JSON.parse(JSON.stringify(task));
+
+        // Navigate to add-task route with the copied task as state
+        navigate('/add-task', { state: { task: taskCopy } });
     };
 
     const handleDeleteTask = (id, index) => {
@@ -76,12 +73,11 @@ const Todolist = () => {
             overflowX: "hidden"
         }}>
 
-        <Box sx={{
+            <Box sx={{
                 flex: 3,
                 marginRight: "20px",
                 overflowY: "auto",
             }}>
-                
                 <Box sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -96,7 +92,7 @@ const Todolist = () => {
                         Add New To-Do List
                     </Button>
                 </Box>
- 
+
                 <List sx={{
                     padding: "10px",
                     borderRadius: "8px",
@@ -164,7 +160,7 @@ const Todolist = () => {
 
                                         <Typography variant="body1">
                                             <strong>
-                                                Date Ended: 
+                                                Date Ended:
                                             </strong>
                                             {' '}
                                             {task.taskEnded ? task.taskEnded : 'N/A'}
@@ -172,12 +168,26 @@ const Todolist = () => {
 
                                         <Typography variant="body1">
                                             <strong>
-                                                Deadline: 
+                                                Deadline:
                                             </strong>
                                             {' '}
                                             {task.deadline ? task.deadline : 'N/A'}
                                         </Typography>
                                     </Box>
+
+                                    {/* Display Subtasks if they exist */}
+                                    {task.subTasks && task.subTasks.length > 0 && (
+                                        <Box sx={{ marginTop: "10px", paddingLeft: "20px" }}>
+                                            <Typography variant="body2" color="textSecondary">
+                                                <strong>Subtasks:</strong>
+                                            </Typography>
+                                            {task.subTasks.map((subtask, subIndex) => (
+                                                <Typography key={subIndex} variant="body2">
+                                                    - {subtask.subTaskName}
+                                                </Typography>
+                                            ))}
+                                        </Box>
+                                    )}
                                 </CardContent>
                             </Card>
                         ))
