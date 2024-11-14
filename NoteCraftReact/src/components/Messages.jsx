@@ -207,7 +207,7 @@ export default function Messages() {
   }; 
 
   return (
-    <Paper sx={{ height: '82vh', display: 'flex', flexDirection: 'column', paddingLeft:'60px', marginLeft:30, width:'130vh'}}>
+    <Paper sx={{ height: '80vh', display: 'flex', flexDirection: 'column', paddingLeft:'60px', marginLeft:30, width:'130vh'}}>
       {/* Dialog for Delete Confirmation */}
       <Dialog open={openDialog} onClose={closeConfirmationDialog}>
         <DialogTitle>Confirm Delete</DialogTitle>
@@ -253,9 +253,9 @@ export default function Messages() {
         </Grid>
 
         {/* Right column - Messages List */}
-        <Grid item xs={8} sx={{ display: 'flex', flexDirection: 'column', height:'100%' }}>
-          <div style={{ padding: '10px', backgroundColor: '#E8F5E9', overflowY: 'auto', flexGrow: 1 }}>
-            
+        <Grid item xs={8} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          {/* Fixed container for Receiver's Name */}
+          <Box sx={{ padding: '10px', backgroundColor: '#E8F5E9', position: 'sticky', top: 0, zIndex: 1 }}>
             {isAddingChat && !isReceiverFinalized ? (
               <>
                 {/* Input for Receiver's Name */}
@@ -272,74 +272,72 @@ export default function Messages() {
                 </Box>
               </>
             ) : (
-              <>
-                {/* Display Receiver's Name */}
-                <Typography variant="h6">{selectedConversation?.receiver}</Typography>
-
-                {/* Message list display */}
-                <Box sx={{ mt: 2 }}>
-                  {selectedConversation?.messages?.map((msg) => (
-                    <Box key={msg.messageId} sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: msg.sender === selectedConversation.sender ? 'flex-end' : 'flex-start',
-                      marginBottom: '3px',
-                      maxWidth: '100%',
-                      marginRight: msg.sender === selectedConversation.sender ? '20px' : '0px',
-                      padding:'10px'
-                    }}>
-                      
-                      {/* Sender/Receiver Name */}
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                        {msg.sender === selectedConversation.sender ? 'You' : msg.sender}
-                      </Typography>
-
-                      {/* Message Content */}
-                      <Box sx={{
-                          padding: '10px',
-                          borderRadius: '10px',
-                          backgroundColor: msg.sender === selectedConversation.sender ? '#D1C4E9' : '#C8E6C9',
-                        }}>
-                          {editMessageId === msg.messageId ? (
-                            <>
-                              <TextField
-                                value={editMessageContent}
-                                onChange={handleEditChange}
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                sx={{ marginBottom: '5px' }}
-                              />
-                              <Box sx={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                                <Button variant='contained' onClick={handleEditCancel} color="error" size="small">
-                                  Cancel
-                                </Button>
-                                <IconButton color="primary" onClick={handleEditSubmit}>
-                                  <SendIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            </>
-                          ) : (
-                            <Typography variant="body1">{msg.messageContent}</Typography>
-                          )}
-                        </Box>
-
-                      {/* Edit and Delete Options */}
-                      <Box sx={{ color: 'gray', display: 'flex', gap: '10px', marginTop: '5px' }}>
-                        {editMessageId === msg.messageId ? null : (
-                          <>
-                            <span style={{ cursor: 'pointer' }} onClick={() => handleEditClick(msg.messageId, msg.messageContent)}>Edit</span>
-                            <span style={{ cursor: 'pointer' }} onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}>Delete</span>
-                          </>
-                        )}
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
-              </>
+              <Typography variant="h6">{selectedConversation?.receiver}</Typography>
             )}
+          </Box>
+
+          {/* Scrollable container for Messages List */}
+          <div style={{ padding: '10px', overflowY: 'auto', flexGrow: 1, backgroundColor: '#E8F5E9'}}>
+            <Box sx={{ mt: 2 }}>
+              {selectedConversation?.messages?.map((msg) => (
+                <Box key={msg.messageId} sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: msg.sender === selectedConversation.sender ? 'flex-end' : 'flex-start',
+                  marginBottom: '3px',
+                  maxWidth: '100%',
+                  marginRight: msg.sender === selectedConversation.sender ? '20px' : '0px',
+                  padding: '10px'
+                }}>
+                  {/* Sender/Receiver Name */}
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                    {msg.sender === selectedConversation.sender ? 'You' : msg.sender}
+                  </Typography>
+
+                  {/* Message Content */}
+                  <Box sx={{
+                    padding: '10px',
+                    borderRadius: '10px',
+                    backgroundColor: msg.sender === selectedConversation.sender ? '#D1C4E9' : '#C8E6C9',
+                  }}>
+                    {editMessageId === msg.messageId ? (
+                      <>
+                        <TextField
+                          value={editMessageContent}
+                          onChange={handleEditChange}
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          sx={{ marginBottom: '5px' }}
+                        />
+                        <Box sx={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                          <Button variant='contained' onClick={handleEditCancel} color="error" size="small">
+                            Cancel
+                          </Button>
+                          <IconButton color="primary" onClick={handleEditSubmit}>
+                            <SendIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </>
+                    ) : (
+                      <Typography variant="body1">{msg.messageContent}</Typography>
+                    )}
+                  </Box>
+
+                  {/* Edit and Delete Options */}
+                  <Box sx={{ color: 'gray', display: 'flex', gap: '10px', marginTop: '5px' }}>
+                    {editMessageId === msg.messageId ? null : (
+                      <>
+                        <span style={{ cursor: 'pointer' }} onClick={() => handleEditClick(msg.messageId, msg.messageContent)}>Edit</span>
+                        <span style={{ cursor: 'pointer' }} onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}>Delete</span>
+                      </>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
           </div>
-          
+
           {/* Bottom section - New Message Box */}
           {(selectedConversation && (isReceiverFinalized || selectedConversation.receiver)) && (
             <Box sx={{ display: 'flex', padding: 2, borderTop: '1px solid #ccc' }}>
