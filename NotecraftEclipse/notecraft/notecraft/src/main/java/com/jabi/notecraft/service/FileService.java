@@ -16,7 +16,7 @@ public class FileService {
     @Autowired
     FileRepository fileRepository;
     
-    private static final String UPLOAD_DIRECTORY = "D:\\CIT Files\\3rdYear\\App development\\notecraftstorage";
+    private static final String UPLOAD_DIRECTORY = "D:\\CIT Files\\3rdYear\\CSIT327 - IM 2\\Githubfolder\\NoteCraft\\NotecraftStorage";
 
     public FileEntity uploadFile(MultipartFile file) {
         FileEntity fileEntity = new FileEntity();

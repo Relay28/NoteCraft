@@ -28,6 +28,10 @@ export default function NestedList({ open, toggleNestedList }) {
     setIsOpen(!isOpen);
   };
 
+  const handleFileClick = () => {
+    navigate('/files');
+  };
+
   const handleTodolistClick = () => {
     navigate('/todolist');
   };
@@ -76,7 +80,7 @@ export default function NestedList({ open, toggleNestedList }) {
           <ListItemText primary="Todo List" />
         </ListItemButton>
 
-        <ListItemButton sx={{ mb: 2 }}>
+        <ListItemButton sx={{ mb: 2 }} onClick={handleFileClick}>
           <ListItemIcon sx={{ minWidth: '40px', color: "#579A59" }}>
             <FolderIcon sx={{ fontSize: '30px' }} />
           </ListItemIcon>
