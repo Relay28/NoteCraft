@@ -33,7 +33,7 @@ export default function NestedList({ open, toggleNestedList }) {
   };
 
   const handleTodolistClick = () => {
-    navigate('/todolist');
+    navigate('/todolist', { state: { user: personalInfo } });
   };
 
   React.useEffect(() => {

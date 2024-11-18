@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
+import { PersonalInfoContext } from './PersonalInfoProvider';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const MAX_DESCRIPTION_LENGTH = 200; // Set your max length here
+const MAX_DESCRIPTION_LENGTH = 200;
 
 const AddTask = () => {
     const location = useLocation();
     const isEditing = !!location.state?.task;
+    const { personalInfo } = useContext(PersonalInfoContext);
+    const token = localStorage.getItem('token');
+    const user = personalInfo;
     const navigate = useNavigate();
-    
+
     const [taskData, setTaskData] = useState(location.state?.task || {
         taskName: '',
         description: '',
@@ -18,8 +22,9 @@ const AddTask = () => {
         taskEnded: '',
         isCompleted: false,
         category: '',
-        subTasks: [{ SubTaskName: '' }] // Initialize with an empty subtask if none exist
+        subTasks: [{ SubTaskName: '' }]
     });
+
     const [errors, setErrors] = useState({
         taskName: false,
         deadline: false,
@@ -27,21 +32,29 @@ const AddTask = () => {
         subTasks: false
     });
 
+    useEffect(() => {
+        // Ensure user is authenticated and has a valid userId
+        if (!token || !user?.id) {
+            navigate('/login'); // Redirect to login if authentication fails
+        }
+    
+        // Verify user is authorized to edit the task
+        if (isEditing && location.state.task.id !== user.id) {
+            alert("Unauthorized access to this task.");
+            navigate('/todolist'); // Redirect to task list
+        }
+    }, [token, user, isEditing, location.state?.task, navigate]);
+
     // Prevent editing of taskStarted in edit mode
     useEffect(() => {
         if (isEditing) {
-            setTaskData(prevData => ({
+            setTaskData((prevData) => ({
                 ...prevData,
-                taskName: location.state.task.taskName,
-                description: location.state.task.description,
-                deadline: location.state.task.deadline,
-                taskStarted: location.state.task.taskStarted,
-                taskEnded: location.state.task.taskEnded,
-                category: location.state.task.category,
-                subTasks: location.state.task.subTasks || [{ SubTaskName: '' }] // Make sure subTasks are properly set
+                ...location.state.task,
+                subTasks: location.state.task.subTasks || [{ SubTaskName: '' }]
             }));
         }
-    }, [isEditing, location.state?.task]); // Watch for changes in the task being edited
+    }, [isEditing, location.state?.task]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -49,20 +62,18 @@ const AddTask = () => {
             ...prevTask,
             [name]: value,
         }));
-        
-        // Clear errors when input is updated
+
         if (name === 'taskName' || name === 'deadline') {
             setErrors((prevErrors) => ({ ...prevErrors, [name]: !value }));
         }
 
-        // Check for description length
         if (name === 'description') {
             setErrors((prevErrors) => ({ ...prevErrors, description: value.length > MAX_DESCRIPTION_LENGTH }));
         }
     };
 
     const handleSubtaskChange = (index, value) => {
-        const newSubtasks = [...taskData.subTasks]; // Create a copy of the current subtask list
+        const newSubtasks = [...taskData.subTasks];
         newSubtasks[index] = { SubTaskName: value };
         setTaskData({ ...taskData, subTasks: newSubtasks });
     };
@@ -70,7 +81,7 @@ const AddTask = () => {
     const addSubtaskField = () => {
         setTaskData((prevTaskData) => ({
             ...prevTaskData,
-            subTasks: [...prevTaskData.subTasks, { SubTaskName: '' }] // Add new subtask
+            subTasks: [...prevTaskData.subTasks, { SubTaskName: '' }]
         }));
     };
 
@@ -79,44 +90,50 @@ const AddTask = () => {
             ...taskData,
             dateCreated: new Date().toISOString().split('T')[0],
             subTasks: taskData.subTasks
-                .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '') // Filter out empty subtasks
-                .map(subtask => ({ subTaskName: subtask.SubTaskName?.trim() || '' })) // Safely access SubTaskName
+                .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '')
+                .map(subtask => ({ subTaskName: subtask.SubTaskName.trim() || '' }))
         };
-        console.log("Task with Subtasks to Save:", taskWithDates); // Check taskWithDates structure
-        
-        axios.post('http://localhost:8081/api/todolist/postToDoListRecord', taskWithDates)
-            .then(() => navigate('/todolist'))
-            .catch(error => console.error("Error creating task or subtasks!", error));
+    
+        console.log('Task Data:', taskWithDates);
+        console.log('User ID:', user?.id);
+        console.log('Token:', token);
+    
+        const headers = { Authorization: `Bearer ${token}` };
+    
+        axios.post(
+            `http://localhost:8081/api/todolist/postToDoListRecord?userId=${user.id}`, 
+            taskWithDates, 
+            { headers }
+        )
+            .then(() => navigate('/todolist', { state: { user: user } }))
+            .catch(error => {
+                console.error('Error response:', error.response);
+                console.error('Error message:', error.message);
+                alert(`Failed to save task: ${error.response?.data?.message || "Please try again."}`);
+            });
     };
 
     const handleBack = () => {
-        navigate('/todolist');
+        navigate('/todolist', { state: { user: user } });
     };
 
     const validateForm = () => {
         const newErrors = {
             taskName: !taskData.taskName,
             deadline: !taskData.deadline,
-            description: taskData.description.length > MAX_DESCRIPTION_LENGTH // Validate description length
+            description: taskData.description.length > MAX_DESCRIPTION_LENGTH
         };
         setErrors(newErrors);
-        return !newErrors.taskName && !newErrors.deadline && !newErrors.description; // Include description in validation
+        return !newErrors.taskName && !newErrors.deadline && !newErrors.description;
     };
 
     return (
-        <Box sx={{
-            padding: '20px',
-            marginLeft: "200px",
-        }}>
+        <Box sx={{ padding: '20px', marginLeft: "200px" }}>
             <Typography variant="h4" component="h2" marginBottom="20px" sx={{ color: "black" }}>
                 {isEditing ? "Edit Task" : "Add New Task"}
             </Typography>
             
-            <Box sx={{
-                backgroundColor: "#fff",
-                borderRadius: "25px",
-                padding: "30px"
-            }}>
+            <Box sx={{ backgroundColor: "#fff", borderRadius: "25px", padding: "30px" }}>
                 <TextField 
                     label="Task Name" 
                     name="taskName" 
@@ -136,7 +153,7 @@ const AddTask = () => {
                     margin="normal"
                     multiline
                     rows={4}
-                    error={errors.description} // Set error state based on length
+                    error={errors.description}
                     helperText={errors.description ? `Description is too long (max ${MAX_DESCRIPTION_LENGTH} characters).` : ""}
                 />
                 <TextField 
@@ -181,7 +198,6 @@ const AddTask = () => {
                     margin="normal" 
                 />
 
-                {/* Subtasks Section */}
                 <Box marginTop="20px">
                     <Typography variant="h6" marginBottom="10px">
                         Subtasks

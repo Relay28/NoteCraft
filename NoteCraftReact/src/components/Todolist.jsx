@@ -1,53 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Box, Button, Typography, List, ListItem, ListItemText, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Todolist = () => {
     const [tasks, setTasks] = useState([]);
     const [taskToDelete, setTaskToDelete] = useState(null);
     const [openDialog, setOpenDialog] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const personalInfo = location.state?.user || { id: '', username: '' };
+    console.log(personalInfo.id);
 
     useEffect(() => {
-        axios.get('http://localhost:8081/api/todolist/getAllToDoList')
+        // If the user ID is missing, redirect to the login page
+        if (!personalInfo.id) {
+            navigate('/login');
+            return;
+        }
+
+        // Fetch the to-do list for the logged-in user
+        axios.get('http://localhost:8081/api/todolist/getAllToDoList', {
+            params: { userId: personalInfo.id },
+        })
             .then(response => {
-                console.log('Fetched Tasks:', response.data); // Log the fetched data to check the structure
+                console.log('Fetched Tasks:', response.data);
                 if (Array.isArray(response.data)) {
                     setTasks(response.data);
                 } else {
-                    setTasks([]); // If response is not an array, set empty tasks
+                    setTasks([]);
                 }
             })
             .catch(error => {
                 console.error('Error fetching tasks', error);
-                setTasks([]); // Set tasks to empty array on error
+                setTasks([]);
             });
-    }, []);
+    }, [personalInfo.id, navigate]);
 
     const handleEdit = (task) => {
-        console.log('Editing task:', task); // Log task to verify it's correct
-
-        // Create a deep copy of the task data (including subtasks)
+        console.log('Editing task:', task);
         const taskCopy = JSON.parse(JSON.stringify(task));
-
-        // Navigate to add-task route with the copied task as state
-        navigate('/add-task', { state: { task: taskCopy } });
+        navigate('/add-task', { state: { task: taskCopy, user: personalInfo } });
     };
 
     const handleDeleteTask = (id, index) => {
-        axios.delete(`http://localhost:8081/api/todolist/deleteToDoList/${id}`)
+        axios.delete(`http://localhost:8081/api/todolist/deleteToDoList/${id}`, {
+            params: { userId: personalInfo.id },
+        })
             .then(() => {
                 const updatedTasks = tasks.filter((_, i) => i !== index);
                 setTasks(updatedTasks);
-                setOpenDialog(false); // Close dialog on successful deletion
+                setOpenDialog(false);
             })
             .catch(error => {
-                console.error("Error deleting task", error);
+                console.error('Error deleting task', error);
             });
     };
 
-    // Open confirmation dialog
     const handleOpenDeleteDialog = (task, index) => {
         setTaskToDelete({ task, index });
         setOpenDialog(true);
@@ -55,11 +65,11 @@ const Todolist = () => {
 
     const handleCloseDialog = () => {
         setOpenDialog(false);
-        setTaskToDelete(null); // Reset task to delete
+        setTaskToDelete(null);
     };
 
     const handleTaskClick = (task) => {
-        navigate("/task", { state: { task } });
+        navigate('/task', { state: { task, user: personalInfo } });
     };
 
     return (
@@ -72,7 +82,6 @@ const Todolist = () => {
             marginRight: "-50px",
             overflowX: "hidden"
         }}>
-
             <Box sx={{
                 flex: 3,
                 marginRight: "20px",
@@ -88,7 +97,11 @@ const Todolist = () => {
                         To-Do List
                     </Typography>
 
-                    <Button variant="contained" color="success" onClick={() => navigate('/add-task')}>
+                    <Button 
+                        variant="contained" 
+                        color="success" 
+                        onClick={() => navigate('/add-task', { state: { user: personalInfo } })}
+                    >
                         Add New To-Do List
                     </Button>
                 </Box>
@@ -128,7 +141,7 @@ const Todolist = () => {
                                                 variant="outlined"
                                                 color="secondary"
                                                 onClick={(e) => {
-                                                    e.stopPropagation(); // Prevent triggering card click
+                                                    e.stopPropagation();
                                                     handleEdit(task);
                                                 }}
                                                 sx={{ marginRight: "10px" }}
@@ -140,7 +153,7 @@ const Todolist = () => {
                                                 variant="outlined"
                                                 color="error"
                                                 onClick={(e) => {
-                                                    e.stopPropagation(); // Prevent triggering card click
+                                                    e.stopPropagation();
                                                     handleOpenDeleteDialog(task, index);
                                                 }}
                                             >
@@ -151,31 +164,16 @@ const Todolist = () => {
 
                                     <Box sx={{ marginTop: "10px", textAlign: "left" }}>
                                         <Typography variant="body1">
-                                            <strong>
-                                                Date Started:
-                                            </strong>
-                                            {' '}
-                                            {task.taskStarted ? task.taskStarted : 'N/A'}
+                                            <strong>Date Started:</strong> {task.taskStarted || 'N/A'}
                                         </Typography>
-
                                         <Typography variant="body1">
-                                            <strong>
-                                                Date Ended:
-                                            </strong>
-                                            {' '}
-                                            {task.taskEnded ? task.taskEnded : 'N/A'}
+                                            <strong>Date Ended:</strong> {task.taskEnded || 'N/A'}
                                         </Typography>
-
                                         <Typography variant="body1">
-                                            <strong>
-                                                Deadline:
-                                            </strong>
-                                            {' '}
-                                            {task.deadline ? task.deadline : 'N/A'}
+                                            <strong>Deadline:</strong> {task.deadline || 'N/A'}
                                         </Typography>
                                     </Box>
 
-                                    {/* Display Subtasks if they exist */}
                                     {task.subTasks && task.subTasks.length > 0 && (
                                         <Box sx={{ marginTop: "10px", paddingLeft: "20px" }}>
                                             <Typography variant="body2" color="textSecondary">

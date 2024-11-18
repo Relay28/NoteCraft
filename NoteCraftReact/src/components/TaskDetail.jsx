@@ -10,6 +10,7 @@ import 'react-calendar/dist/Calendar.css';
 const TaskDetail = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const user = location.state?.user || { id: '', username: '' };
     const [taskData, setTaskData] = useState(location.state?.task || {
         taskName: '',
         description: '',
@@ -26,14 +27,14 @@ const TaskDetail = () => {
 
     useEffect(() => {
         if (!location.state?.task) {
-            navigate('/todolist');
+            navigate('/todolist', { state: { user: user } });
         } else {
             const taskId = location.state.task.id; // Assuming the task object has an 'id'
         }
     }, [location, navigate]);
 
     const handleBack = () => {
-        navigate('/todolist');
+        navigate('/todolist', { state: { user: user } });
     };
 
     const tileClassName = ({ date }) => {
