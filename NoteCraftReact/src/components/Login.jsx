@@ -65,23 +65,27 @@ export default function Login() {
             borderRadius: "20px",
             overflow: "hidden"
         }}>
-            <div className="transition-section-login" style={{
-                height: '100%', 
-                width: 'calc(50% - 10px)', 
-                background: "#579A59",
-                color: '#ffffff',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '20px',
-                borderRadius: "15px",
-                boxSizing: "border-box",
-            }}>
+            <div
+                className="transition-section-login"
+                style={{
+                    height: '100%',
+                    width: 'calc(50% - 10px)',
+                    background: "#579A59",
+                    color: '#ffffff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '20px',
+                    borderRadius: "15px",
+                    boxSizing: "border-box",
+                    animation: 'slideIn 1s ease-out', // Add animation property here
+                }}
+                >
                 <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>
                     Stay Organized, Stay Creative: NoteCraft Makes It Easy.
                 </h1>
-            </div>
+                </div>
             <div style={{
                 flex: '1',
                 display: 'flex',
