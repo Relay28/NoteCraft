@@ -35,6 +35,10 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<NoteEntity> notes;
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ToDoListEntity> todolists;
 
     // Getters and setters for 'notes' field
     public List<NoteEntity> getNotes() {

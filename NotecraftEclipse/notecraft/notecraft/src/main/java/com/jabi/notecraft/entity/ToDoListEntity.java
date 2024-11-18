@@ -2,6 +2,7 @@ package com.jabi.notecraft.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -10,6 +11,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 @Entity
@@ -31,6 +34,11 @@ public class ToDoListEntity {
 	@OneToMany(mappedBy = "toDoList", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	public List<SubTaskEntity> subTasks;
+	
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	@JsonBackReference
+	private UserEntity user;
 	
 	public ToDoListEntity() {
 		super();
@@ -117,5 +125,13 @@ public class ToDoListEntity {
 
 	public void setSubTasks(List<SubTaskEntity> subTasks) {
 		this.subTasks = subTasks;
+	}
+	
+	public UserEntity getUser() {
+		return user;
+	}
+	
+	public void setUser(UserEntity user) {
+		this.user = user;
 	}
 }

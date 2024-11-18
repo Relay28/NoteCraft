@@ -27,22 +27,22 @@ public class ToDoListController {
 	ToDoListService tdlserv;
 	
 	@PostMapping("/postToDoListRecord")
-	public ToDoListEntity postToDoListRecord(@RequestBody ToDoListEntity toDoList) {
-		return tdlserv.postToDoListRecord(toDoList);
+	public ToDoListEntity postToDoListRecord(@RequestBody ToDoListEntity toDoList, @RequestParam("userId") int userId) {
+		return tdlserv.postToDoListRecord(toDoList, userId);
 	}
 	
 	@GetMapping("/getAllToDoList")
-	public List<ToDoListEntity>getAllToDoList(){
-		return tdlserv.getAllToDoList();
+	public List<ToDoListEntity>getAllToDoList(@RequestParam int userId){
+		return tdlserv.getAllToDoList(userId);
 	}
 	
 	@PutMapping("/putToDoListDetails")
-	public ToDoListEntity putToDoListDetails(@RequestParam int id, @RequestBody ToDoListEntity newToDoListDetails) {
-		return tdlserv.putToDoListDetails(id, newToDoListDetails);
+	public ToDoListEntity putToDoListDetails(@RequestParam int id, @RequestBody ToDoListEntity newToDoListDetails, @RequestParam int userId) {
+		return tdlserv.putToDoListDetails(id, newToDoListDetails, userId);
 	}
 	
 	@DeleteMapping("/deleteToDoList/{id}")
-	public String deleteToDoList(@PathVariable int id) {
-		return tdlserv.deleteToDoList(id);
+	public String deleteToDoList(@PathVariable int id, @RequestParam int userId) {
+		return tdlserv.deleteToDoList(id, userId);
 	}
 }
