@@ -27,6 +27,12 @@ public class ChatController {
     public ChatEntity addChat(@RequestBody ChatEntity chat) {
     	return chatService.createChatWithMessages(chat);
     }
+ // Fetch chats specific to the logged-in user (sender or receiver)
+    @GetMapping("/getChatsByUser")
+    public List<ChatEntity> getChatsByUser(@RequestParam int userId) {
+        return chatService.getChatsByUser(userId);
+    }
+
 
     // READ
     @GetMapping("/getAllChats")

@@ -22,6 +22,16 @@ public class ChatService {
     private UserRepository userRepo;
     
     
+ // Fetch chats created by the user (sender) or where the user is the receiver
+    public List<ChatEntity> getChatsByUser(int userId) {
+        // Fetch the user by ID
+        UserEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+        // Fetch chats where the user is the sender or receiver
+        return chatRepo.findAllBySenderOrReceiver(user, user.getUsername());
+    }
+
 
     public ChatEntity createChatWithMessages(ChatEntity chat) {
         // Validate if sender and receiver are provided
