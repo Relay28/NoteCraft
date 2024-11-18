@@ -36,9 +36,10 @@ public class UserEntity {
     @JsonManagedReference
     private List<NoteEntity> notes;
     
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<ToDoListEntity> todolists;
+    private List<ChatEntity> sentChats;
+    
 
     // Getters and setters for 'notes' field
     public List<NoteEntity> getNotes() {
@@ -47,6 +48,14 @@ public class UserEntity {
 
     public void setNotes(List<NoteEntity> notes) {
         this.notes = notes;
+    }
+    
+    public List<ChatEntity> getSentChats() {
+        return sentChats;
+    }
+    
+    public void setSentChats(List<ChatEntity> sentChats) {
+        this.sentChats = sentChats;
     }
   
     public int getId() {

@@ -1,5 +1,6 @@
 package com.jabi.notecraft.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -8,24 +9,51 @@ import org.springframework.stereotype.Service;
 
 import com.jabi.notecraft.entity.ChatEntity;
 import com.jabi.notecraft.entity.MessageEntity;
+import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.repository.ChatRepository;
+import com.jabi.notecraft.repository.UserRepository;
 
 @Service
 public class ChatService {
     @Autowired
     ChatRepository chatRepo;
     
+    @Autowired
+    private UserRepository userRepo;
+    
+    
 
-    // CREATE
     public ChatEntity createChatWithMessages(ChatEntity chat) {
-        // For each message in the chat, set the chat reference
-        for (MessageEntity message : chat.getMessages()) {
-            message.setChat(chat); // Associate the chat with each message
+        // Validate if sender and receiver are provided
+        if (chat.getSender() == null || chat.getReceiver() == null || chat.getReceiver().isEmpty()) {
+            throw new IllegalArgumentException("Sender or receiver cannot be null or empty");
         }
 
-        // Now save the chat, which will also save the associated messages
+        // Fetch sender and receiver user entities from the database
+        UserEntity sender = userRepo.findById(chat.getSender().getId())
+                .orElseThrow(() -> new NoSuchElementException("Sender not found."));
+        
+        // Fetch the receiver by username
+        UserEntity receiverEntity = userRepo.findByUsername(chat.getReceiver())
+                .orElseThrow(() -> new NoSuchElementException("Receiver not found."));
+
+        chat.setSender(sender);  // Set sender
+        chat.setReceiver(receiverEntity.getUsername());  // Set receiver as username
+
+        // Ensure the messages list is initialized
+        if (chat.getMessages() == null) {
+            chat.setMessages(new ArrayList<>());
+        }
+
+        // Set the chat reference for each message
+        for (MessageEntity message : chat.getMessages()) {
+            message.setChat(chat);
+        }
+
+        // Save the chat (along with messages)
         return chatRepo.save(chat);
     }
+
     
 //    //CREATE
 //    public ChatEntity addMessageToChat(int chatId, MessageEntity newMessage) {

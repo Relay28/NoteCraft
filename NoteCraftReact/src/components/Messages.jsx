@@ -1,8 +1,11 @@
-import * as React from 'react';
+import React, {useState, useEffect} from 'react';
 import {Grid, List, ListItem, ListItemAvatar, Avatar, ListItemText, TextField, Typography, Paper, IconButton, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button} from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
 import axios from 'axios';
+import { PersonalInfoContext } from './PersonalInfoProvider';
+import { useLocation, useNavigate } from 'react-router';
+
 
 const API_BASE_URL = 'http://localhost:8081/api/chat';
 
@@ -18,7 +21,14 @@ export default function Messages() {
   const [openDialog, setOpenDialog] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState({chatId:null, messageId:null});
   const [openEditConfirmDialog, setOpenEditConfirmDialog] = React.useState(false);
-
+  const [isCheckingUser, setIsCheckingUser] = useState(false);
+  const [userExists, setUserExists] = useState(true);
+  const [isMessageBoxDisabled, setIsMessageBoxDisabled] = useState(false);
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
+  const location = useLocation();
+  const personalInfo = location.state?.user || { id: '', username: '' };
+  console.log(personalInfo)
   React.useEffect(() => {
     const loadChats = async () => {
       try {
@@ -48,61 +58,85 @@ export default function Messages() {
     setIsReceiverFinalized(false);
   };
 
-  const handleReceiverConfirm=()=>{
-    setIsReceiverFinalized(true);
-  }
-
+  const handleReceiverConfirm = async () => {
+    const username = selectedConversation?.receiver?.trim();
+    if (!username) {
+      alert("Please enter a receiver's name.");
+      return;
+    }
+  
+    const userExists = await checkUserExists(username);
+    if (userExists) {
+      setIsReceiverFinalized(true);
+    } else {
+      alert("User not found. Please choose a valid recipient.");
+    }
+  };
   const handleSendMessage = async () => {
     if (newMessage.trim() && selectedConversation?.receiver) {
+      setIsCheckingUser(true);
+      setIsCheckingUser(false);
+  
+      if (!userExists) {
+        alert("The user does not exist. Please choose a valid recipient.");
+        return;
+      }
+  
       const newMessageData = {
-        sender: 'default', // Adjust this as needed
+        sender: personalInfo.username,  // Only include sender's username in the message
         recipient: selectedConversation.receiver,
         messageContent: newMessage.trim(),
-        date: '2024-11-11', // Use a dynamic date if needed
+        date: new Date().toISOString().split('T')[0],  // Format date to "YYYY-MM-DD"
       };
   
       try {
         if (selectedConversation?.chatId) {
-          // Add the message to an existing chat
+          // Add message to an existing chat
           await axios.post(`${API_BASE_URL}/addMessageToChat/${selectedConversation.chatId}`, newMessageData);
-  
-          // Reload the chat from the backend to ensure consistency
           const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${selectedConversation.chatId}`);
-          const updatedMessages = updatedChat.data.messages; // Define updatedMessages here
           setSelectedConversation(updatedChat.data);
-  
-          // Update the chat list with the latest chat data
+          
+          // Update the chat list
           setChats((prevChats) =>
             prevChats.map((chat) =>
-              chat.chatId === selectedConversation.chatId ? { ...chat, messages: updatedMessages } : chat
+              chat.chatId === selectedConversation.chatId ? { ...chat, messages: updatedChat.data.messages } : chat
             )
           );
         } else {
-          // Creating a new chat
+          // Create a new chat if none exists
+          console.log(personalInfo.id)
           const newChatData = {
             receiver: selectedConversation.receiver,
-            sender: 'default',
-            messages: [newMessageData],
+            sender: { 
+              id: personalInfo.id,  // Include the sender's ID
+              username: personalInfo.username  // Include the sender's username
+            },
+            messages: [{
+              sender: personalInfo.username,  // Only include sender's username in the message
+              recipient: selectedConversation.receiver,
+              messageContent: newMessage.trim(),
+              date: new Date().toISOString().split('T')[0],  // Format date to "YYYY-MM-DD"
+            }],
           };
-  
+          
           const response = await axios.post(`${API_BASE_URL}/addChat`, newChatData);
-          const createdChat = response.data; // Assuming the API returns the newly created chat
-  
-          // Add the new chat to the chat list and select it
+          const createdChat = response.data;
           setChats((prevChats) => [...prevChats, createdChat]);
           setSelectedConversation(createdChat);
         }
   
-        // Clear the new message input
-        setNewMessage("");
+        setNewMessage("");  // Clear the input
       } catch (error) {
         console.error("Error sending message:", error);
       }
+    } else {
+      alert("Please enter a message.");
     }
   };
   
   
 
+  
   const handleEditClick = (messageId, currentContent) => {
     setEditMessageId(messageId);
     setEditMessageContent(currentContent);
@@ -204,7 +238,42 @@ export default function Messages() {
     } catch (error) {
       console.error("Error deleting:", error);
     }
-  }; 
+  };
+
+  const checkUserExists = async (username) => {
+      try {
+        const response = await axios.get(`http://localhost:8081/api/user/checkUser/${username}`);
+        const userExists = response.data;
+        setUserExists(userExists);
+        setIsMessageBoxDisabled(!userExists);
+        if (!userExists) alert("User not found. You cannot send a message.");
+        return userExists;
+      } catch (error) {
+        console.error("Error checking user existence:", error);
+        alert("An error occurred while checking the user.");
+        setUserExists(false);
+        setIsMessageBoxDisabled(true);
+        return false;
+      }
+    };
+
+  const handleConfirmClick = async () => {
+      try {
+          // Using the updated backend API with boolean response
+          const response = await axios.get(`http://localhost:8081/api/user/checkUser/${username}`);
+          if (response.data) {
+              // User exists, proceed to input message
+              setError(""); // Clear any previous error
+              // Here, show the message input box or proceed with chat creation
+          } else {
+              // User does not exist
+              setError("User not found");
+          }
+      } catch (err) {
+          console.error("Error checking user existence:", err);
+          setError("Error checking user existence");
+      }
+  };
 
   return (
     <Paper sx={{ height: '80vh', display: 'flex', flexDirection: 'column', paddingLeft:'60px', marginLeft:30, width:'130vh'}}>
@@ -248,7 +317,7 @@ export default function Messages() {
             ))}
           </List>
           <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <button onClick={handleAddChatClick}>Add Chat</button>
+              <button variant="contained" onClick={handleAddChatClick}>Add Chat</button>
           </Box>
         </Grid>
 
@@ -265,6 +334,7 @@ export default function Messages() {
                   placeholder="Enter receiver's name"
                   value={selectedConversation?.receiver || ''}
                   onChange={(e) => setSelectedConversation((prev) => ({ ...prev, receiver: e.target.value }))}
+                  disabled={isReceiverFinalized}
                 />
                 {/* Confirm Button */}
                 <Box sx={{ mt: 1, textAlign: 'right' }}>
@@ -283,22 +353,27 @@ export default function Messages() {
                 <Box key={msg.messageId} sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: msg.sender === selectedConversation.sender ? 'flex-end' : 'flex-start',
+                  alignItems: msg.sender === personalInfo.username ? 'flex-end' : 'flex-start',
                   marginBottom: '3px',
                   maxWidth: '100%',
-                  marginRight: msg.sender === selectedConversation.sender ? '20px' : '0px',
-                  padding: '10px'
+                  borderRadius:'10px',
+                  marginRight: msg.sender === personalInfo.username ? '10px' : '0px', // Adjust margin for sender
+                  marginLeft: msg.sender === personalInfo.username ? '0px' : '10px', // Adjust margin for receiver
+                  backgroundColor: msg.sender === personalInfo.username ? '#C8E6C9' : '#D1C4E9',
+                  padding: '8px', // Reduced padding for smaller boxes
                 }}>
                   {/* Sender/Receiver Name */}
                   <Typography variant="body2" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                    {msg.sender === selectedConversation.sender ? 'You' : msg.sender}
+                    {msg.sender === personalInfo.username ? 'You' : msg.sender}
                   </Typography>
 
                   {/* Message Content */}
                   <Box sx={{
                     padding: '10px',
                     borderRadius: '10px',
-                    backgroundColor: msg.sender === selectedConversation.sender ? '#D1C4E9' : '#C8E6C9',
+                    backgroundColor: msg.sender === personalInfo.username ? '#C8E6C9' : '#D1C4E9',
+                    maxWidth: '100%', // Ensures the box isn't too wide
+                    wordBreak: 'break-word', // Prevents long words from overflowing
                   }}>
                     {editMessageId === msg.messageId ? (
                       <>
@@ -342,6 +417,7 @@ export default function Messages() {
           {(selectedConversation && (isReceiverFinalized || selectedConversation.receiver)) && (
             <Box sx={{ display: 'flex', padding: 2, borderTop: '1px solid #ccc' }}>
               <TextField
+                label="New Message"
                 variant="outlined"
                 placeholder="Type a message"
                 fullWidth
@@ -349,7 +425,7 @@ export default function Messages() {
                 onChange={(e) => setNewMessage(e.target.value)}
                 sx={{ marginRight: '10px' }}
               />
-              <IconButton color="primary" onClick={handleSendMessage}>
+              <IconButton color="primary" onClick={handleSendMessage}disabled={isMessageBoxDisabled}>
                 <SendIcon />
               </IconButton>
             </Box>

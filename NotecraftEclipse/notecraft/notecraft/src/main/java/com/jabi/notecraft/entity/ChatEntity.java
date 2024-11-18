@@ -3,6 +3,7 @@ package com.jabi.notecraft.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -10,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 @Entity
@@ -18,18 +21,24 @@ public class ChatEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int chatId;
 
-    private String sender;
+    @ManyToOne // Many chats can have one sender
+    @JsonBackReference
+    @JoinColumn(name = "sender_id")
+    private UserEntity sender;
+    
     private String receiver;
 
     @OneToMany(mappedBy="chat", cascade = CascadeType.ALL, orphanRemoval = true) // A chat can have many messages
     @JsonManagedReference
-    private List<MessageEntity> messages = new ArrayList<>(); // List of messages for the chat
+    private List<MessageEntity> messages; // List of messages for the chat
     
     public ChatEntity() {
         super();
+        this.messages = new ArrayList<>();
     }
 
-    public ChatEntity(int chatId, String sender, String receiver, List<MessageEntity> messages) {
+    public ChatEntity(int chatId, UserEntity sender, String receiver, List<MessageEntity> messages) {
+    	super();
         this.chatId = chatId;
         this.sender = sender;
         this.receiver = receiver;
@@ -45,11 +54,11 @@ public class ChatEntity {
         this.chatId = chatId;
     }
 
-    public String getSender() {
+    public UserEntity getSender() {
         return sender;
     }
 
-    public void setSender(String sender) {
+    public void setSender(UserEntity sender) {
         this.sender = sender;
     }
 

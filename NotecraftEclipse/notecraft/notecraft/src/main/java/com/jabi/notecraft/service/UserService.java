@@ -124,6 +124,8 @@ public class UserService {
         }
         return urepo.save(user);
     }
-
-	
+    
+    public boolean doesUserExist(String username) {
+    	return urepo.existsByUsername(username);
+    }
 }

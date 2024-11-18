@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.jabi.notecraft.dto.LoginRequest;
 import com.jabi.notecraft.entity.UserEntity;
+import com.jabi.notecraft.repository.UserRepository;
 import com.jabi.notecraft.service.UserService;
 import com.jabi.notecraft.util.JwtResponse;
 import com.jabi.notecraft.util.JwtUtils;
@@ -138,4 +139,9 @@ public class UserController {
         }
     }
     
+    @GetMapping("/checkUser/{username}")
+    public ResponseEntity<Boolean> checkUser(@PathVariable String username) {
+        boolean exists = userv.doesUserExist(username);
+        return ResponseEntity.ok(exists);
+    }
 }

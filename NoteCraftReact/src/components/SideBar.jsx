@@ -17,7 +17,7 @@ export default function NestedList({ open, toggleNestedList }) {
   const { personalInfo } = React.useContext(PersonalInfoContext);
 
   const handleMessagesClick = () => {
-    navigate('/messages');
+    navigate('/messages', { state: { user: personalInfo } });
   };
 
   const handleNotesClick = () => {
