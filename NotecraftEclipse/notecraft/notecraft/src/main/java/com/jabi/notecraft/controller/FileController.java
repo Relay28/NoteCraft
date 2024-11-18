@@ -4,48 +4,47 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.multipart.MultipartFile;
 import com.jabi.notecraft.entity.FileEntity;
 import com.jabi.notecraft.service.FileService;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
-@RequestMapping(method=RequestMethod.GET,path="/api/files")
+@RequestMapping("/api/files")
 public class FileController {
 
     @Autowired
-    FileService fileService;
+    private FileService fileService;
 
+    // File upload endpoint with userId
     @PostMapping("/upload")
-    public ResponseEntity<FileEntity> uploadFile(@RequestPart("file") MultipartFile file) {
+    public ResponseEntity<FileEntity> uploadFile(@RequestPart("file") MultipartFile file, @RequestParam int userId) {
         // Handle file and save it
-        FileEntity savedFile = fileService.uploadFile(file);
+        FileEntity savedFile = fileService.uploadFile(file, userId);
         return ResponseEntity.ok(savedFile);
     }
+    
+    @GetMapping("/getFilesByUser/{userId}")
+    public List<FileEntity> getFilesByUserId(@PathVariable int userId) {
+        return fileService.getFilesByUserId(userId); // Fetch only files for the logged-in user
+    }
 
+    // Get all files
     @GetMapping("/getAll")
     public List<FileEntity> getAllFiles() {
         return fileService.getAllFiles();
     }
 
+    // Update file name
     @PutMapping("/updateFile")
     public ResponseEntity<FileEntity> updateFile(@RequestParam int fileId, @RequestParam String newFileName) {
         FileEntity updatedFile = fileService.updateFile(fileId, newFileName);
         return ResponseEntity.ok(updatedFile);
     }
 
+    // Delete file
     @DeleteMapping("/delete/{id}")
     public String deleteFile(@PathVariable int id) {
         return fileService.deleteFile(id);

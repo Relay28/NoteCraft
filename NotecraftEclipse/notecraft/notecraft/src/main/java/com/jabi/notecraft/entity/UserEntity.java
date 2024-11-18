@@ -40,6 +40,9 @@ public class UserEntity {
     @JsonManagedReference
     private List<ChatEntity> sentChats;
     
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<FileEntity> files;
 
     // Getters and setters for 'notes' field
     public List<NoteEntity> getNotes() {
@@ -56,6 +59,14 @@ public class UserEntity {
     
     public void setSentChats(List<ChatEntity> sentChats) {
         this.sentChats = sentChats;
+    }
+    
+    public List<FileEntity> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<FileEntity> files) {
+        this.files = files;
     }
   
     public int getId() {

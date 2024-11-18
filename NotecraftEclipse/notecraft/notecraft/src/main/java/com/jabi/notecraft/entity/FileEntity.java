@@ -1,6 +1,7 @@
 package com.jabi.notecraft.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "files")
@@ -17,15 +18,22 @@ public class FileEntity {
     @Lob
     private byte[] fileData; // Store the file's binary data (optional)
 
+    // Add the user association here
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")  // Foreign key to UserEntity
+    @JsonBackReference  // Prevent infinite recursion during JSON serialization
+    private UserEntity user;
+
     // Constructors
     public FileEntity() {}
 
-    public FileEntity(int fileId, String fileName, String fileType, int size, byte[] fileData) {
+    public FileEntity(int fileId, String fileName, String fileType, int size, byte[] fileData, UserEntity user) {
         this.fileId = fileId;
         this.fileName = fileName;
         this.fileType = fileType;
         this.size = size;
         this.fileData = fileData;
+        this.user = user;
     }
 
     // Getters and Setters
@@ -69,5 +77,12 @@ public class FileEntity {
         this.fileData = fileData;
     }
 
-    // Additional Methods if needed
+    // Getter and setter for user
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
 }

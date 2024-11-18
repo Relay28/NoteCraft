@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-    List, ListItem, ListItemText, Button, Box, Typography, IconButton
-} from "@mui/material";
+import { List, ListItem, ListItemText, Button, Box, Typography, IconButton } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
 export default function File() {
     const [files, setFiles] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [userId, setUserId] = useState(null); // State to hold the userId
 
-    // Fetch files from the API
+    // Fetch userId from localStorage (or cookies) if available
     useEffect(() => {
-        fetchFiles();
-    }, []);
+        const storedUserId = localStorage.getItem('userId'); // Assuming you stored the userId in localStorage
+        if (storedUserId) {
+            setUserId(storedUserId);
+            fetchFiles(storedUserId);
+        }
+    }, []); // This runs only once when the component mounts
 
-    const fetchFiles = async () => {
+    // Fetch files from the API for the specific user
+    const fetchFiles = async (userId) => {
         try {
-            const response = await axios.get('http://localhost:8081/api/files/getAll');
+            const response = await axios.get(`http://localhost:8081/api/files/getFilesByUser/${userId}`);
             setFiles(response.data);
-            console.log(response.data);
         } catch (error) {
             console.error("There was an error fetching the files!", error);
         }
@@ -43,6 +46,7 @@ export default function File() {
         try {
             const response = await axios.post('http://localhost:8081/api/files/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                params: { userId },  // Pass userId when uploading
             });
             setFiles(prevFiles => [...prevFiles, response.data]); // Append the new file
             setSelectedFile(null); // Reset file input
@@ -85,54 +89,33 @@ export default function File() {
         }
     };
 
+    if (!userId) {
+        return <Typography variant="h6">Please log in to view your files.</Typography>;
+    }
+
     return (
         <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "80%", margin: "0 auto", padding: "10px", height: "100vh" }}>
             {/* Files List */}
-            <Box sx={{ flex: 1, marginRight: "20px", overflowY: "auto", maxHeight: "100%" }}>
-                <Typography variant="h4" component="h2" sx={{ color: 'black', marginBottom: "20px" }}>Files</Typography>
+            <Box sx={{ width: "50%", overflowY: "auto", padding: "10px" }}>
+                <Typography variant="h6">Your Files</Typography>
                 <List>
-                    {files.length === 0 ? (
-                        <ListItem>
-                            <ListItemText primary="No Files Available" sx={{ color: 'black' }} />
+                    {files.map((file) => (
+                        <ListItem key={file.fileId} sx={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", padding: "5px" }}>
+                            <ListItemText primary={file.fileName} secondary={`Size: ${file.size} bytes`} />
+                            <Box>
+                                <IconButton onClick={() => handleUpdateFile(file.fileId)}><EditIcon /></IconButton>
+                                <IconButton onClick={() => handleDeleteFile(file.fileId)}><DeleteIcon /></IconButton>
+                            </Box>
                         </ListItem>
-                    ) : (
-                        files.map((file) => (
-                            <ListItem key={file.fileId}>
-                                <ListItemText 
-                                    primary={file.fileName} 
-                                    secondary={`${file.fileType} - ${file.size} KB`} // Optional secondary text
-                                    sx={{ color: 'black' }}
-                                />
-                                {/* Edit button */}
-                                <IconButton color="primary" onClick={() => handleUpdateFile(file.fileId)}>
-                                    <EditIcon />
-                                </IconButton>
-                                {/* Delete button */}
-                                <IconButton color="error" onClick={() => handleDeleteFile(file.fileId)}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </ListItem>
-                        ))
-                    )}
+                    ))}
                 </List>
             </Box>
 
-            {/* File Upload Section */}
-            <Box component="form" sx={{ flex: 1, padding: "20px", backgroundColor: "#f5f5f5", borderRadius: "8px", border: "solid 1px #ddd", maxHeight: "100%", overflowY: "auto" }}>
-                <input
-                    type="file"
-                    onChange={handleFileChange}
-                    style={{ display: "block", marginBottom: "20px" }}
-                />
-                <Button 
-                    variant="contained" 
-                    color="success" 
-                    onClick={handleUploadFile} 
-                    fullWidth
-                    disabled={!selectedFile}
-                >
-                    Upload File
-                </Button>
+            {/* File Upload */}
+            <Box sx={{ width: "40%" }}>
+                <Typography variant="h6">Upload a File</Typography>
+                <input type="file" onChange={handleFileChange} />
+                <Button variant="contained" onClick={handleUploadFile}>Upload</Button>
             </Box>
         </Box>
     );
