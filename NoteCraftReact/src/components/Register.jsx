@@ -233,6 +233,7 @@ export default function SignIn() {
                     padding: '20px',
                     borderRadius: "15px",
                     boxSizing: "border-box",
+                    animation: "slideInRight 1s ease-out forwards" 
                 }}
             >
                 <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>
