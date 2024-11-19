@@ -49,7 +49,7 @@ export default function Note() {
     // Edit a note
     const handleEditNote = (index) => {
         const noteId = notes[index].noteid;
-        navigate(`/edit-note/${noteId}`, { state: { noteData: notes[index], user: personalInfo.id } });
+        navigate(`/notes/edit/${noteId}`, { state: { noteData: notes[index], user: personalInfo.id } });
     };
 
     // Open the delete confirmation dialog
@@ -122,7 +122,7 @@ export default function Note() {
                 <Button
                     variant="contained"
                     color="success"
-                    onClick={() => navigate("/new-note", { state: { user: personalInfo } })}
+                    onClick={() => navigate("/notes/new", { state: { user: personalInfo } })}
                 >
                     Add New Note
                 </Button>
