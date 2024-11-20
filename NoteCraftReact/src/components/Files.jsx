@@ -94,7 +94,7 @@ export default function File() {
     }
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "80%", margin: "0 auto", padding: "10px", height: "100vh" }}>
+        <Box sx={{ display: "flex", flexDirection: "row", alignItems: "flex-start", width: "80%", left:0,padding: "10px" }}>
             {/* Files List */}
             <Box sx={{ width: "50%", overflowY: "auto", padding: "10px" }}>
                 <Typography variant="h6">Your Files</Typography>

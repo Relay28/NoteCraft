@@ -76,20 +76,18 @@ const Todolist = () => {
         <Box sx={{
             display: "flex",
             flexDirection: "row",
-            justifyContent: "space-between",
+            width:"85%",
             alignItems: "flex-start",
-            marginLeft: "90px",
-            marginRight: "-50px",
             overflowX: "hidden"
         }}>
             <Box sx={{
-                flex: 3,
+                flex: 2,
                 marginRight: "20px",
                 overflowY: "auto",
             }}>
                 <Box sx={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    
                     alignItems: "center",
                     marginBottom: "20px",
                 }}>
@@ -98,6 +96,7 @@ const Todolist = () => {
                     </Typography>
 
                     <Button 
+                    sx={{marginLeft:"60%"}}
                         variant="contained" 
                         color="success" 
                         onClick={() => navigate('/add-task', { state: { user: personalInfo } })}

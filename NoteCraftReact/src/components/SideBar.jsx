@@ -122,7 +122,9 @@ export default function NestedList({ open, toggleNestedList }) {
               fontSize: "16px",
               opacity: isOpen ? 1 : 0,
               transition: "opacity 0.3s ease", // Smooth text fade-in
+              
             }}
+            
           >
             NoteCraft
           </Typography>

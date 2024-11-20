@@ -18,8 +18,8 @@ export default function Home() {
 
     return (
         <div>
-            <PrimarySearchAppBar personalInfo={personalInfo} />
-            <SideBar personalInfo={personalInfo} />
+            {/* <PrimarySearchAppBar personalInfo={personalInfo} />
+            <SideBar personalInfo={personalInfo} /> */}
             <Outlet context={personalInfo} />
         </div>
     );

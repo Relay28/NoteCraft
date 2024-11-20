@@ -21,7 +21,8 @@ export default function NoteForm() {
         description: "", 
         content: "", 
         dateCreated: "", 
-        userId: user ? user : null 
+        userId: user ? user : null ,
+        isGroupNote:false
     });
 
     useEffect(() => {

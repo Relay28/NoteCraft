@@ -104,7 +104,7 @@ export default function Note() {
                 alignItems: "center",
                 width: "75%",
                 padding: 2,
-                marginLeft: 30
+                marginLeft:0
             }}
         >
             <Box

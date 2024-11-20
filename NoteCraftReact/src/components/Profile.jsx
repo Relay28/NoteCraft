@@ -68,7 +68,7 @@ export default function Profile({ personalInfo, token }) {
     };
 
     return (
-        <div style={{ border:"3px solid #93BA95", width: "150vh", height: "70vh", marginLeft: "28vh", marginTop: "10vh", borderRadius: "10px", padding: "20px", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)" }}>
+        <div style={{ border:"3px solid #93BA95", width: "80%", height: "90%", marginLeft: "0", marginTop: "3vh", borderRadius: "10px", padding: "20px", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)" }}>
             <div style={{ width: "96%", padding: "20px", display: "flex", alignItems: "center", gap: "20px", borderBottom: "3px solid #93BA95", marginBottom: "20px" }}>
                 {userInfo.profileImg ? (
                     <img

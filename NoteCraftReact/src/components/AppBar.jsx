@@ -64,7 +64,7 @@ export default function PrimarySearchAppBar({ isSidebarOpen }) {
   };
 
   const handleMyProfileClick = () => {
-    navigate('/home/myprofile', { state: { account: personalInfo } });
+    navigate('/myprofile', { state: { account: personalInfo } });
     handleMenuClose();
   };
 
