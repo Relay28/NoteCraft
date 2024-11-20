@@ -63,3 +63,24 @@
       opacity: 1;
   }
 }
+
+.login-container{
+  overflow: hidden;
+  /* left: 50%;
+  top: 50%; */
+  transform: translate(-5%, -1%);
+}
+
+.register-container {
+  overflow: hidden;
+  /* left: 50%;
+  top: 50%; */
+  transform: translate(-12%, -1%);
+}
+body.login-body{
+  overflow: hidden;
+}
+
+body.register-body {
+  overflow: hidden;
+}

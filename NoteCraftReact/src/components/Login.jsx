@@ -58,13 +58,13 @@ export default function Login() {
             display: 'flex',
             height: '70vh',
             width: '150vh',
-            marginLeft: "60px",
             fontFamily: 'Arial, sans-serif',
             background: '#ffffff',
             border: "1px solid #579A59",
             borderRadius: "20px",
-            overflow: "hidden"
-        }}>
+            overflow: "hidden",
+           
+        }} className='login-container'>
             <div
                 className="transition-section-login"
                 style={{

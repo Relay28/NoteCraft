@@ -74,8 +74,8 @@ export default function SignIn() {
             border: "1px solid black",
             marginLeft:"85px",
             borderRadius: "20px",
-            overflow: "hidden"
-        }}>
+            overflow: "hidden",
+        }} className='register-container'>
             <div style={{
                 flex: '1',
                 display: 'flex',
