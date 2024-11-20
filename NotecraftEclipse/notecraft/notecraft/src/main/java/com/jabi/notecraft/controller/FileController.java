@@ -1,14 +1,28 @@
 package com.jabi.notecraft.controller;
 
+import java.io.File;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.multipart.MultipartFile;
 import com.jabi.notecraft.entity.FileEntity;
 import com.jabi.notecraft.service.FileService;
+
+
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -25,7 +39,15 @@ public class FileController {
         FileEntity savedFile = fileService.uploadFile(file, userId);
         return ResponseEntity.ok(savedFile);
     }
-    
+    @GetMapping("/download/{fileId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable int fileId) {
+        File file = fileService.getFileById(fileId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getName() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new FileSystemResource(file));
+    }
+
     @GetMapping("/getFilesByUser/{userId}")
     public List<FileEntity> getFilesByUserId(@PathVariable int userId) {
         return fileService.getFilesByUserId(userId); // Fetch only files for the logged-in user

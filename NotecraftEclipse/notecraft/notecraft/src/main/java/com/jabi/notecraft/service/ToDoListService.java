@@ -8,8 +8,10 @@ import javax.naming.NameNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.jabi.notecraft.entity.StudyGroupEntity;
 import com.jabi.notecraft.entity.ToDoListEntity;
 import com.jabi.notecraft.entity.UserEntity;
+import com.jabi.notecraft.repository.StudyGroupRepository;
 import com.jabi.notecraft.repository.ToDoListRepository;
 import com.jabi.notecraft.repository.UserRepository;
 
@@ -20,6 +22,9 @@ public class ToDoListService {
 	
 	@Autowired
 	UserRepository urepo;
+	
+	 @Autowired
+	  private StudyGroupRepository studyGroupRepository;
 	
 	public ToDoListService() {
 		super();
@@ -37,6 +42,23 @@ public class ToDoListService {
 	    return tdlrepo.save(toDoList);
 	}
 	
+	public ToDoListEntity postToDoListWithGroup(ToDoListEntity toDoList, int userId, int studyGroupId) {
+	    UserEntity user = urepo.findById(userId)
+	        .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+	    StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+	        .orElseThrow(() -> new NoSuchElementException("Study Group not found with ID: " + studyGroupId));
+
+	    if (toDoList.getSubTasks() != null) {
+	        toDoList.getSubTasks().forEach(subTask -> subTask.setToDoList(toDoList));
+	    }
+
+	    toDoList.setUser(user);
+	    toDoList.setStudyGroup(studyGroup); // Associate to-do list with the study group
+
+	    return tdlrepo.save(toDoList);
+	}
+
 	public List<ToDoListEntity>getAllToDoList(int userId){
 		UserEntity user = urepo.findById(userId)
 	            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));

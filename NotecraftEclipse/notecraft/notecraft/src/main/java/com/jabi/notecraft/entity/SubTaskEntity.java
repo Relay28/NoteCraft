@@ -20,7 +20,7 @@ public class SubTaskEntity {
 
 	@ManyToOne
 	@JoinColumn(name = "taskID", nullable = false)
-	@JsonBackReference
+	@JsonBackReference("todo-subtasks")
 	private ToDoListEntity toDoList;
 
 	public SubTaskEntity() {

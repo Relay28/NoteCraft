@@ -1,17 +1,24 @@
 package com.jabi.notecraft.entity;
 
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 
 @Entity
@@ -32,19 +39,36 @@ public class UserEntity {
     
     @Lob
     private String profileImg;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<NoteEntity> notes;
     
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<ChatEntity> sentChats;
-    
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<FileEntity> files;
 
-    // Getters and setters for 'notes' field
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-notes") // Unique name for notes reference
+    private List<NoteEntity> notes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    @JsonManagedReference("user-sent-chats") // Matches the name in ChatEntity
+    private List<ChatEntity> sentChats = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-files") // Unique name for files
+    private List<FileEntity> files = new ArrayList<>();
+
+
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    private Set<StudyGroupEntity> studyGroups = new HashSet<>();
+
+
+  
+
+    public Set<StudyGroupEntity>  getStudyGroups() {
+		return studyGroups;
+	}
+
+	public void setStudyGroups(Set<StudyGroupEntity> studyGroups) {
+		this.studyGroups = studyGroups;
+	}
+
+	// Getters and setters for 'notes' field
     public List<NoteEntity> getNotes() {
         return notes;
     }

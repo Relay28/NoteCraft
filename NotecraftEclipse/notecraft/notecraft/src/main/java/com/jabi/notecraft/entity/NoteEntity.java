@@ -31,12 +31,29 @@ public class NoteEntity {
     
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("user-notes") // Unique back-reference for UserEntity
     private UserEntity user;
+
+    @ManyToOne
+    @JoinColumn(name = "study_group_id", nullable = true)
+    @JsonBackReference("study-group-notes") // Unique back-reference for StudyGroupEntity
+    private StudyGroupEntity studyGroup;
+
+
+    public StudyGroupEntity getStudyGroup() {
+        return studyGroup;
+    }
+
+    public void setStudyGroup(StudyGroupEntity studyGroup) {
+        this.studyGroup = studyGroup;
+    }
+
     
     public UserEntity getUser() {
         return user;
     }
+    
+    
 
     public void setUser(UserEntity user) {
         this.user = user;

@@ -1,8 +1,10 @@
 package com.jabi.notecraft.service;
 
 import com.jabi.notecraft.entity.FileEntity;
+import com.jabi.notecraft.entity.StudyGroupEntity;
 import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.repository.FileRepository;
+import com.jabi.notecraft.repository.StudyGroupRepository;
 import com.jabi.notecraft.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +23,10 @@ public class FileService {
     
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private StudyGroupRepository studyGroupRepository;
     
-    private static final String UPLOAD_DIRECTORY = "D:\\CIT Files\\3rdYear\\CSIT327 - IM 2\\Githubfolder\\NoteCraft\\NotecraftStorage";
+    private static final String UPLOAD_DIRECTORY = "C:\\Users\\Rae Addison Duque\\Documents\\CSIT340\\REACT NOTECRAFT\\gitnotecraft\\Finale\\NoteCraft\\NoteCraftStorage";
 
     // Upload a file
     public FileEntity uploadFile(MultipartFile file, int userId) {
@@ -47,6 +51,29 @@ public class FileService {
         }
 
         return fileEntity;
+    }
+
+    public FileEntity uploadFileWithGroup(MultipartFile file, int userId, int studyGroupId) {
+        UserEntity user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+            .orElseThrow(() -> new RuntimeException("Study Group not found"));
+
+        FileEntity fileEntity = new FileEntity();
+        fileEntity.setFileName(file.getOriginalFilename());
+        fileEntity.setFileType(file.getContentType());
+        fileEntity.setSize((int) file.getSize());
+        fileEntity.setUser(user);
+        fileEntity.setStudyGroup(studyGroup); // Associate file with the study group
+
+        try {
+            String filePath = UPLOAD_DIRECTORY + "/" + file.getOriginalFilename();
+            file.transferTo(new File(filePath));
+            return fileRepository.save(fileEntity);
+        } catch (IOException e) {
+            throw new RuntimeException("File upload failed!", e);
+        }
     }
 
     // Get all files uploaded by a specific user
@@ -77,6 +104,19 @@ public class FileService {
         } else {
             throw new RuntimeException("Failed to rename file on disk");
         }
+    }
+    
+    public File getFileById(int fileId) {
+        FileEntity fileEntity = fileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("File not found"));
+
+        String filePath = UPLOAD_DIRECTORY + "/" + fileEntity.getFileName();
+        File file = new File(filePath);
+
+        if (!file.exists()) {
+            throw new RuntimeException("File not found on disk");
+        }
+        return file;
     }
 
     // Delete the file

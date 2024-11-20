@@ -32,13 +32,28 @@ public class ToDoListEntity {
 	private String category;
 	
 	@OneToMany(mappedBy = "toDoList", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonManagedReference
-	public List<SubTaskEntity> subTasks;
-	
+	@JsonManagedReference("todo-subtasks") // Unique name for sub-tasks
+	private List<SubTaskEntity> subTasks;
+
 	@ManyToOne
 	@JoinColumn(name = "user_id", nullable = false)
-	@JsonBackReference
+	@JsonBackReference("user-todo-lists") // Unique back-reference for UserEntity
 	private UserEntity user;
+
+	@ManyToOne
+	@JoinColumn(name = "study_group_id", nullable = true)
+	@JsonBackReference("study-group-todo-lists") // Unique back-reference for StudyGroupEntity
+	private StudyGroupEntity studyGroup;
+
+
+	public StudyGroupEntity getStudyGroup() {
+	    return studyGroup;
+	}
+
+	public void setStudyGroup(StudyGroupEntity studyGroup) {
+	    this.studyGroup = studyGroup;
+	}
+
 	
 	public ToDoListEntity() {
 		super();

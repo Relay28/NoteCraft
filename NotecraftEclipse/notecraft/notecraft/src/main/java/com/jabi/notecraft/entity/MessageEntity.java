@@ -21,10 +21,10 @@ public class MessageEntity {
 	private String date;
 	
 	@ManyToOne
-	@JoinColumn(name="chat_id")
-	@JsonBackReference
+	@JoinColumn(name = "chat_id")
+	@JsonBackReference("chat-messages") // Match the name in ChatEntity
 	private ChatEntity chat;
-	
+
 	public MessageEntity() {
 		super();
 	}

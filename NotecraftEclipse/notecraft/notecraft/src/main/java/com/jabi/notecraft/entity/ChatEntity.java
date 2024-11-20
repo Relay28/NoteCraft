@@ -21,22 +21,37 @@ public class ChatEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int chatId;
 
-    @ManyToOne // Many chats can have one sender
-    @JsonBackReference
+    @ManyToOne
+    @JsonBackReference("user-sent-chats")
     @JoinColumn(name = "sender_id")
     private UserEntity sender;
-    
+
     private String receiver;
 
-    @OneToMany(mappedBy="chat", cascade = CascadeType.ALL, orphanRemoval = true) // A chat can have many messages
-    @JsonManagedReference
-    private List<MessageEntity> messages; // List of messages for the chat
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("chat-messages")
+    private List<MessageEntity> messages;
+
+    @ManyToOne
+    @JoinColumn(name = "study_group_id", nullable = true)
+    @JsonBackReference("study-group-chats")
+    private StudyGroupEntity studyGroup;
+
+    public StudyGroupEntity getStudyGroup() {
+        return studyGroup;
+    }
+
+    public void setStudyGroup(StudyGroupEntity studyGroup) {
+        this.studyGroup = studyGroup;
+    }
+
     
     public ChatEntity() {
         super();
         this.messages = new ArrayList<>();
     }
 
+    	
     public ChatEntity(int chatId, UserEntity sender, String receiver, List<MessageEntity> messages) {
     	super();
         this.chatId = chatId;

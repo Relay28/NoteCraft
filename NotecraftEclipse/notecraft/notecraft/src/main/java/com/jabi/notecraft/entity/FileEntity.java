@@ -20,9 +20,22 @@ public class FileEntity {
 
     // Add the user association here
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")  // Foreign key to UserEntity
-    @JsonBackReference  // Prevent infinite recursion during JSON serialization
-    private UserEntity user;
+    @JoinColumn(name = "user_id")
+    @JsonBackReference("user-files") // Unique back-reference for UserEntity
+    private UserEntity user;;
+    
+    @ManyToOne
+    @JoinColumn(name = "study_group_id", nullable = true)
+    @JsonBackReference("study-group-files") // Unique back-reference for StudyGroupEntity
+    private StudyGroupEntity studyGroup;
+    
+    public StudyGroupEntity getStudyGroup() {
+        return studyGroup;
+    }
+
+    public void setStudyGroup(StudyGroupEntity studyGroup) {
+        this.studyGroup = studyGroup;
+    }
 
     // Constructors
     public FileEntity() {}

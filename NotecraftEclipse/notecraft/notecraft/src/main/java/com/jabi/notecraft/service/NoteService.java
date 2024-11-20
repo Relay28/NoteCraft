@@ -1,8 +1,10 @@
 package com.jabi.notecraft.service;
 
 import com.jabi.notecraft.entity.NoteEntity;
+import com.jabi.notecraft.entity.StudyGroupEntity;
 import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.repository.NoteRepository;
+import com.jabi.notecraft.repository.StudyGroupRepository;
 import com.jabi.notecraft.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class NoteService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private StudyGroupRepository studyGroupRepository;
 
     public NoteEntity insertNote(NoteEntity note, int userId) {
         UserEntity user = userRepository.findById(userId)
@@ -26,6 +31,20 @@ public class NoteService {
         note.setUser(user);
         return noteRepository.save(note);
     }
+    
+    public NoteEntity insertNoteWithGroup(NoteEntity note, int userId, int studyGroupId) {
+        UserEntity user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+        StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+            .orElseThrow(() -> new NoSuchElementException("Study Group not found with ID: " + studyGroupId));
+
+        note.setUser(user);
+        note.setStudyGroup(studyGroup); // Associate note with the study group
+
+        return noteRepository.save(note);
+    }
+
 
     	
  // Fetch all notes belonging to a specific user by userId
