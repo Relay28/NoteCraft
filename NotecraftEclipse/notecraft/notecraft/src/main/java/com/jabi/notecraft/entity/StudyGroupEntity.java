@@ -67,6 +67,9 @@ public class StudyGroupEntity {
         this.groupName = groupName;
         this.description = description;
     }
+    
+    
+    
 
     // Getters and Setters
     public int getGroupId() {
@@ -94,7 +97,9 @@ public class StudyGroupEntity {
     }
 
     public  Set<UserEntity> getUsers() {
-        return users;
+    	 Set<UserEntity> allUsers = new HashSet<>(users);
+         allUsers.add(owner);  // Add the owner to the user set explicitly
+         return allUsers;
     }
 
     public void setUsers( Set<UserEntity> users) {
