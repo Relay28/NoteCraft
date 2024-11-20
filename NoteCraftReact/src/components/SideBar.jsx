@@ -1,15 +1,21 @@
 import * as React from 'react';
-import ListSubheader from '@mui/material/ListSubheader';
+import { useNavigate } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DescriptionIcon from '@mui/icons-material/Description';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FolderIcon from '@mui/icons-material/Folder';
 import MessageIcon from '@mui/icons-material/Message';
-import { useNavigate } from 'react-router-dom';
 import { PersonalInfoContext } from './PersonalInfoProvider';
+import Box from '@mui/material/Box';
+import profile from '/src/assets/profile.jpg';
+
 
 export default function NestedList({ open, toggleNestedList }) {
   const [isOpen, setIsOpen] = React.useState(true);
@@ -21,11 +27,7 @@ export default function NestedList({ open, toggleNestedList }) {
   };
 
   const handleNotesClick = () => {
-    navigate('/notes', { state: { user: personalInfo } }); // Pass user info
-  };
-
-  const handleClick = () => {
-    setIsOpen(!isOpen);
+    navigate('/notes', { state: { user: personalInfo } });
   };
 
   const handleFileClick = () => {
@@ -36,6 +38,14 @@ export default function NestedList({ open, toggleNestedList }) {
     navigate('/todolist', { state: { user: personalInfo } });
   };
 
+  const goHome = () => {
+    navigate('/home');
+  };
+
+  const handleClick = () => {
+    setIsOpen(!isOpen);
+  };
+
   React.useEffect(() => {
     if (!open) {
       setIsOpen(false);
@@ -43,57 +53,211 @@ export default function NestedList({ open, toggleNestedList }) {
   }, [open]);
 
   return (
-    <List
-      sx={{
-        width: '20%', 
-        height: "100%",
-        bgcolor: ' ',
-        position: 'fixed', 
-        top: '60px', 
-        color: "#487d4b",
-        left: 0,
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)', 
-        borderRadius: "20px",
-      }} 
-      component="nav"
-      aria-labelledby="nested-list-subheader"
-      subheader={
-        <ListSubheader component="div" id="nested-list-subheader" sx={{ bgcolor: '#579A59' }}></ListSubheader>
-      }
+    <div
+  style={{
+    height: "100vh",
+    position: "fixed",
+    left: 0,
+    top: 0,
+    display: "flex",
+    flexDirection: "column",
+    zIndex: 2,
+  }}
+>
+  <List
+    sx={{
+      width: isOpen ? "260px" : "90px", // Sidebar width with smooth transition
+      height: "100vh",
+      bgcolor: "white",
+      position: "relative",
+      color: "#487d4b",
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+      borderRight: "1px solid #e0e0e0",
+      display: "flex",
+      flexDirection: "column",
+      transition: "width 0.3s ease", // Smooth width transition
+      overflow: "hidden", // Prevent content from overflowing during the transition
+    }}
+    component="nav"
+  >
+    {/* Sidebar Header */}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: isOpen ? "space-between" : "center",
+        padding: "15px",
+        borderBottom: "1px solid #e0e0e0",
+        transition: "all 0.3s ease", // Ensure smooth header transition
+      }}
     >
-      <div style={{marginTop: "50px", justifyContent: "center"}}>
-        <h2>Workspace</h2>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: isOpen ? "10px" : "0",
+          transition: "gap 0.3s ease", // Smooth gap adjustment
+        }}
+      >
+        <div
+          style={{
+            width: "36px",
+            height: "36px",
+            backgroundColor: "#d9d9d9",
+            borderRadius: "50%",
+          }}
+        />
+        {isOpen && (
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              fontWeight: "bold",
+              color: "#487d4b",
+              fontSize: "16px",
+              opacity: isOpen ? 1 : 0,
+              transition: "opacity 0.3s ease", // Smooth text fade-in
+            }}
+          >
+            NoteCraft
+          </Typography>
+        )}
       </div>
-
-      <div style={{ marginLeft: "30px", marginTop: "30px" }}>
-        <ListItemButton sx={{ mb: 2, mt: 2 }} onClick={handleNotesClick}> 
-          <ListItemIcon sx={{ minWidth: '40px', color: "#579A59" }}> 
-            <DescriptionIcon sx={{ fontSize: '30px' }} />
-          </ListItemIcon>
-          <ListItemText primary="Notes" />
-        </ListItemButton>
-
-        <ListItemButton sx={{ mb: 2 }} onClick={handleTodolistClick}>
-          <ListItemIcon sx={{ minWidth: '40px', color: "#579A59" }}>
-            <FormatListBulletedIcon sx={{ fontSize: '30px' }} />
-          </ListItemIcon>
-          <ListItemText primary="Todo List" />
-        </ListItemButton>
-
-        <ListItemButton sx={{ mb: 2 }} onClick={handleFileClick}>
-          <ListItemIcon sx={{ minWidth: '40px', color: "#579A59" }}>
-            <FolderIcon sx={{ fontSize: '30px' }} />
-          </ListItemIcon>
-          <ListItemText primary="Files" />
-        </ListItemButton>
-
-        <ListItemButton sx={{ mb: 2 }} onClick={handleMessagesClick}>
-          <ListItemIcon sx={{ minWidth: '40px', color: "#579A59" }}>
-            <MessageIcon sx={{ fontSize: '30px' }} />
-          </ListItemIcon>
-          <ListItemText primary="Messages" />
-        </ListItemButton>
+      <div
+        style={{
+          cursor: "pointer",
+          transition: "transform 0.3s ease", // Smooth icon rotation
+        }}
+        onClick={handleClick}
+      >
+        {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
       </div>
-    </List>
+    </div>
+
+    <Divider />
+
+    
+
+    {/* List Items */}
+    <div style={{ flexGrow: 1, marginTop: isOpen ? "25px" : "25px" }}>
+      {[
+        { label: "Notes", icon: <DescriptionIcon />, onClick: handleNotesClick },
+        {
+          label: "Todo List",
+          icon: <FormatListBulletedIcon />,
+          onClick: handleTodolistClick,
+        },
+        { label: "Files", icon: <FolderIcon />, onClick: handleFileClick },
+        { label: "Messages", icon: <MessageIcon />, onClick: handleMessagesClick },
+      ].map((item, index) => (
+        <ListItemButton
+          key={index}
+          onClick={item.onClick}
+          sx={{
+            justifyContent: isOpen ? "flex-start" : "center",
+            alignItems: "center",
+            padding: isOpen ? "8px 16px" : "8px 0",
+            minHeight: "48px",
+            transition: "all 0.3s ease", // Smooth transitions for padding and alignment
+            display: "flex",
+            flexDirection: "row",
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#579A59",
+              width: isOpen ? "60px" : "auto", // Adjust icon container width
+              height: "60px", // Maintain consistent height for smooth transitions
+              transition: "all 0.3s ease", // Smooth transitions
+              "& svg": {
+                fontSize: "1.7rem", // Icon size
+              },
+              marginTop: isOpen ? "0px" : "0px",
+            }}
+          >
+            {item.icon}
+          </ListItemIcon>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              overflow: "hidden", // Prevent overflow during transitions
+              opacity: isOpen ? 1 : 0,
+              visibility: isOpen ? "visible" : "hidden", // Prevent rendering when closed
+              transition: "opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease", // Smooth fade-in/out and resizing
+              whiteSpace: "nowrap", // Prevent text from wrapping
+              width: isOpen ? "auto" : 0, // Smoothly adjust text container width
+            }}
+          >
+            <ListItemText
+              primary={item.label}
+              sx={{
+                "& span": {
+                  fontSize: "15px",
+                  fontWeight: 500,
+                  transition: "opacity 0.3s ease", // Ensure text opacity transitions match
+                },
+              }}
+            />
+          </Box>
+        </ListItemButton>
+      ))}
+
+      
+    </div>
+
+    
+    {/* Profile Section */}
+<Box
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: isOpen ? "flex-start" : "center",
+    padding: "15px",
+    gap: "15px",
+    borderTop: "1px solid #e0e0e0",
+    transition: "all 0.3s ease",
+  }}
+>
+  <Box
+    component="img"
+    src={personalInfo?.profileImg || profile} // Use the imported profile image if profileImg is null
+    alt="Profile"
+    sx={{
+      width: "40px",
+      height: "40px",
+      borderRadius: "50%",
+      transition: "all 0.3s ease",
+    }}
+  />
+  {isOpen && (
+    <Box sx={{ textAlign: "left" }}>
+      <Typography
+        variant="body1"
+        sx={{ fontWeight: "bold", fontSize: "15px", color: "#333", }}
+      >
+        {personalInfo?.name || "John Doe"} {/* Placeholder name if name is null */}
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{ fontSize: "13px", color: "#666" }}
+      >
+        {personalInfo?.email || "no-email@domain.com"} {/* Placeholder email if email is null */}
+      </Typography>
+    </Box>
+  )}
+</Box>
+
+
+  </List>
+  
+</div>
+
+
+
+
   );
 }

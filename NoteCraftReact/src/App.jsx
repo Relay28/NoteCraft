@@ -10,17 +10,35 @@ function App() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
-  return (
-    <Stack direction="row" sx={{ mt: 5, height: '85vh', width: '90vw' }}>
-      {/* Conditionally render AppBar and Sidebar */}
-      {!isAuthPage && <PrimarySearchAppBar />}
-      {!isAuthPage && <NestedList sx={{ maxWidth: '20%' }} />}
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
-      {/* Main content area with flexGrow and full width */}
-      <Box sx={{ flexGrow: 6, p: 4, margin: 0 }}>
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
+  return (
+    <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
+      {/* Conditionally render Sidebar and AppBar */}
+      {!isAuthPage && (
+        <>
+          {/* Sidebar is layered above the AppBar */}
+          <NestedList open={isSidebarOpen} toggleNestedList={toggleSidebar} />
+          <PrimarySearchAppBar isSidebarOpen={isSidebarOpen} />
+        </>
+      )}
+
+      {/* Main content area */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          p: 4,
+          marginLeft: isSidebarOpen ? '260px' : '90px', // Adjust margin for closed/open sidebar
+          transition: 'margin-left 0.3s ease',
+          height: 'calc(100% - 68px)', // Adjust for AppBar height
+          marginTop: '68px', // Account for AppBar height
+        }}
+      >
         <TheRoutes />
       </Box>
-    </Stack>
+    </div>
   );
 }
 
