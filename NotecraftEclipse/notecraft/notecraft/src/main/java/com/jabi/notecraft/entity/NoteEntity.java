@@ -2,6 +2,7 @@ package com.jabi.notecraft.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,7 +40,16 @@ public class NoteEntity {
     @JsonBackReference("study-group-notes") // Unique back-reference for StudyGroupEntity
     private StudyGroupEntity studyGroup;
 
+    @Column(name = "is_group_note", nullable = false)
+    private boolean isGroupNote = false;
 
+    public boolean isGroupNote() {
+        return isGroupNote;
+    }
+
+    public void setGroupNote(boolean isGroupNote) {
+        this.isGroupNote = isGroupNote;
+    }
     public StudyGroupEntity getStudyGroup() {
         return studyGroup;
     }

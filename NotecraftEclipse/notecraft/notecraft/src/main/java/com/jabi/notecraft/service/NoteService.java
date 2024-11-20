@@ -20,18 +20,21 @@ public class NoteService {
 
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private StudyGroupRepository studyGroupRepository;
 
+    // Insert a personal note
     public NoteEntity insertNote(NoteEntity note, int userId) {
         UserEntity user = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
-        
+
         note.setUser(user);
+        note.setGroupNote(false); // Ensure it's marked as a personal note
         return noteRepository.save(note);
     }
-    
+
+    // Insert a group note
     public NoteEntity insertNoteWithGroup(NoteEntity note, int userId, int studyGroupId) {
         UserEntity user = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
@@ -41,17 +44,24 @@ public class NoteService {
 
         note.setUser(user);
         note.setStudyGroup(studyGroup); // Associate note with the study group
-
+        note.setGroupNote(true); // Mark as group-specific
         return noteRepository.save(note);
     }
 
+    // Fetch only personal notes for a specific user
+    public List<NoteEntity> getPersonalNotesByUserId(int userId) {
+        System.out.println("Fetching notes for user ID: " + userId);
+        List<NoteEntity> notes = noteRepository.findByUser_IdAndIsGroupNoteFalse(userId);
+        System.out.println("Notes retrieved: " + notes.size());
+        return notes;
+    }
 
-    	
- // Fetch all notes belonging to a specific user by userId
-    public List<NoteEntity> getNotesByUserId(int userId) {
-        UserEntity user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
-        return noteRepository.findByUser(user);
+    
+    
+
+    // Fetch all notes belonging to a group
+    public List<NoteEntity> getGroupNotes(int studyGroupId) {
+        return noteRepository.findByStudyGroup_GroupId(studyGroupId);
     }
 
     public List<NoteEntity> getAllNotes() {
@@ -68,7 +78,6 @@ public class NoteService {
         UserEntity user = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
 
-        // Update note details and re-associate with user
         existingNote.setTitle(newNote.getTitle());
         existingNote.setDescription(newNote.getDescription());
         existingNote.setContent(newNote.getContent());

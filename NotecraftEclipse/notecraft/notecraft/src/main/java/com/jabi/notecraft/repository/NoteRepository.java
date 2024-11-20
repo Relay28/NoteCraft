@@ -12,5 +12,12 @@ import com.jabi.notecraft.entity.UserEntity;
 @Repository
 public interface NoteRepository extends JpaRepository<NoteEntity,Integer>{
 	 List<NoteEntity> findByUser(UserEntity user);
+	 List<NoteEntity> findByUserIdAndIsGroupNoteFalse(int userId);
+	 List<NoteEntity> findByStudyGroup_GroupId(int groupId);
+	 List<NoteEntity> findByUser_IdAndIsGroupNoteFalse(int userId);
+
+
+
+
 	
 }

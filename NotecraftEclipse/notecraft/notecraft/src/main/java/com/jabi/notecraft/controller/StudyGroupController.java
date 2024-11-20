@@ -72,7 +72,7 @@ public class StudyGroupController {
     public ResponseEntity<StudyGroupEntity> createStudyGroup(@RequestBody StudyGroupEntity studyGroup) {
         StudyGroupEntity savedGroup = studyGroupService.createStudyGroup(studyGroup);
         return ResponseEntity.ok(savedGroup);
-    }
+    }	
 
     @PostMapping("/{groupId}/add-users")
     public ResponseEntity<StudyGroupEntity> addUsersToGroup(

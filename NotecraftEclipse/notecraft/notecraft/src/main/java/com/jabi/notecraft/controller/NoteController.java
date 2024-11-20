@@ -15,19 +15,31 @@ public class NoteController {
     @Autowired
     private NoteService noteService;
 
-    // Insert a note with mixed content (text and embedded images)
+    // Insert a personal note
     @PostMapping("/insertNote")
     public NoteEntity insertNote(@RequestBody NoteEntity note, @RequestParam("userId") int userId) {
         return noteService.insertNote(note, userId);
     }
 
-    
- // Fetch notes specific to a user by userId
-    @GetMapping("/getNotesByUser")
-    public List<NoteEntity> getNotesByUser(@RequestParam int userId) {
-        return noteService.getNotesByUserId(userId);
+    // Insert a group note
+    @PostMapping("/insertGroupNote")
+    public NoteEntity insertNoteWithGroup(
+            @RequestBody NoteEntity note, 
+            @RequestParam("userId") int userId, 
+            @RequestParam("studyGroupId") int studyGroupId) {
+        return noteService.insertNoteWithGroup(note, userId, studyGroupId);
     }
 
+    @GetMapping("/getNotesByUser")
+    public List<NoteEntity> getNotesByUser(@RequestParam int userId) {
+        return noteService.getPersonalNotesByUserId(userId);
+    }
+
+    // Fetch all group notes for a study group
+    @GetMapping("/getGroupNotes")
+    public List<NoteEntity> getGroupNotes(@RequestParam("studyGroupId") int studyGroupId) {
+        return noteService.getGroupNotes(studyGroupId);
+    }
 
     // Get all notes
     @GetMapping("/getAllNotes")
@@ -41,7 +53,7 @@ public class NoteController {
         return noteService.getNoteById(noteId);
     }
 
-    // Update an existing note, including its mixed content
+    // Update an existing note
     @PutMapping("/updateNote")
     public NoteEntity updateNote(@RequestParam int noteid, @RequestBody NoteEntity newNote, @RequestParam int userId) {
         return noteService.updateNote(noteid, newNote, userId);
