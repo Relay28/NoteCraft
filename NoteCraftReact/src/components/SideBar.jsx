@@ -15,6 +15,7 @@ import MessageIcon from '@mui/icons-material/Message';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 import Box from '@mui/material/Box';
 import profile from '/src/assets/profile.jpg';
+import { Group } from '@mui/icons-material';
 
 
 export default function NestedList({ open, toggleNestedList }) {
@@ -36,6 +37,10 @@ export default function NestedList({ open, toggleNestedList }) {
 
   const handleTodolistClick = () => {
     navigate('/todolist', { state: { user: personalInfo } });
+  };
+  const handleGroupClick = () => {
+    console.log(personalInfo);
+    navigate('/group', { state: { user: personalInfo } });
   };
 
   const goHome = () => {
@@ -149,6 +154,7 @@ export default function NestedList({ open, toggleNestedList }) {
         },
         { label: "Files", icon: <FolderIcon />, onClick: handleFileClick },
         { label: "Messages", icon: <MessageIcon />, onClick: handleMessagesClick },
+        { label: "Group", icon: <Group />, onClick: handleGroupClick },
       ].map((item, index) => (
         <ListItemButton
           key={index}

@@ -13,6 +13,8 @@ import AddTask from './AddTask';
 import TaskDetail from './TaskDetail';
 import Messages from './Messages';
 import NotFound from './NotFound'; // Import NotFound component
+import StudyGroupPage from './StudyGroupPage';
+import GroupDetailsPage from './GroupDetails';
 
 const TheRoutes = () => {
   return (
@@ -22,7 +24,7 @@ const TheRoutes = () => {
       <Route path="/register" element={<SignIn />} index />
 
       {/* Authenticated routes with Home layout */}
-      <Route element={<Home />}>
+   
         <Route path="/notes">
           <Route index element={<Note />} />
           <Route path="new" element={<NoteForm />} />
@@ -33,19 +35,19 @@ const TheRoutes = () => {
         <Route path="/files" element={<Files />} />
         <Route path="/messages" element={<Messages />} />
         
-        <Route path="/home">
-          <Route index element={<Home />} />
-          <Route path="myprofile" element={<Profile />} />
-          <Route path="myprofile/edit" element={<EditProfile />} />
-        </Route>
+       
+          <Route path="/myprofile" element={<Profile />} />
+          <Route path="/myprofile/edit" element={<EditProfile />} />
+        
 
         {/* ToDo List Routes */}
         <Route path="/todolist" element={<Todolist />} />
         <Route path="/add-task" element={<AddTask />} />
         <Route path="/edit-task" element={<AddTask />} />
         <Route path="/task" element={<TaskDetail />} />
-      </Route>
-
+   
+      <Route path="/group" element={<StudyGroupPage />}/>
+      <Route path="/group-details/:groupId" element={<GroupDetailsPage />} />
       {/* 404 Route outside Home layout */}
       <Route path="*" element={<NotFound />} /> {/* Catch-all for unmatched routes */}
     </Routes>
