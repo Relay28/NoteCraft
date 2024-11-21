@@ -12,7 +12,7 @@ export default function NotFound () {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
+        height: '50vh',
         textAlign: 'center',
       }}
     >

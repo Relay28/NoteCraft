@@ -90,7 +90,7 @@ export default function File() {
     return (
         <Box
             sx={{
-                maxWidth: "1325px",
+                maxWidth: "90%",
                 margin: "20px auto",
                 padding: "20px",
                 backgroundColor: "#C8E6C9", // Light green background for the larger container

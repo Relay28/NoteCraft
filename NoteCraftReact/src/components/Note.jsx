@@ -1,37 +1,37 @@
-// Note.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { 
-    List, 
-    ListItem, 
-    ListItemText, 
-    Button, 
-    Card, 
-    CardContent, 
-    Box, 
-    Typography, 
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions 
+import {
+    List,
+    ListItem,
+    Card,
+    CardContent,
+    Box,
+    Typography,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    IconButton,
+    Button,  // Use Button instead of IconButton for better control over styling
 } from "@mui/material";
+import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Note() {
-
     const [notes, setNotes] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [noteToDelete, setNoteToDelete] = useState(null);
+    const [selectedNote, setSelectedNote] = useState(null); // For modal preview
     const navigate = useNavigate();
     const location = useLocation();
 
     // Retrieve user info from route state
     const personalInfo = location.state?.user || { id: '', username: '' };
-  
+
     useEffect(() => {
         if (personalInfo.id) {
             axios.get(`http://localhost:8081/api/note/getNotesByUser`, {
-                params: { userId: personalInfo.id }
+                params: { userId: personalInfo.id },
             })
                 .then(response => {
                     setNotes(response.data);
@@ -40,31 +40,26 @@ export default function Note() {
                     console.error("There was an error fetching the notes!", error);
                 });
         } else {
-           
             console.warn("No user ID found. Redirecting to login.");
             navigate('/login');
         }
     }, [personalInfo.id, navigate]);
 
-    // Edit a note
     const handleEditNote = (index) => {
         const noteId = notes[index].noteid;
         navigate(`/notes/edit/${noteId}`, { state: { noteData: notes[index], user: personalInfo.id } });
     };
 
-    // Open the delete confirmation dialog
     const openDeleteDialog = (id, index) => {
         setNoteToDelete({ id, index });
         setOpenDialog(true);
     };
 
-    // Close the delete confirmation dialog
     const closeDeleteDialog = () => {
         setOpenDialog(false);
         setNoteToDelete(null);
     };
 
-    // Delete a note after confirmation
     const handleDeleteNote = () => {
         if (noteToDelete) {
             const { id, index } = noteToDelete;
@@ -80,7 +75,6 @@ export default function Note() {
         }
     };
 
-    // Function to sanitize and style the content
     const styleNoteContent = (content) => {
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = content;
@@ -96,15 +90,25 @@ export default function Note() {
         return tempDiv.innerHTML;
     };
 
+    // Open preview modal
+    const openNotePreview = (note) => {
+        setSelectedNote(note);
+    };
+
+    // Close preview modal
+    const closeNotePreview = () => {
+        setSelectedNote(null);
+    };
+
     return (
         <Box
             sx={{
                 display: "flex",
+             
                 flexDirection: "column",
                 alignItems: "center",
                 width: "75%",
                 padding: 2,
-                marginLeft:0
             }}
         >
             <Box
@@ -119,24 +123,30 @@ export default function Note() {
                 <Typography variant="h4" component="h2">
                     Notes
                 </Typography>
-                <Button
-                    variant="contained"
-                    color="success"
+                <IconButton
                     onClick={() => navigate("/notes/new", { state: { user: personalInfo } })}
+                    color="success"
+                    sx={{
+                        backgroundColor: "#579A59",
+                        color: "#f0f0f0",
+                        '&:hover': {
+                            backgroundColor: "#487d4b",
+                        },
+                    }}
                 >
-                    Add New Note
-                </Button>
+                    <AddIcon />
+                </IconButton>
             </Box>
 
             <List sx={{ width: "100%", padding: "10px", borderRadius: "8px" }}>
                 {notes.length === 0 ? (
                     <ListItem>
-                        <ListItemText primary="No Notes Available" />
+                        <Typography>No Notes Available</Typography>
                     </ListItem>
                 ) : (
                     notes.map((note, index) => (
                         <Card
-                            key={note.noteid} // Use noteid as the key for better performance
+                            key={note.noteid}
                             sx={{
                                 marginBottom: "15px",
                                 backgroundColor: "#f0f0f0",
@@ -144,85 +154,124 @@ export default function Note() {
                                 textAlign: "left",
                                 width: "100%",
                                 boxShadow: 2,
+                                cursor: "pointer", // Make the card clickable
+                                position: "relative", // For positioning icons
                             }}
+                            onClick={() => openNotePreview(note)}
                         >
                             <CardContent>
                                 <Typography variant="h6"><b>{note.title}</b></Typography>
                                 <Typography variant="body2" color="textSecondary">
                                     {note.description}
                                 </Typography>
-                                <Typography 
-                                    variant="body1" 
-                                    dangerouslySetInnerHTML={{ __html: styleNoteContent(note.content).split("\n")[0] }} 
+                                <Typography
+                                    variant="body1"
+                                    dangerouslySetInnerHTML={{ __html: styleNoteContent(note.content).split("\n")[0] }}
                                 />
-
-                                <Box sx={{ marginTop: "10px", textAlign: "right" }}>
-                                    <Button
-                                        variant="outlined"
-                                        color="secondary"
-                                        onClick={() => handleEditNote(index)}
-                                        sx={{ 
-                                            marginRight: "10px",
-                                            color: "#f0f0f0",
-                                            backgroundColor: "#579A59",
-                                            '&:hover': {
-                                                backgroundColor: "#487d4b",
-                                            }
-                                        }}
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        onClick={() => openDeleteDialog(note.noteid, index)}
-                                        sx={{ 
-                                            marginRight: "10px",
-                                            color: "#f0f0f0",
-                                            backgroundColor: "red",
-                                            '&:hover': {
-                                                backgroundColor: "#c62828",
-                                            }
-                                        }}
-                                    >
-                                        Delete
-                                    </Button>
-                                </Box>
                             </CardContent>
+
+                            {/* Edit and Delete icons placed beside each other */}
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    top: "10px",
+                                    right: "10px",
+                                    display: "flex",
+                                    gap: "10px", // Adding space between icons
+                                }}
+                            >
+                                <IconButton
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Prevent modal opening
+                                        handleEditNote(index);
+                                    }}
+                                    color="primary"
+                                    sx={{
+                                        backgroundColor: "transparent",
+                                        '&:hover': {
+                                            backgroundColor: "#d0d0d0", // Light hover effect
+                                        },
+                                    }}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                                <IconButton
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Prevent modal opening
+                                        openDeleteDialog(note.noteid, index);
+                                    }}
+                                    color="error"
+                                    sx={{
+                                        backgroundColor: "transparent",
+                                        '&:hover': {
+                                            backgroundColor: "#f7dcdc", // Light hover effect for delete
+                                        },
+                                    }}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Box>
                         </Card>
                     ))
                 )}
             </List>
 
             {/* Delete Confirmation Dialog */}
-            <Dialog
-                open={openDialog}
-                onClose={closeDeleteDialog}
-            >
+            <Dialog open={openDialog} onClose={closeDeleteDialog}>
                 <DialogTitle>Confirm Delete</DialogTitle>
                 <DialogContent>
                     <Typography>Are you sure you want to delete this note?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button 
-                        onClick={closeDeleteDialog} 
-                        color="primary" 
+                    <Button
+                        onClick={closeDeleteDialog}
                         sx={{
-                            color: "#f0f0f0",
-                            backgroundColor: "#579A59",
+                            color: "#579A59", // Green color
+                            fontWeight: "bold",
+                            textTransform: "none", // Remove uppercase text
                             '&:hover': {
-                                backgroundColor: "#487d4b",
-                            }
+                                backgroundColor: "#f0f0f0", // Subtle hover effect
+                            },
                         }}
                     >
                         Cancel
                     </Button>
-                    <Button 
-                        onClick={handleDeleteNote} 
-                        color="error" 
-                        variant="contained"
-                    >
+                    <Button onClick={handleDeleteNote} color="error" variant="contained">
                         Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Note Preview Dialog */}
+            <Dialog open={!!selectedNote} onClose={closeNotePreview} maxWidth="md" fullWidth>
+                <DialogTitle>Note Preview</DialogTitle>
+                <DialogContent>
+                    {selectedNote && (
+                        <>
+                            <Typography variant="h5">{selectedNote.title}</Typography>
+                            <Typography variant="body2" color="textSecondary">
+                                {selectedNote.description}
+                            </Typography>
+                            <Typography
+                                variant="body1"
+                                dangerouslySetInnerHTML={{ __html: styleNoteContent(selectedNote.content) }}
+                            />
+                        </>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={closeNotePreview}
+                        color="primary"
+                        sx={{
+                            backgroundColor: "#579A59",
+                            color: "#f0f0f0",
+                            '&:hover': {
+                                backgroundColor: "#487d4b",
+                            },
+                        }}
+                    >
+                        Close
                     </Button>
                 </DialogActions>
             </Dialog>
