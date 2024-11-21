@@ -114,7 +114,7 @@ export default function PrimarySearchAppBar({ isSidebarOpen }) {
               <Typography
                 variant="body1"
                 sx={{ fontWeight: 'bold', fontSize: '20px', color: '#333' }}
-              > Hello, {personalInfo?.name || 'John Doe'} 
+              > Hello, {personalInfo?.name || 'Guest'} 
               </Typography>
              
             </Box>

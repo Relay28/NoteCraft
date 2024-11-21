@@ -223,10 +223,10 @@ export default function NestedList({ open, toggleNestedList }) {
                 variant="body1"
                 sx={{ fontWeight: 'bold', fontSize: '15px', color: '#333' }}
               >
-                {personalInfo?.name || 'John Doe'} 
+                {personalInfo?.name || 'Guest'} 
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '13px', color: '#666' }}>
-                {personalInfo?.email || 'no-email@domain.com'} 
+                {personalInfo?.email || 'guest@email.com'} 
               </Typography>
             </Box>
           )}
