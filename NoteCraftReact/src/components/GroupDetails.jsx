@@ -41,7 +41,17 @@ export default function GroupDetailsPage() {
   const { personalInfo } = useContext(PersonalInfoContext);
   const user = personalInfo;
   const { groupId } = useParams();
-  const [groupDetails, setGroupDetails] = useState({});
+  const [groupDetails, setGroupDetails] = useState({
+    groupId: null,
+    groupName: '',
+    description: '',
+    files: [],
+    groupChats: [],
+    notes: [],
+    toDoLists: [],
+    users: []
+});
+
   const [notes, setNotes] = useState([]);
   const [files, setFiles] = useState([]);
   const [todos, setTodos] = useState([]);
@@ -130,22 +140,20 @@ export default function GroupDetailsPage() {
     }
   };
 
-  // Handle Adding a Member
+    
   const handleAddMember = async () => {
     try {
-      // Assuming the API responds with updated group details
-      await axios.post(`${apiBaseUrl}/${groupId}/add-users`, [newMemberId]);
-  
-      // Fetch updated members (or alternatively, just append the new member if you have the data)
-      const updatedGroupDetails = await axios.get(`${apiBaseUrl}/getStudyGroupById/${groupId}`);
-      setMembers(updatedGroupDetails.data.users);
-  
-      setOpenAddMemberModal(false);
+      const response = await axios.post(`${apiBaseUrl}/${groupId}/add-users`, [newMemberId]);
+      setGroupDetails((prev) => ({
+        ...prev,
+        users: response.data.users,
+      }));
+      setMembers( response.data.users);
       setNewMemberId('');
+      setOpenAddMemberModal(false);
       setResponseMessage('Member added successfully!');
-    } catch (error) {
+    } catch {
       setResponseMessage('Failed to add member.');
-      console.error(error);
     }
   };
 

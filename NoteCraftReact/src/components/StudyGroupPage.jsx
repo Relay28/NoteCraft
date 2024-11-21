@@ -51,7 +51,7 @@ export default function StudyGroupPage() {
   const fetchUserGroups = async () => {
     try {
       const response = await axios.get(
-        `${apiBaseUrl}/getStudyGroupByOwner/owner/${userId}`
+        `${apiBaseUrl}/getGroupsForUser/${userId}`
       );
       setStudyGroups(response.data);
     } catch (error) {
@@ -61,7 +61,7 @@ export default function StudyGroupPage() {
       setSnackbarOpen(true);
     }
   };
-
+  console.log(studyGroups)
   useEffect(() => {
     fetchUserGroups();
   }, [userId]);

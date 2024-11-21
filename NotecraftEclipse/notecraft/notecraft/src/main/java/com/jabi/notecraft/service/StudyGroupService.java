@@ -15,6 +15,8 @@ import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.repository.StudyGroupRepository;
 import com.jabi.notecraft.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class StudyGroupService {
 
@@ -24,17 +26,7 @@ public class StudyGroupService {
     @Autowired
     private UserRepository userRepository;
 
-    // Create a new Study Group
-//    public StudyGroupEntity createStudyGroup(String groupName, String description, int ownerId) {
-//        UserEntity owner = userRepository.findById(ownerId)
-//                .orElseThrow(() -> new RuntimeException("Owner with ID " + ownerId + " not found"));
-//        StudyGroupEntity studyGroup = new StudyGroupEntity();
-//        studyGroup.setGroupName(groupName);
-//        studyGroup.setDescription(description);
-//        studyGroup.setOwner(owner);
-//        return studyGroupRepository.save(studyGroup);
-//    }
-    
+    @Transactional
     public StudyGroupEntity addUsersToGroup(int groupId, List<Integer> userIds) {
         // Fetch the study group
         StudyGroupEntity studyGroup = studyGroupRepository.findById(groupId)
@@ -46,6 +38,7 @@ public class StudyGroupService {
             throw new NoSuchElementException("No valid users found for the provided IDs.");
         }
 
+        
         // Add users to the group, ensuring no duplicates
         Set<UserEntity> existingUsers = studyGroup.getUsers();
         if (existingUsers == null) {
@@ -56,6 +49,10 @@ public class StudyGroupService {
 
         // Save the updated study group
         return studyGroupRepository.save(studyGroup);
+    }
+    
+    public List<StudyGroupEntity> getGroupsForUser(UserEntity user) {
+        return studyGroupRepository.findAllGroupsForUser(user);
     }
     public StudyGroupEntity createStudyGroup(StudyGroupEntity studyGroup) {
         // Ensure the owner exists in the database
@@ -153,10 +150,19 @@ public class StudyGroupService {
     }
 
     // Delete a study group
-    public void deleteStudyGroup(int groupId) {
-        if (!studyGroupRepository.existsById(groupId)) {
-            throw new RuntimeException("Study Group with ID " + groupId + " not found");
+ // Delete a study group (only if the requester is the owner)
+    public void deleteStudyGroup(int groupId, int userId) {
+        // Fetch the group by ID
+        StudyGroupEntity group = studyGroupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Study Group with ID " + groupId + " not found"));
+        
+        // Check if the user requesting the deletion is the owner
+        if (group.getOwner().getId() != userId) {
+            throw new SecurityException("Only the owner can delete the group.");
         }
+        
+        // Proceed with deletion if the user is the owner
         studyGroupRepository.deleteById(groupId);
     }
+
 }

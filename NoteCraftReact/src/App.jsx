@@ -30,7 +30,7 @@ function App() {
         sx={{
           flexGrow: 1,
           p: 4,
-          marginLeft: isSidebarOpen ? '12%' : '5%', // Adjust margin for closed/open sidebar
+          marginLeft: isSidebarOpen ? '15%' : '5%', // Adjust margin for closed/open sidebar
           transition: 'margin-left 0.3s ease',
           width:"90%",
           height: 'calc(100% - 68px)', // Adjust for AppBar height

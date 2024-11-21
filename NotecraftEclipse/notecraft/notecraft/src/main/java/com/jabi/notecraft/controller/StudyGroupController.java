@@ -13,10 +13,12 @@ import com.jabi.notecraft.entity.FileEntity;
 import com.jabi.notecraft.entity.NoteEntity;
 import com.jabi.notecraft.entity.StudyGroupEntity;
 import com.jabi.notecraft.entity.ToDoListEntity;
+import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.service.FileService;
 import com.jabi.notecraft.service.NoteService;
 import com.jabi.notecraft.service.StudyGroupService;
 import com.jabi.notecraft.service.ToDoListService;
+import com.jabi.notecraft.service.UserService;
 
 @RestController
 @RequestMapping("/api/study-groups")
@@ -90,6 +92,24 @@ public class StudyGroupController {
         List<StudyGroupEntity> studyGroups = studyGroupService.getAllStudyGroups();
         return ResponseEntity.ok(studyGroups);
     }
+    
+ // Get study groups by member
+    @Autowired
+    private UserService userService; // Inject UserService
+
+    @GetMapping("/getGroupsForUser/{userId}")
+    public ResponseEntity<List<StudyGroupEntity>> getGroupsForUser(@PathVariable int userId) {
+        // Retrieve the user entity from the database
+        UserEntity user = userService.findById(userId);
+        if (user == null) {
+            return ResponseEntity.notFound().build(); // Return 404 if user not found
+        }
+
+        // Fetch groups for the user
+        List<StudyGroupEntity> groups = studyGroupService.getGroupsForUser(user);
+        return ResponseEntity.ok(groups);
+    }
+
 
     // Get a study group by ID
     @GetMapping("getStudyGroupById/{groupId}")
@@ -126,12 +146,16 @@ public class StudyGroupController {
     }
 
 
-    // Delete a study group
+ // Delete a study group - Only the owner can delete the group
+ // Delete a study group (only if the requester is the owner)
     @DeleteMapping("deleteStudyGroup/{groupId}")
-    public ResponseEntity<Void> deleteStudyGroup(@PathVariable int groupId) {
-        studyGroupService.deleteStudyGroup(groupId);
+    public ResponseEntity<Void> deleteStudyGroup(@PathVariable int groupId, @RequestParam int userId) {
+        // Call service to delete the group with ownership check
+        studyGroupService.deleteStudyGroup(groupId, userId);
         return ResponseEntity.noContent().build();
     }
+
+
     
     @DeleteMapping("/{groupId}/remove-users")
     public ResponseEntity<StudyGroupEntity> removeUsersFromGroup(

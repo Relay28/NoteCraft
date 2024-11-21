@@ -24,6 +24,11 @@ public class UserService {
     public UserService() {
         super();
     }
+    
+    public UserEntity findById(int userId) {
+        Optional<UserEntity> user = urepo.findById(userId);
+        return user.orElse(null); // Return the user if found, or null otherwise
+    }
 
     public UserEntity insertUserRecord(UserEntity user) {
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
