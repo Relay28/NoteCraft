@@ -63,7 +63,12 @@ export default function Login() {
             border: "1px solid #579A59",
             borderRadius: "20px",
             overflow: "hidden",
-           
+            justifyContent: "center",
+            alignItems: "center",
+            alignContent: "center",
+            marginTop:"4.5%",
+            marginLeft:"5%"
+            
         }} className='login-container'>
             <div
                 className="transition-section-login"

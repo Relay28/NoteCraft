@@ -3,7 +3,7 @@ import './App.css';
 import PrimarySearchAppBar from './components/AppBar';
 import NestedList from './components/SideBar';
 import TheRoutes from './components/TheRoutes';
-import { Stack, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 
 function App() {
@@ -13,14 +13,14 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
-  console.log(isSidebarOpen)
+
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
-      {/* Conditionally render Sidebar and AppBar */}
       {!isAuthPage && (
         <>
-          {/* Sidebar is layered above the AppBar */}
+          {/* Sidebar */}
           <NestedList open={isSidebarOpen} toggleNestedList={toggleSidebar} />
+          {/* AppBar */}
           <PrimarySearchAppBar isSidebarOpen={isSidebarOpen} />
         </>
       )}
@@ -29,12 +29,12 @@ function App() {
       <Box
         sx={{
           flexGrow: 1,
-          p: 4,
-          marginLeft: isSidebarOpen ? '15%' : '5%', // Adjust margin for closed/open sidebar
+          p: isAuthPage ? 0 : 4,
+          marginLeft: isAuthPage ? 0 : isSidebarOpen ? '15%' : '5%', 
           transition: 'margin-left 0.3s ease',
-          width:"90%",
-          height: 'calc(100% - 68px)', // Adjust for AppBar height
-          marginTop: '68px', // Account for AppBar height
+          width: isAuthPage ? '100%' : '90%', 
+          height: isAuthPage ? '100%' : 'calc(100% - 68px)', 
+          marginTop: isAuthPage ? 0 : '68px', 
         }}
       >
         <TheRoutes />
@@ -43,4 +43,4 @@ function App() {
   );
 }
 
-export default App;
+export default App

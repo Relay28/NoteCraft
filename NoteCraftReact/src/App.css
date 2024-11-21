@@ -64,18 +64,12 @@
   }
 }
 
-.login-container{
-  overflow: hidden;
-  /* left: 50%;
-  top: 50%; */
-  transform: translate(-5%, -1%);
-}
-
+.login-container,
 .register-container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center;    /* Center vertically */
   overflow: hidden;
-  /* left: 50%;
-  top: 50%; */
-  transform: translate(-12%, -1%);
 }
 body.login-body{
   overflow: hidden;
@@ -84,3 +78,4 @@ body.login-body{
 body.register-body {
   overflow: hidden;
 }
+
