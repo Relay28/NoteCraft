@@ -59,7 +59,7 @@ export default function NestedList({ open, toggleNestedList }) {
     >
       <List
         sx={{
-          width: open ? '260px' : '90px', // Sidebar width with smooth transition
+          width: open ? '260px' : '90px', 
           height: '100vh',
           bgcolor: 'white',
           position: 'relative',
@@ -68,8 +68,8 @@ export default function NestedList({ open, toggleNestedList }) {
           borderRight: '1px solid #e0e0e0',
           display: 'flex',
           flexDirection: 'column',
-          transition: 'width 0.3s ease', // Smooth width transition
-          overflow: 'hidden', // Prevent content from overflowing during the transition
+          transition: 'width 0.3s ease', 
+          overflow: 'hidden', 
         }}
         component="nav"
       >
@@ -81,7 +81,7 @@ export default function NestedList({ open, toggleNestedList }) {
             justifyContent: open ? 'space-between' : 'center',
             padding: '15px',
             borderBottom: '1px solid #e0e0e0',
-            transition: 'all 0.3s ease', // Ensure smooth header transition
+            transition: 'all 0.3s ease', 
           }}
         >
           <div
@@ -89,7 +89,7 @@ export default function NestedList({ open, toggleNestedList }) {
               display: 'flex',
               alignItems: 'center',
               gap: open ? '10px' : '0',
-              transition: 'gap 0.3s ease', // Smooth gap adjustment
+              transition: 'gap 0.3s ease', 
             }}
           >
             <div
@@ -109,7 +109,7 @@ export default function NestedList({ open, toggleNestedList }) {
                   color: '#487d4b',
                   fontSize: '16px',
                   opacity: open ? 1 : 0,
-                  transition: 'opacity 0.3s ease', // Smooth text fade-in
+                  transition: 'opacity 0.3s ease', 
                 }}
               >
                 NoteCraft
@@ -119,9 +119,9 @@ export default function NestedList({ open, toggleNestedList }) {
           <div
             style={{
               cursor: 'pointer',
-              transition: 'transform 0.3s ease', // Smooth icon rotation
+              transition: 'transform 0.3s ease', 
             }}
-            onClick={toggleNestedList} // Call the toggleSidebar function from App
+            onClick={toggleNestedList} 
           >
             {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </div>
@@ -146,7 +146,7 @@ export default function NestedList({ open, toggleNestedList }) {
                 alignItems: 'center',
                 padding: open ? '8px 16px' : '8px 0',
                 minHeight: '48px',
-                transition: 'all 0.3s ease', // Smooth transitions for padding and alignment
+                transition: 'all 0.3s ease', 
                 display: 'flex',
                 flexDirection: 'row',
               }}
@@ -157,11 +157,11 @@ export default function NestedList({ open, toggleNestedList }) {
                   justifyContent: 'center',
                   alignItems: 'center',
                   color: '#579A59',
-                  width: open ? '60px' : 'auto', // Adjust icon container width
-                  height: '60px', // Maintain consistent height for smooth transitions
-                  transition: 'all 0.3s ease', // Smooth transitions
+                  width: open ? '60px' : 'auto', 
+                  height: '60px', 
+                  transition: 'all 0.3s ease', 
                   '& svg': {
-                    fontSize: '1.7rem', // Icon size
+                    fontSize: '1.7rem', 
                   },
                 }}
               >
@@ -171,12 +171,12 @@ export default function NestedList({ open, toggleNestedList }) {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  overflow: 'hidden', // Prevent overflow during transitions
+                  overflow: 'hidden', 
                   opacity: open ? 1 : 0,
-                  visibility: open ? 'visible' : 'hidden', // Prevent rendering when closed
-                  transition: 'opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease', // Smooth fade-in/out and resizing
-                  whiteSpace: 'nowrap', // Prevent text from wrapping
-                  width: open ? 'auto' : 0, // Smoothly adjust text container width
+                  visibility: open ? 'visible' : 'hidden', 
+                  transition: 'opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease', 
+                  whiteSpace: 'nowrap', 
+                  width: open ? 'auto' : 0, 
                 }}
               >
                 <ListItemText
@@ -185,7 +185,7 @@ export default function NestedList({ open, toggleNestedList }) {
                     '& span': {
                       fontSize: '15px',
                       fontWeight: 500,
-                      transition: 'opacity 0.3s ease', // Ensure text opacity transitions match
+                      transition: 'opacity 0.3s ease', 
                     },
                   }}
                 />
@@ -208,7 +208,7 @@ export default function NestedList({ open, toggleNestedList }) {
         >
           <Box
             component="img"
-            src={personalInfo?.profileImg || profile} // Use the imported profile image if profileImg is null
+            src={personalInfo?.profileImg || profile} 
             alt="Profile"
             sx={{
               width: '40px',
@@ -223,10 +223,10 @@ export default function NestedList({ open, toggleNestedList }) {
                 variant="body1"
                 sx={{ fontWeight: 'bold', fontSize: '15px', color: '#333' }}
               >
-                {personalInfo?.name || 'John Doe'} {/* Placeholder name if name is null */}
+                {personalInfo?.name || 'John Doe'} 
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '13px', color: '#666' }}>
-                {personalInfo?.email || 'no-email@domain.com'} {/* Placeholder email */}
+                {personalInfo?.email || 'no-email@domain.com'} 
               </Typography>
             </Box>
           )}

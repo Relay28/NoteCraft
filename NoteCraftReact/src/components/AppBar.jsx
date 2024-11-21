@@ -5,11 +5,13 @@ import { Mail as MailIcon, Notifications as NotificationsIcon, AccountCircle, Ho
 import { useNavigate } from 'react-router-dom';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 import SearchIcon from '@mui/icons-material/Search';
+import Avatar from '@mui/material/Avatar';
+import profile from '/src/assets/profile.jpg';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha('#b6b9bf', 0.2), // Subtle contrast for search bar
+  backgroundColor: alpha('#b6b9bf', 0.2), 
   '&:hover': {
     backgroundColor: alpha('#b6b9bf', 0.4),
   },
@@ -33,7 +35,7 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: '#333', // Match text color to sidebar
+  color: '#333', 
   '& .MuiInputBase-input': {
     padding: theme.spacing(1, 1, 1, 0),
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
@@ -98,9 +100,9 @@ export default function PrimarySearchAppBar({ isSidebarOpen }) {
     backgroundColor: '#fff',
     color: '#333',
     height: '76px',
-    zIndex: 1, // Ensure AppBar is below the Sidebar (Sidebar z-index is higher)
-    width: isSidebarOpen ? 'calc(100% - 90px)' : 'calc(100% - 90px)', // Adjust width as per Sidebar
-    marginLeft: isSidebarOpen ? '260px' : '90px', // Sidebar alignment
+    zIndex: 1, 
+    width: isSidebarOpen ? 'calc(100% - 90px)' : 'calc(100% - 90px)', 
+    marginLeft: isSidebarOpen ? '260px' : '90px', 
     transition: 'all 0.3s ease',
     boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.1)',
     borderBottom: '1px solid #e0e0e0',
@@ -143,7 +145,18 @@ export default function PrimarySearchAppBar({ isSidebarOpen }) {
             onClick={handleProfileMenuOpen}
             color="inherit"
           >
-            <AccountCircle sx={{ color: '#487d4b' }} />
+                
+                <Box
+  component="img"
+  src={personalInfo?.profileImg || profile} 
+  alt="Profile"
+  sx={{
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    transition: 'all 0.3s ease', 
+  }}
+/>
           </IconButton>
         </Box>
       </Toolbar>

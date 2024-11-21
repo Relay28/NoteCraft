@@ -10,7 +10,7 @@ export default function EditProfile({ personalInfo, onUpdate, onCancel, token })
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
-        console.log(file); // Get the selected file
+        console.log(file); 
         if (file) {
             setProfileImage(file); // Store the file in state
         }
@@ -27,21 +27,21 @@ export default function EditProfile({ personalInfo, onUpdate, onCancel, token })
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Show confirmation dialog
+        
         const isConfirmed = window.confirm("Are you sure you want to update your profile?");
         if (!isConfirmed) {
-            return; // If the user clicked Cancel, exit the function
+            return; 
         }
 
-        // Create a new FormData object
+        
         const updatedFormData = new FormData();
 
-        // Append existing form data to the FormData object
+        
         for (const key in formData) {
             updatedFormData.append(key, formData[key]);
         }
 
-        // Append the profile image if it exists
+        
         if (profileImage) {
             updatedFormData.append('profileImg', profileImage);
         }
@@ -53,14 +53,14 @@ export default function EditProfile({ personalInfo, onUpdate, onCancel, token })
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        // Do not set 'Content-Type' for FormData
+                        
                     }
                 }
             );
             console.log('User details updated:', response.data);
-            onUpdate(response.data); // Call the parent update function with updated data
-            setError(null); // Clear any previous errors
-            navigate('/home/myprofile'); // Redirect to the profile page (or the correct route)
+            onUpdate(response.data); 
+            setError(null); 
+            navigate('/myprofile'); 
         } catch (error) {
             console.error('Error updating user details:', error);
             setError('Failed to update user details. Please try again.');
@@ -115,8 +115,8 @@ export default function EditProfile({ personalInfo, onUpdate, onCancel, token })
                 <input 
                     type="file" 
                     name="profileImage" 
-                    onChange={handleImageChange} // Add an event handler for file selection
-                    accept="image/*" // Restrict file input to image types only
+                    onChange={handleImageChange} 
+                    accept="image/*" 
                 />
             </div>
 
