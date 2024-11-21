@@ -13,7 +13,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
-
+  console.log(isSidebarOpen)
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
       {/* Conditionally render Sidebar and AppBar */}
@@ -30,7 +30,7 @@ function App() {
         sx={{
           flexGrow: 1,
           p: 4,
-          marginLeft: isSidebarOpen ? '5%' : '0px', // Adjust margin for closed/open sidebar
+          marginLeft: isSidebarOpen ? '12%' : '5%', // Adjust margin for closed/open sidebar
           transition: 'margin-left 0.3s ease',
           width:"90%",
           height: 'calc(100% - 68px)', // Adjust for AppBar height
