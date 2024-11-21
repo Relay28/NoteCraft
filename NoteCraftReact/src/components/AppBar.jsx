@@ -109,12 +109,15 @@ export default function PrimarySearchAppBar({ isSidebarOpen }) {
   }}
 >
       <Toolbar style={{marginTop:"0.5%"}}>
-        <IconButton edge="start" color="inherit" onClick={() => navigate('/home')} sx={{ mr: 2 }}>
-          <HomeIcon sx={{ fontSize: '28px', color: '#487d4b' }} />
-        </IconButton>
-        <Typography variant="h6" noWrap sx={{ fontWeight: 'bold', color: '#487d4b' }}>
-          NoteCraft
-        </Typography>
+      
+      <Box sx={{ textAlign: 'left' }}>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 'bold', fontSize: '20px', color: '#333' }}
+              > Hello, {personalInfo?.name || 'John Doe'} 
+              </Typography>
+             
+            </Box>
 
         <Box sx={{ flexGrow: 1 }} />
 
