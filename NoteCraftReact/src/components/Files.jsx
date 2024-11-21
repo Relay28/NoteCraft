@@ -90,13 +90,13 @@ export default function File() {
     return (
         <Box
             sx={{
-                maxWidth: "1200px",
+                maxWidth: "1325px",
                 margin: "20px auto",
                 padding: "20px",
                 backgroundColor: "#C8E6C9", // Light green background for the larger container
                 borderRadius: "20px",
                 boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.2)",
-                marginLeft: "300px" // Adjust the Location of the Entire Content
+                marginLeft: "0px" // Adjust the Location of the Entire Content
             }}
         >
             <Typography
@@ -121,7 +121,7 @@ export default function File() {
                 {/* Your Files Section */}
                 <Box
                     sx={{
-                        flex: 1,
+                        flex: 2,
                         backgroundColor: "#E8F5E9",
                         borderRadius: "15px",
                         padding: "20px",
