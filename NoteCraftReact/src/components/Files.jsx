@@ -7,18 +7,16 @@ import EditIcon from '@mui/icons-material/Edit';
 export default function File() {
     const [files, setFiles] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [userId, setUserId] = useState(null); // State to hold the userId
+    const [userId, setUserId] = useState(null);
 
-    // Fetch userId from localStorage (or cookies) if available
     useEffect(() => {
-        const storedUserId = localStorage.getItem('userId'); // Assuming you stored the userId in localStorage
+        const storedUserId = localStorage.getItem('userId');
         if (storedUserId) {
             setUserId(storedUserId);
             fetchFiles(storedUserId);
         }
-    }, []); // This runs only once when the component mounts
+    }, []);
 
-    // Fetch files from the API for the specific user
     const fetchFiles = async (userId) => {
         try {
             const response = await axios.get(`http://localhost:8081/api/files/getFilesByUser/${userId}`);
@@ -28,12 +26,10 @@ export default function File() {
         }
     };
 
-    // Handle file selection
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]);
     };
 
-    // Upload the selected file
     const handleUploadFile = async () => {
         if (!selectedFile) {
             alert("Please select a file to upload");
@@ -46,36 +42,34 @@ export default function File() {
         try {
             const response = await axios.post('http://localhost:8081/api/files/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                params: { userId },  // Pass userId when uploading
+                params: { userId },
             });
-            setFiles(prevFiles => [...prevFiles, response.data]); // Append the new file
-            setSelectedFile(null); // Reset file input
+            setFiles(prevFiles => [...prevFiles, response.data]);
+            setSelectedFile(null);
         } catch (error) {
             console.error("There was an error uploading the file!", error);
         }
     };
 
-    // Delete file
     const handleDeleteFile = async (fileId) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this?");
-        if (!confirmDelete) return; // Exit if the user does not confirm
-    
+        if (!confirmDelete) return;
+
         try {
             await axios.delete(`http://localhost:8081/api/files/delete/${fileId}`);
-            setFiles(files.filter(file => file.fileId !== fileId)); // Remove file from state
+            setFiles(files.filter(file => file.fileId !== fileId));
         } catch (error) {
             console.error("There was an error deleting the file!", error);
         }
     };
 
-    // Update file name
     const handleUpdateFile = async (fileId) => {
         const confirmEdit = window.confirm("Are you sure you want to edit this?");
-        if (!confirmEdit) return; // Exit if the user does not confirm
-    
+        if (!confirmEdit) return;
+
         const newFileName = prompt("Enter new file name:");
         if (!newFileName) return;
-    
+
         try {
             const response = await axios.put(`http://localhost:8081/api/files/updateFile`, null, {
                 params: {
@@ -83,7 +77,7 @@ export default function File() {
                     newFileName: newFileName
                 }
             });
-            setFiles(files.map(file => (file.fileId === fileId ? response.data : file))); // Update file in state
+            setFiles(files.map(file => (file.fileId === fileId ? response.data : file)));
         } catch (error) {
             console.error("There was an error updating the file!", error);
         }
@@ -94,28 +88,97 @@ export default function File() {
     }
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "row", alignItems: "flex-start", width: "80%", left:0,padding: "10px" }}>
-            {/* Files List */}
-            <Box sx={{ width: "50%", overflowY: "auto", padding: "10px" }}>
-                <Typography variant="h6">Your Files</Typography>
-                <List>
-                    {files.map((file) => (
-                        <ListItem key={file.fileId} sx={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", padding: "5px" }}>
-                            <ListItemText primary={file.fileName} secondary={`Size: ${file.size} bytes`} />
-                            <Box>
-                                <IconButton onClick={() => handleUpdateFile(file.fileId)}><EditIcon /></IconButton>
-                                <IconButton onClick={() => handleDeleteFile(file.fileId)}><DeleteIcon /></IconButton>
-                            </Box>
-                        </ListItem>
-                    ))}
-                </List>
-            </Box>
+        <Box
+            sx={{
+                maxWidth: "1200px",
+                margin: "20px auto",
+                padding: "20px",
+                backgroundColor: "#C8E6C9", // Light green background for the larger container
+                borderRadius: "20px",
+                boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.2)",
+                marginLeft: "300px" // Adjust the Location of the Entire Content
+            }}
+        >
+            <Typography
+                variant="h5"
+                sx={{
+                    textAlign: "center",
+                    marginBottom: "20px",
+                    color: "#2E7D32", // Dark green for the title
+                }}
+            >
+                Files Dashboard
+            </Typography>
 
-            {/* File Upload */}
-            <Box sx={{ width: "40%" }}>
-                <Typography variant="h6">Upload a File</Typography>
-                <input type="file" onChange={handleFileChange} />
-                <Button variant="contained" onClick={handleUploadFile}>Upload</Button>
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: "20px",
+                    justifyContent: "center",
+                    
+                }}
+            >
+                {/* Your Files Section */}
+                <Box
+                    sx={{
+                        flex: 1,
+                        backgroundColor: "#E8F5E9",
+                        borderRadius: "15px",
+                        padding: "20px",
+                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                    }}
+                >
+                    <Typography 
+                        variant="h6" 
+                        sx={{ marginBottom: "20px",
+                        color: "#2E7D32",}}
+                        >
+                        Your Files
+                    </Typography>
+                    <List>
+                        {files.map((file) => (
+                            <ListItem
+                                key={file.fileId}
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    marginBottom: "10px",
+                                    padding: "10px",
+                                    borderRadius: "10px",
+                                    backgroundColor: "#FBFBFB",
+                                }}
+                            >
+                                <ListItemText primary={file.fileName} secondary={`Size: ${file.size} bytes`} />
+                                <Box>
+                                    <IconButton onClick={() => handleUpdateFile(file.fileId)}><EditIcon /></IconButton>
+                                    <IconButton onClick={() => handleDeleteFile(file.fileId)}><DeleteIcon /></IconButton>
+                                </Box>
+                            </ListItem>
+                        ))}
+                    </List>
+                </Box>
+
+                {/* Upload a File Section */}
+                <Box
+                    sx={{
+                        flex: 1,
+                        backgroundColor: "#E8F5E9",
+                        borderRadius: "15px",
+                        padding: "20px",
+                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                    }}
+                >
+                    <Typography variant="h6" sx={{ marginBottom: "20px", color: "#2E7D32"}}>Upload a File</Typography>
+                    <input type="file" onChange={handleFileChange} style={{ marginBottom: "10px", width: "100%" }} />
+                    <Button 
+                        variant="contained" 
+                        color="success"
+                        onClick={handleUploadFile}
+                        sx={{ width: "100%" }}
+                    >
+                        Upload
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );
