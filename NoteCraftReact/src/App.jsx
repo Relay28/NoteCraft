@@ -10,18 +10,25 @@ function App() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  // Sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = React.useState(false);
 
+  // Toggle sidebar
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   return (
-    <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
+    <Box style={{ height: '100vh', width: '100vw', display: 'flex' }}>
       {!isAuthPage && (
         <>
           {/* Sidebar */}
-          <NestedList open={isSidebarOpen} toggleNestedList={toggleSidebar} />
+          <NestedList
+            open={isSidebarOpen}
+            toggleNestedList={toggleSidebar}
+            setSidebarHovered={setIsSidebarHovered} // Pass hover state handler
+          />
           {/* AppBar */}
-          <PrimarySearchAppBar isSidebarOpen={isSidebarOpen} />
+          <PrimarySearchAppBar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         </>
       )}
 
@@ -29,18 +36,18 @@ function App() {
       <Box
         sx={{
           flexGrow: 1,
-          p: isAuthPage ? 0 : 4,
-          marginLeft: isAuthPage ? 0 : isSidebarOpen ? '15%' : '5%', 
+          padding: isAuthPage ? 0 : 4,
+          marginLeft: isAuthPage ? 0 : isSidebarHovered ? '260px' : '90px',
           transition: 'margin-left 0.3s ease',
-          width: isAuthPage ? '100%' : '90%', 
-          height: isAuthPage ? '100%' : 'calc(100% - 68px)', 
-          marginTop: isAuthPage ? 0 : '68px', 
+          width: '100%',
+          height: isAuthPage ? '100%' : 'calc(100% - 68px)',
+          marginTop: isAuthPage ? 0 : '68px',
         }}
       >
         <TheRoutes />
       </Box>
-    </div>
+    </Box>
   );
 }
 
-export default App
+export default App;

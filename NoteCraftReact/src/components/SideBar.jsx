@@ -17,10 +17,28 @@ import Box from '@mui/material/Box';
 import profile from '/src/assets/profile.jpg';
 import { Group } from '@mui/icons-material';
 
-export default function NestedList({ open, toggleNestedList }) {
+export default function NestedList({  open, toggleNestedList, setSidebarHovered}) {
   const navigate = useNavigate();
   const { personalInfo } = React.useContext(PersonalInfoContext);
+  const [isHovered, setIsHovered] = React.useState(false);
 
+  // Handlers for hover events
+  const handleMouseEnter = () => {
+    setSidebarHovered(true);
+    toggleNestedList();
+    setIsHovered(true)
+  };
+
+  const handleMouseLeave = () => {
+    setSidebarHovered(false);
+    toggleNestedList();
+    setIsHovered(false)
+  };
+
+  const isSidebarOpen = isHovered ;
+
+  
+  
   const handleMessagesClick = () => {
     navigate('/messages', { state: { user: personalInfo } });
   };
@@ -59,7 +77,7 @@ export default function NestedList({ open, toggleNestedList }) {
     >
       <List
         sx={{
-          width: open ? '260px' : '90px', 
+          width: isSidebarOpen ? '260px' : '90px', 
           height: '100vh',
           bgcolor: 'white',
           position: 'relative',
@@ -71,6 +89,9 @@ export default function NestedList({ open, toggleNestedList }) {
           transition: 'width 0.3s ease', 
           overflow: 'hidden', 
         }}
+        onMouseEnter={handleMouseEnter} // Expand sidebar on hover
+        onMouseLeave={handleMouseLeave} // Collapse sidebar on mouse leave
+
         component="nav"
       >
         {/* Sidebar Header */}
@@ -78,7 +99,7 @@ export default function NestedList({ open, toggleNestedList }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: open ? 'space-between' : 'center',
+            justifyContent: isSidebarOpen ? 'space-between' : 'center',
             padding: '15px',
             borderBottom: '1px solid #e0e0e0',
             transition: 'all 0.3s ease', 
@@ -88,7 +109,7 @@ export default function NestedList({ open, toggleNestedList }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: open ? '10px' : '0',
+              gap: isSidebarOpen ? '10px' : '0',
               transition: 'gap 0.3s ease', 
             }}
           >
@@ -100,7 +121,7 @@ export default function NestedList({ open, toggleNestedList }) {
                 borderRadius: '50%',
               }}
             />
-            {open && (
+            {isSidebarOpen && (
               <Typography
                 variant="h6"
                 noWrap
@@ -108,7 +129,7 @@ export default function NestedList({ open, toggleNestedList }) {
                   fontWeight: 'bold',
                   color: '#487d4b',
                   fontSize: '16px',
-                  opacity: open ? 1 : 0,
+                  opacity: isSidebarOpen ? 1 : 0,
                   transition: 'opacity 0.3s ease', 
                 }}
               >
@@ -116,21 +137,12 @@ export default function NestedList({ open, toggleNestedList }) {
               </Typography>
             )}
           </div>
-          <div
-            style={{
-              cursor: 'pointer',
-              transition: 'transform 0.3s ease', 
-            }}
-            onClick={toggleNestedList} 
-          >
-            {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          </div>
         </div>
 
         <Divider />
 
-        {/* List Items */}
-        <div style={{ flexGrow: 1, marginTop: open ? '25px' : '25px' }}>
+         {/* List Items */}
+         <div style={{ flexGrow: 1, marginTop: '25px' }}>
           {[
             { label: 'Notes', icon: <DescriptionIcon />, onClick: handleNotesClick },
             { label: 'Todo List', icon: <FormatListBulletedIcon />, onClick: handleTodolistClick },
@@ -142,11 +154,11 @@ export default function NestedList({ open, toggleNestedList }) {
               key={index}
               onClick={item.onClick}
               sx={{
-                justifyContent: open ? 'flex-start' : 'center',
+                justifyContent: isSidebarOpen ? 'flex-start' : 'center',
                 alignItems: 'center',
-                padding: open ? '8px 16px' : '8px 0',
+                padding: isSidebarOpen ? '8px 16px' : '8px 0',
                 minHeight: '48px',
-                transition: 'all 0.3s ease', 
+                transition: 'all 0.3s ease',
                 display: 'flex',
                 flexDirection: 'row',
               }}
@@ -157,11 +169,11 @@ export default function NestedList({ open, toggleNestedList }) {
                   justifyContent: 'center',
                   alignItems: 'center',
                   color: '#579A59',
-                  width: open ? '60px' : 'auto', 
-                  height: '60px', 
-                  transition: 'all 0.3s ease', 
+                  width: isSidebarOpen ? '60px' : 'auto',
+                  height: '60px',
+                  transition: 'all 0.3s ease',
                   '& svg': {
-                    fontSize: '1.7rem', 
+                    fontSize: '1.7rem',
                   },
                 }}
               >
@@ -171,12 +183,12 @@ export default function NestedList({ open, toggleNestedList }) {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  overflow: 'hidden', 
-                  opacity: open ? 1 : 0,
-                  visibility: open ? 'visible' : 'hidden', 
-                  transition: 'opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease', 
-                  whiteSpace: 'nowrap', 
-                  width: open ? 'auto' : 0, 
+                  overflow: 'hidden',
+                  opacity: isSidebarOpen ? 1 : 0,
+                  visibility: isSidebarOpen ? 'visible' : 'hidden',
+                  transition: 'opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease',
+                  whiteSpace: 'nowrap',
+                  width: isSidebarOpen ? 'auto' : 0,
                 }}
               >
                 <ListItemText
@@ -185,22 +197,23 @@ export default function NestedList({ open, toggleNestedList }) {
                     '& span': {
                       fontSize: '15px',
                       fontWeight: 500,
-                      transition: 'opacity 0.3s ease', 
+                      transition: 'opacity 0.3s ease',
                     },
                   }}
                 />
               </Box>
             </ListItemButton>
+            
           ))}
+          
         </div>
-
         {/* Profile Section */}
         <Box
           sx={{
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: open ? 'flex-start' : 'center',
-            padding: '15px',
+            
+            justifyContent: isSidebarOpen ? 'flex-start' : 'center',
+            padding: '25px',
             gap: '15px',
             borderTop: '1px solid #e0e0e0',
             transition: 'all 0.3s ease',
@@ -217,7 +230,7 @@ export default function NestedList({ open, toggleNestedList }) {
               transition: 'all 0.3s ease',
             }}
           />
-          {open && (
+          {isSidebarOpen && (
             <Box sx={{ textAlign: 'left' }}>
               <Typography
                 variant="body1"
@@ -232,6 +245,7 @@ export default function NestedList({ open, toggleNestedList }) {
           )}
         </Box>
       </List>
+
     </div>
   );
 }
