@@ -4,7 +4,7 @@ import { Box, Button, Typography } from '@mui/material';
 
 export default function NotFound () {
   const navigate = useNavigate();
-
+  navigate('/Login')
   return (
     <Box
       sx={{

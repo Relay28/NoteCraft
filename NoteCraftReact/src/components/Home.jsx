@@ -18,8 +18,9 @@ export default function Home() {
 
     return (
         <div>
-            {/* <PrimarySearchAppBar personalInfo={personalInfo} />
-            <SideBar personalInfo={personalInfo} /> */}
+           
+           So Far So good
+           In Progress...
             <Outlet context={personalInfo} />
         </div>
     );

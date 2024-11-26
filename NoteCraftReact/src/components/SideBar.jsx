@@ -21,7 +21,15 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
   const navigate = useNavigate();
   const { personalInfo } = React.useContext(PersonalInfoContext);
   const [isHovered, setIsHovered] = React.useState(false);
+  const user = personalInfo
+  const [imgSrc, setImgSrc] = React.useState(profile);
 
+  React.useEffect(() => {
+    if (user?.profileImg) {
+      const imageUrl = `http://localhost:8081/profileImages/${user.profileImg}`;
+      setImgSrc(imageUrl);
+    }
+  }, [user?.profileImg]);
   // Handlers for hover events
   const handleMouseEnter = () => {
     setSidebarHovered(true);
@@ -221,7 +229,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
         >
           <Box
             component="img"
-            src={personalInfo?.profileImg || profile} 
+            src={imgSrc} 
             alt="Profile"
             sx={{
               width: '40px',

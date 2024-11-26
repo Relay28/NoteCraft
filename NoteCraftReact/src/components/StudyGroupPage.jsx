@@ -137,15 +137,15 @@ export default function StudyGroupPage() {
   };
 
   return (
-    <Box sx={{ display: "flex",left:"0",margin:"0" }}>
+    <Box sx={{ display: "flex",left:"0",margin:"0",width:"75%" }}>
     
       <Box sx={{ flexGrow: 1, p: 3 }}>
         <Typography variant="h4" sx={{ mb: 2, color: "#487d4b" }}>
-          Study Group Manager
+          Group Manager
         </Typography>
 
         <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
-          Your Study Groups
+          Your Groups
         </Typography>
 
         <List>

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext,useEffect } from 'react';
 import { AppBar, Toolbar, Box, IconButton, Typography, Badge, InputBase, Menu, MenuItem } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { Mail as MailIcon, Notifications as NotificationsIcon, AccountCircle, Home as HomeIcon } from '@mui/icons-material';
@@ -52,9 +52,19 @@ export default function PrimarySearchAppBar({ isSidebarOpen }) {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const { personalInfo } = useContext(PersonalInfoContext);
   const navigate = useNavigate();
+  const user = personalInfo;
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  const [imgSrc, setImgSrc] = React.useState(profile);
+
+  React.useEffect(() => {
+    if (user?.profileImg) {
+      const imageUrl = `http://localhost:8081/profileImages/${user.profileImg}`;
+      setImgSrc(imageUrl);
+    }
+  }, [user?.profileImg]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -151,7 +161,7 @@ export default function PrimarySearchAppBar({ isSidebarOpen }) {
                 
                 <Box
   component="img"
-  src={personalInfo?.profileImg || profile} 
+  src={imgSrc} 
   alt="Profile"
   sx={{
     width: '40px',

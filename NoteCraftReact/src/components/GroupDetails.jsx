@@ -156,14 +156,14 @@ export default function GroupDetailsPage() {
       setResponseMessage('Failed to add member.');
     }
   };
-
+useEffect
   // Tab Switch Handler
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
   };
 
   return (
-    <Box p={3} sx={{ maxWidth: '1200px', margin: '0 auto', marginLeft: 0 }}>
+    <Box p={3} sx={{ maxWidth: '75%', margin: '0 auto', marginLeft: 0 }}>
       {/* Group Title and Description */}
       <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', borderBottom: `2px solid ${sidebarGreen}`, pb: 1 }}>
         {groupDetails.groupName}

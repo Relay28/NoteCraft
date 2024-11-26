@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route ,Navigate} from 'react-router-dom';
 import Note from './Note';
 import NoteForm from './NoteForm';
 import SignIn from './Register';
@@ -20,10 +20,16 @@ const TheRoutes = () => {
   return (
     <Routes>
       {/* Login as the index route */}
-      <Route path="/login" element={<Login />} index />
+
+      {/* Redirect the root path to /login */}
+      {/* <Route path="" element={<Navigate to="/login" replace />} />
+ */}
+
+      <Route path="/login" element={ <Login />} index />
       <Route path="/register" element={<SignIn />} index />
 
       {/* Authenticated routes with Home layout */}
+      <Route path="/home" element={<Home/>}/>
    
         <Route path="/notes">
           <Route index element={<Note />} />
