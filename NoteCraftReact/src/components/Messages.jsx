@@ -3,8 +3,7 @@
   import SendIcon from '@mui/icons-material/Send';
   import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
   import axios from 'axios';
-  import { PersonalInfoContext } from './PersonalInfoProvider';
-  import { useLocation, useNavigate } from 'react-router';
+  import { useLocation } from 'react-router';
 
 
   const API_BASE_URL = 'http://localhost:8081/api/chat';
@@ -24,8 +23,6 @@
     const [isCheckingUser, setIsCheckingUser] = useState(false);
     const [userExists, setUserExists] = useState(true);
     const [isMessageBoxDisabled, setIsMessageBoxDisabled] = useState(false);
-    const [username, setUsername] = useState("");
-    const [error, setError] = useState("");
     const location = useLocation();
     const personalInfo = location.state?.user || { id: '', username: '' };
    
@@ -64,29 +61,6 @@
         setIsReceiverFinalized(true);
       } else {
         alert("User not found. Please choose a valid recipient.");
-      }
-    };
-
-    const HandleReceiverConfirm = () => {
-      if (username.trim()) {
-        // Check if the user exists before finalizing the receiver
-        checkUserExists(username)
-          .then((exists) => {
-            if (exists) {
-              // If the user exists, finalize the receiver
-              setSelectedConversation({ ...selectedConversation, receiver: username });
-              setIsReceiverFinalized(true);
-              setIsMessageBoxDisabled(false); // Enable the message box
-            } else {
-              // Show error if user doesn't exist
-              setError("User not found. Please choose a valid recipient.");
-            }
-          })
-          .catch((error) => {
-            console.error("Error confirming receiver:", error);
-          });
-      } else {
-        setError("Please enter a valid username.");
       }
     };
     
@@ -152,8 +126,6 @@
       }
     };
     
-    
-
     const handleAddChatClick = () => {
       setIsAddingChat(true);
       setSelectedConversation({ receiver: '', messages: [] }); // Initialize a new conversation with an empty receiver
@@ -161,7 +133,6 @@
       setIsReceiverFinalized(false); // Ensure receiver is not yet finalized
       setIsMessageBoxDisabled(true); // Disable message box until the receiver is confirmed
     };
-    
     
     const handleEditClick = (messageId, currentContent) => {
       setEditMessageId(messageId);
@@ -295,24 +266,6 @@
         }
       };
 
-    const handleConfirmClick = async () => {
-        try {
-            // Using the updated backend API with boolean response
-            const response = await axios.get(`http://localhost:8081/api/user/checkUser/${username}`);
-            if (response.data) {
-                // User exists, proceed to input message
-                setError(""); // Clear any previous error
-                // Here, show the message input box or proceed with chat creation
-            } else {
-                // User does not exist
-                setError("User not found");
-            }
-        } catch (err) {
-            console.error("Error checking user existence:", err);
-            setError("Error checking user existence");
-        }
-    };
-
     return (
       <Paper sx={{ height: '80vh', display: 'flex', flexDirection: 'column', paddingLeft:'60px',ml:"1%", width:'130vh'}}>
         {/* Dialog for Delete Confirmation */}
@@ -385,20 +338,20 @@
             </Box>
 
             {/* Scrollable container for Messages List */}
-            <div style={{ padding: '10px', overflowY: 'auto', flexGrow: 1, backgroundColor: '#E8F5E9'}}>
+            <div style={{ padding: '20px', overflowY: 'auto', flexGrow: 1, backgroundColor: '#E8F5E9'}}>
               <Box sx={{ mt: 2 }}>
                 {selectedConversation?.messages?.map((msg) => (
                   <Box key={msg.messageId} sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: msg.sender === personalInfo.username ? 'flex-end' : 'flex-start',
-                    marginBottom: '3px',
+                    marginBottom: '10px',
                     maxWidth: '100%',
                     borderRadius:'10px',
-                    marginRight: msg.sender === personalInfo.username ? '10px' : '0px', // Adjust margin for sender
-                    marginLeft: msg.sender === personalInfo.username ? '0px' : '10px', // Adjust margin for receiver
+                    marginRight: msg.sender === personalInfo.username ? '0px' : '90px', // Adjust margin for sender
+                    marginLeft: msg.sender === personalInfo.username ? '90px' : '0px', // Adjust margin for receiver
                     backgroundColor: msg.sender === personalInfo.username ? '#C8E6C9' : '#D1C4E9',
-                    padding: '8px', // Reduced padding for smaller boxes
+                    padding: '10px', // Reduced padding for smaller boxes
                   }}>
                     {/* Sender/Receiver Name */}
                     <Typography variant="body2" sx={{ fontWeight: 'bold', marginBottom: '5px' }}>
@@ -410,7 +363,7 @@
                       padding: '10px',
                       borderRadius: '10px',
                       backgroundColor: msg.sender === personalInfo.username ? '#C8E6C9' : '#D1C4E9',
-                      maxWidth: '100%', // Ensures the box isn't too wide
+                      maxWidth: '80%', // Ensures the box isn't too wide
                       wordBreak: 'break-word', // Prevents long words from overflowing
                     }}>
                       {editMessageId === msg.messageId ? (
