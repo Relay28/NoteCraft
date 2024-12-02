@@ -32,7 +32,7 @@ const AddTask = () => {
         subTasks: false
     });
 
-    useEffect(() => {
+    /* useEffect(() => {
         // Ensure user is authenticated and has a valid userId
         if (!token || !user?.id) {
             navigate('/login'); // Redirect to login if authentication fails
@@ -43,15 +43,21 @@ const AddTask = () => {
             alert("Unauthorized access to this task.");
             navigate('/todolist'); // Redirect to task list
         }
-    }, [token, user, isEditing, location.state?.task, navigate]);
+    }, [token, user, isEditing, location.state?.task, navigate]); */
 
     // Prevent editing of taskStarted in edit mode
+    // Modify the useEffect hook to handle subtasks correctly
     useEffect(() => {
         if (isEditing) {
             setTaskData((prevData) => ({
                 ...prevData,
                 ...location.state.task,
-                subTasks: location.state.task.subTasks || [{ SubTaskName: '' }]
+                // Ensure subtasks are in the correct format
+                subTasks: location.state.task.subTasks && location.state.task.subTasks.length > 0 
+                    ? location.state.task.subTasks.map(subtask => ({
+                        SubTaskName: subtask.subTaskName || subtask.SubTaskName || ''
+                    }))
+                    : [{ SubTaskName: '' }]
             }));
         }
     }, [isEditing, location.state?.task]);
@@ -72,10 +78,16 @@ const AddTask = () => {
         }
     };
 
+    // Modify the handleSubtaskChange method
     const handleSubtaskChange = (index, value) => {
-        const newSubtasks = [...taskData.subTasks];
-        newSubtasks[index] = { SubTaskName: value };
-        setTaskData({ ...taskData, subTasks: newSubtasks });
+        setTaskData((prevTaskData) => {
+            const newSubtasks = [...prevTaskData.subTasks];
+            newSubtasks[index] = { SubTaskName: value };
+            return {
+                ...prevTaskData,
+                subTasks: newSubtasks
+            };
+        });
     };
 
     const addSubtaskField = () => {
@@ -86,14 +98,26 @@ const AddTask = () => {
     };
 
     const handleSaveTask = () => {
+        // Store the original subtask IDs if we're in editing mode
+        const originalSubtaskIds = isEditing 
+            ? location.state.task.subTasks.map(subtask => subtask.subTaskID)
+            : [];
+    
         const taskWithDates = {
             ...taskData,
             dateCreated: new Date().toISOString().split('T')[0],
+            // If editing an existing task, use the original task's ID
+            taskID: isEditing ? location.state.task.taskID : undefined,
             subTasks: taskData.subTasks
                 .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '')
-                .map(subtask => ({ subTaskName: subtask.SubTaskName.trim() || '' }))
+                .map((subtask, index) => ({
+                    // Use the original subtask ID if it exists, otherwise omit
+                    ...(originalSubtaskIds[index] ? { subTaskID: originalSubtaskIds[index] } : {}),
+                    subTaskName: subtask.SubTaskName.trim() || ''
+                }))
         };
     
+        // Rest of the method remains the same
         console.log('Task Data:', taskWithDates);
         console.log('User ID:', user?.id);
         console.log('Token:', token);
