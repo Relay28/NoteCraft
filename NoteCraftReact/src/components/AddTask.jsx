@@ -169,27 +169,6 @@ const AddTask = () => {
                     helperText={errors.deadline ? "Deadline is required." : ""}
                 />
                 <TextField 
-                    label="Task Started" 
-                    name="taskStarted" 
-                    type="date" 
-                    value={taskData.taskStarted} 
-                    onChange={handleInputChange} 
-                    fullWidth 
-                    margin="normal" 
-                    InputLabelProps={{ shrink: true }}
-                    disabled
-                />
-                <TextField 
-                    label="Task Ended" 
-                    name="taskEnded" 
-                    type="date" 
-                    value={taskData.taskEnded} 
-                    onChange={handleInputChange} 
-                    fullWidth 
-                    margin="normal" 
-                    InputLabelProps={{ shrink: true }} 
-                />
-                <TextField 
                     label="Category" 
                     name="category" 
                     value={taskData.category} 
