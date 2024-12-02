@@ -120,39 +120,33 @@ const TaskDetail = () => {
             </Box>
 
             <Box sx={{ backgroundColor: "#fff", borderRadius: "25px", padding: "30px", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: "100%", marginBottom: '20px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: "100%", marginBottom: '20px', marginLeft: "25px" }}>
                     
                     <Box sx={{ width: "45%", textAlign: "left" }}>
-                        <Typography variant="h5" gutterBottom>Category: {taskData.category || "N/A"}</Typography>
-                        <Typography variant="h6" gutterBottom> {taskData.description || "N/A"}</Typography>
-                        <Typography variant="h5" gutterBottom>Status: {taskData.isCompleted ? "Completed" : "Incomplete"}</Typography>
+                        <Typography gutterBottom sx={{ fontSize: "18px" }}> {taskData.description || "N/A"}</Typography>
 
-                        <Typography variant="h6" gutterBottom>
-                            Subtasks:
+                        <Typography variant="h6" gutterBottom sx={{ marginTop: "30px" }}>
+                            <Typography sx={{
+                                textDecoration: "underline",
+                                fontWeight: "bold",
+                                fontSize: "20px"
+                            }}>
+                                Subtasks:
+                            </Typography>
                         </Typography>
                         {taskData.subTasks && taskData.subTasks.length > 0 ? (
                             <ul>
                                 {taskData.subTasks.map((subtask, subIndex) => (
-                                    <li key={subIndex} style={{ display: 'flex', alignItems: 'center' }}>
-                                        <FormControlLabel
-                                            control={
-                                                <Radio
-                                                    checked={subtask.isCompleted}
-                                                    onChange={() => toggleSubtaskCompletion(subIndex, subtask.id)}
-                                                />
-                                            }
-                                            label={
-                                                <Typography
-                                                    variant="body2"
-                                                    sx={{
-                                                        textDecoration: subtask.isCompleted ? 'line-through' : 'none',
-                                                        color: subtask.isCompleted ? 'gray' : 'inherit'
-                                                    }}
-                                                >
-                                                    {subtask.subTaskName}
-                                                </Typography>
-                                            }
-                                        />
+                                    <li key={subIndex}>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                fontSize: "18px",
+                                                marginBottom: "10px"
+                                            }}
+                                        >
+                                            {subtask.subTaskName}
+                                        </Typography>
                                     </li>
                                 ))}
                             </ul>

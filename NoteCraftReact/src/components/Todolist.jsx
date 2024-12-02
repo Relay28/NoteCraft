@@ -127,11 +127,8 @@ const Todolist = () => {
                                 <CardContent>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Box>
-                                            <Typography variant="h6">
+                                            <Typography variant="h5" sx={{ fontWeight: "bold"}}>
                                                 {task.taskName}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                {task.category}
                                             </Typography>
                                         </Box>
 
@@ -161,30 +158,31 @@ const Todolist = () => {
                                         </Box>
                                     </Box>
 
-                                    <Box sx={{ marginTop: "10px", textAlign: "left" }}>
-                                        <Typography variant="body1">
-                                            <strong>Date Started:</strong> {task.taskStarted || 'N/A'}
-                                        </Typography>
-                                        <Typography variant="body1">
-                                            <strong>Date Ended:</strong> {task.taskEnded || 'N/A'}
-                                        </Typography>
-                                        <Typography variant="body1">
-                                            <strong>Deadline:</strong> {task.deadline || 'N/A'}
-                                        </Typography>
-                                    </Box>
-
-                                    {task.subTasks && task.subTasks.length > 0 && (
-                                        <Box sx={{ marginTop: "10px", paddingLeft: "20px" }}>
-                                            <Typography variant="body2" color="textSecondary">
-                                                <strong>Subtasks:</strong>
+                                    <Box sx={{
+                                        display: "flex",
+                                        gap: "250px"
+                                    }}>
+                                        <Box sx={{ marginLeft: "25px", marginTop: "20px", textAlign: "left" }}>
+                                            <Typography variant="body1" sx={{ marginBottom: "10px"}}>
+                                                <strong>Category:</strong> {task.category || 'N/A'}
                                             </Typography>
-                                            {task.subTasks.map((subtask, subIndex) => (
-                                                <Typography key={subIndex} variant="body2">
-                                                    - {subtask.subTaskName}
-                                                </Typography>
-                                            ))}
+                                            <Typography variant="body1">
+                                                <strong>Status:</strong> {task.isCompleted ? "Completed" : "Incomplete"}
+                                            </Typography>
                                         </Box>
-                                    )}
+
+                                        <Box sx={{ marginTop: "20px", textAlign: "left" }}>
+                                            <Typography variant="body1" sx={{ marginBottom: "10px"}}>
+                                                <strong>Date Started:</strong> {task.taskStarted || 'N/A'}
+                                            </Typography>
+                                            <Typography variant="body1" sx={{ marginBottom: "10px"}}>
+                                                <strong>Date Ended:</strong> {task.taskEnded || 'N/A'}
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                <strong>Deadline:</strong> {task.deadline || 'N/A'}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
                                 </CardContent>
                             </Card>
                         ))
