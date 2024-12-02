@@ -289,10 +289,10 @@ const AddTask = () => {
                         />
                     ))}
                     <Button
+                        variant="contained"
+                        color="success"
                         onClick={addSubtaskField}
                         sx={{
-                            backgroundColor: "#8dbf8d",  // Slightly pastel green
-                            color: "white",  // Keep text color white for contrast
                             marginRight: "10px",
                             transition: 'transform 0.3s ease, border-color 0.3s ease, color 0.3s ease',  // Smooth transition for scaling, border and color
                             '&:hover': {
@@ -308,12 +308,12 @@ const AddTask = () => {
                 
                 <Box display="flex" justifyContent="space-between" marginTop="20px">
                     <Button
+                        variant="contained"
+                        color="success"
                         onClick={() => {
                             if (validateForm()) handleSaveTask();
                         }}
                         sx={{
-                            backgroundColor: "#8dbf8d",  // Slightly pastel green
-                            color: "white",  // Keep text color white for contrast
                             marginRight: "10px",
                             transition: 'transform 0.3s ease, border-color 0.3s ease, color 0.3s ease',  // Smooth transition for scaling, border and color
                             '&:hover': {
@@ -326,11 +326,10 @@ const AddTask = () => {
                         Save Task
                     </Button>
                     <Button
-                        variant="outlined"
+                        variant="contained"
+                        color="error"
                         onClick={handleBack}
                         sx={{
-                            backgroundColor: "#e28e8e",
-                            color: "white",
                             marginRight: "10px",
                             borderColor: "#e28e8e",
                             transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change

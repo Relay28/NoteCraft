@@ -96,9 +96,11 @@ const TaskDetail = () => {
         }}>
             <Box display="flex" alignItems="center" marginBottom="20px">
             <IconButton
+                variant="contained"
+                color="success"
                 onClick={handleBack}
                 sx={{
-                    backgroundColor: '#8dbf8d',  // Slightly muted pastel green
+                    backgroundColor: 'green',  // Slightly muted pastel green
                     color: 'white',  // White text color
                     borderRadius: '50%',  // Make the button circular
                     width: '40px',  // Button width

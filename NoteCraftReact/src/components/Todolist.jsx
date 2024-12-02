@@ -148,7 +148,8 @@ const Todolist = () => {
                                         </Box>
 
                                         <Box>
-                                            <Button
+                                            <Button    
+                                                variant="contained"
                                                 color="success"  // Use the same color as the "Add New To-Do List" button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -157,8 +158,6 @@ const Todolist = () => {
                                                 sx={{
                                                     marginTop: "15px",
                                                     marginRight: "10px",
-                                                    backgroundColor: "#8dbf8d",  // Slightly pastel green
-                                                    color: "white",  // Keep text color white for contrast
                                                     transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
                                                     '&:hover': {
                                                         transform: 'scale(1.1)',  // Enlarges the button
@@ -171,6 +170,7 @@ const Todolist = () => {
                                             </Button>
 
                                             <Button
+                                                variant="contained"
                                                 color="error"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -178,8 +178,6 @@ const Todolist = () => {
                                                 }}
                                                 sx={{
                                                     marginTop: "15px",
-                                                    backgroundColor: "#e28e8e",
-                                                    color: "white",
                                                     marginRight: "10px",
                                                     transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
                                                     '&:hover': {
