@@ -18,7 +18,7 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import { PersonAdd, People, AddCircle } from '@mui/icons-material';
+import { PersonAdd, People, AddCircle, Delete, Edit, Download } from '@mui/icons-material';
 import axios from 'axios';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 
@@ -57,7 +57,7 @@ export default function GroupDetailsPage() {
   const [todos, setTodos] = useState([]);
   const [members, setMembers] = useState([]);
   const [responseMessage, setResponseMessage] = useState('');
-
+  const [selectedFile, setSelectedFile] = useState(null);
   const [openNoteModal, setOpenNoteModal] = useState(false);
   const [openFileModal, setOpenFileModal] = useState(false);
   const [openTodoModal, setOpenTodoModal] = useState(false);
@@ -70,6 +70,8 @@ export default function GroupDetailsPage() {
   const [newMemberId, setNewMemberId] = useState('');
   const [openEditModal, setOpenEditModal] = useState(false);
   const [noteToEdit, setNoteToEdit] = useState(null);
+  const [fileToEdit, setFileToEdit] = useState(null);
+const [openEditFileModal, setOpenEditFileModal] = useState(false);
 
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -90,6 +92,10 @@ export default function GroupDetailsPage() {
     };
     fetchGroupData();
   }, [groupId]);
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+};
   
 
   const [note, setNote] = useState({
@@ -113,6 +119,35 @@ export default function GroupDetailsPage() {
     }
   };
   
+  const handleEditFile = async (fileId, updatedFile) => {
+    try {
+      const response = await axios.put(
+        `${apiBaseUrl}/${groupId}/update-file/${fileId}`,
+        updatedFile,
+        { params: { userId: user.id } }
+      );
+      setFiles((prev) =>
+        prev.map((file) => (file.fileId === fileId ? response.data : file))
+      );
+      setResponseMessage('File updated successfully!');
+    } catch (error) {
+      setResponseMessage('Failed to update file.');
+      console.error('Edit File Error:', error);
+    }
+  };
+
+  const handleDeleteFile = async (fileId) => {
+    try {
+      await axios.delete(`http://localhost:8081/api/files/delete/${fileId}`, {
+  
+      });
+      setFiles((prev) => prev.filter((file) => file.fileId !== fileId));
+      setResponseMessage('File deleted successfully!');
+    } catch (error) {
+      setResponseMessage('Failed to delete file.');
+      console.error('Delete File Error:', error);
+    }
+  };
   
   const handleEditNote = async (noteId, updatedNote) => {
     try {
@@ -164,20 +199,37 @@ export default function GroupDetailsPage() {
     }
   };
 
-  // Handle File Upload
   const handleUploadFile = async () => {
+    if (!selectedFile) {
+        alert("Please select a file to upload");
+        return;
+    }
+
     const formData = new FormData();
-    formData.append('file', newFile);
+    formData.append("file", selectedFile);
 
     try {
-      const response = await axios.post(`${apiBaseUrl}/${groupId}/add-file`, formData);
-      setFiles((prev) => [...prev, response.data]);
-      setOpenFileModal(false);
-      setResponseMessage('File uploaded successfully!');
-    } catch {
-      setResponseMessage('Failed to upload file.');
+        const response = await axios.post(
+            `${apiBaseUrl}/upload`,
+            formData, // Pass the FormData directly
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data", // This ensures proper encoding for the file
+                },
+                params: { userId: user.id, studyGroupId: groupId }, // Move params here
+            }
+        );
+        console.log(response)
+
+        setFiles((prev) => [...prev, response.data]); // Update the file list
+        setOpenFileModal(false);
+        setResponseMessage("File uploaded successfully!");
+    } catch (error) {
+        console.error("File upload error:", error);
+        setResponseMessage("Failed to upload file.");
     }
-  };
+};
+
 
   // Handle Todo Creation
   const handleAddTodo = async () => {
@@ -292,9 +344,58 @@ useEffect
         {tabIndex === 1 && (
           <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
             <CardContent>
-              <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                Files functionality coming soon!
-              </Typography>
+                        <Button
+              variant="contained"
+              color="success"
+              onClick={() => setOpenFileModal(true)}
+              startIcon={<AddCircle />}
+              sx={{ mb: 2, fontWeight: 'bold', textTransform: 'none' }}
+            >
+              Upload File
+            </Button>
+
+            {files.length > 0 ? (
+                <List>
+                {files.map((file) => (
+                  <ListItem key={file.fileId} sx={{ display: 'flex', alignItems: 'center' }}>
+                    <ListItemText
+                      primary={file.fileName || 'Unnamed File'}
+                      secondary={`Uploaded by: ${file.uploader?.name || 'Unknown'}`}
+                    />
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ mr: 2 }}
+                    >
+                     <Download/>
+                    </Button>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => {
+                        setFileToEdit(file);
+                        setOpenEditFileModal(true);
+                      }}
+                    >
+                      {/* <Edit /> */}
+                      <Edit/>
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDeleteFile(file.fileId)}>
+                      {/* <Delete /> */}
+                      < Delete/>
+                    </IconButton>
+                  </ListItem>
+                ))}
+              </List>
+        
+              ) : (
+                <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
+                  No files uploaded yet.
+                </Typography>
+              )}
+
             </CardContent>
           </Card>
         )}
@@ -354,6 +455,49 @@ useEffect
           <TextField label="Enter Member ID" fullWidth value={newMemberId} onChange={(e) => setNewMemberId(e.target.value)} sx={{ mb: 2 }} />
           <Button variant="contained" color="primary" onClick={handleAddMember} sx={{ fontWeight: 'bold' }}>
             Add Member
+          </Button>
+        </Box>
+      </Modal>
+
+      
+      
+
+      <Modal open={openFileModal} onClose={() => setOpenFileModal(false)}>
+    <Box sx={modalStyle}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+            Upload a File
+        </Typography>
+            <input type="file" onChange={handleFileChange} style={{ marginBottom: "10px", width: "100%" }} />
+                    <Button 
+                        variant="contained" 
+                        color="success"
+                        onClick={handleUploadFile}
+                        sx={{ width: "100%" }}
+                    >
+                        Upload
+                    </Button>
+    </Box>
+</Modal>
+
+<Modal open={openEditFileModal} onClose={() => setOpenEditFileModal(false)}>
+        <Box sx={{ padding: 4, bgcolor: 'background.paper', borderRadius: 2 }}>
+          <Typography variant="h6">Edit File</Typography>
+          <TextField
+            label="File Name"
+            value={fileToEdit?.fileName || ''}
+            onChange={(e) =>
+              setFileToEdit((prev) => ({ ...prev, fileName: e.target.value }))
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleEditFile}
+            sx={{ mt: 2, display: 'block' }}
+          >
+            Save Changes
           </Button>
         </Box>
       </Modal>

@@ -26,8 +26,81 @@ public class FileService {
     @Autowired
     private StudyGroupRepository studyGroupRepository;
     
-    private static final String UPLOAD_DIRECTORY = "D:\\CIT Files\\3rdYear\\App development\\notecraftstorage";
+    
+    private static final String UPLOAD_DIRECTORY = "C:\\Users\\Rae Addison Duque\\Documents\\CSIT340\\REACT NOTECRAFT\\gitnotecraft\\Finale\\NoteCraft\\NoteCraftStorage";
+    
+    
+    public FileEntity uploadFileWithGroup(MultipartFile file, int userId, int studyGroupId) {
+        // Fetch the UserEntity from the database
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
+        // Fetch the StudyGroupEntity from the database
+        StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+                .orElseThrow(() -> new RuntimeException("Study Group not found with ID: " + studyGroupId));
+
+        // Create a new FileEntity and set its properties
+        FileEntity fileEntity = new FileEntity();
+        fileEntity.setFileName(file.getOriginalFilename());
+        fileEntity.setFileType(file.getContentType());
+        fileEntity.setSize((int) file.getSize());  // Use long for larger file sizes if needed
+        fileEntity.setUser(user);  // Link the actual UserEntity
+        fileEntity.setStudyGroup(studyGroup); // Link the StudyGroupEntity
+
+
+        try {
+            // Save the file to the specified directory
+            String filePath = UPLOAD_DIRECTORY + "/" + file.getOriginalFilename();
+            file.transferTo(new java.io.File(filePath));
+            fileRepository.save(fileEntity);
+        } catch (IOException e) {
+            throw new RuntimeException("File upload failed!", e);
+        }
+
+        return fileEntity;
+    }
+
+    // Retrieve all files associated with a study group
+    public List<FileEntity> getFilesByStudyGroup(int studyGroupId) {
+        StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+            .orElseThrow(() -> new RuntimeException("Study Group not found with ID: " + studyGroupId));
+        return fileRepository.findByStudyGroup(studyGroup);
+    }
+
+    // Update file name within a study group
+    public FileEntity updateFileNameForGroup(int fileId, String newFileName) {
+        FileEntity existingFile = fileRepository.findById(fileId)
+            .orElseThrow(() -> new RuntimeException("File not found with ID: " + fileId));
+
+        File oldFile = new File(UPLOAD_DIRECTORY + "/" + existingFile.getFileName());
+        File newFile = new File(UPLOAD_DIRECTORY + "/" + newFileName);
+
+        if (oldFile.renameTo(newFile)) {
+            existingFile.setFileName(newFileName);
+            return fileRepository.save(existingFile);
+        } else {
+            throw new RuntimeException("Failed to rename file");
+        }
+    }
+
+    // Delete file for a specific study group
+    public String deleteFileForGroup(int fileId, int studyGroupId) {
+        FileEntity fileEntity = fileRepository.findById(fileId)
+            .orElseThrow(() -> new RuntimeException("File not found"));
+
+        if (fileEntity.getStudyGroup().getGroupId() != studyGroupId) {
+            throw new SecurityException("File does not belong to the specified group");
+        }
+
+        File fileToDelete = new File(UPLOAD_DIRECTORY + "/" + fileEntity.getFileName());
+        if (fileToDelete.delete()) {
+            fileRepository.deleteById(fileId);
+            return "File deleted successfully!";
+        } else {
+            throw new RuntimeException("Failed to delete file");
+        }
+    }
+    
     // Upload a file
     public FileEntity uploadFile(MultipartFile file, int userId) {
         // Fetch the UserEntity from the database
@@ -53,28 +126,7 @@ public class FileService {
         return fileEntity;
     }
 
-    public FileEntity uploadFileWithGroup(MultipartFile file, int userId, int studyGroupId) {
-        UserEntity user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
-            .orElseThrow(() -> new RuntimeException("Study Group not found"));
-
-        FileEntity fileEntity = new FileEntity();
-        fileEntity.setFileName(file.getOriginalFilename());
-        fileEntity.setFileType(file.getContentType());
-        fileEntity.setSize((int) file.getSize());
-        fileEntity.setUser(user);
-        fileEntity.setStudyGroup(studyGroup); // Associate file with the study group
-
-        try {
-            String filePath = UPLOAD_DIRECTORY + "/" + file.getOriginalFilename();
-            file.transferTo(new File(filePath));
-            return fileRepository.save(fileEntity);
-        } catch (IOException e) {
-            throw new RuntimeException("File upload failed!", e);
-        }
-    }
 
     // Get all files uploaded by a specific user
     public List<FileEntity> getFilesByUserId(int userId) {

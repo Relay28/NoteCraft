@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +42,41 @@ public class StudyGroupController {
 //    public StudyGroupEntity createStudyGroup(@RequestBody StudyGroupEntity studyGroup) {
 //    	return studyGroupService.createStudyGroup(null, null, 0)
 //    }
+    @PostMapping("/upload")
+    public ResponseEntity<FileEntity> uploadFileWithGroup(@RequestPart("file") MultipartFile file,
+                                                          @RequestParam int userId,
+                                                          @RequestParam int studyGroupId) {
+        // Handle file and save it within the study group context
+    	System.out.print("TESTING DEBUGGING : "+file);
+    	   // Handle file and save it within the study group context
+    	System.out.println("TESTING USER ID : "+userId);
+    	FileEntity savedFile = fileService.uploadFileWithGroup(file, userId, studyGroupId);
+        return ResponseEntity.ok(savedFile);
+    }
+
+
+
+    @GetMapping("/group/{studyGroupId}")
+    public ResponseEntity<List<FileEntity>> getFilesByStudyGroup(@PathVariable int studyGroupId) {
+        List<FileEntity> files = fileService.getFilesByStudyGroup(studyGroupId);
+        return ResponseEntity.ok(files);
+    }
+
+    @PutMapping("/{fileId}")
+    public ResponseEntity<FileEntity> updateFileNameForGroup(
+            @PathVariable int fileId,
+            @RequestParam("newFileName") String newFileName) {
+        FileEntity updatedFile = fileService.updateFileNameForGroup(fileId, newFileName);
+        return ResponseEntity.ok(updatedFile);
+    }
+
+    @DeleteMapping("/{fileId}/delete-file/{studyGroupId}")
+    public ResponseEntity<String> deleteFileForGroup(
+            @PathVariable int fileId,
+            @PathVariable int studyGroupId) {
+        String response = fileService.deleteFileForGroup(fileId, studyGroupId);
+        return ResponseEntity.ok(response);
+    }
     
     @PutMapping("/{noteId}/group")
     public ResponseEntity<NoteEntity> editGroupNote(
