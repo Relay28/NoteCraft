@@ -2,14 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import EditProfile from './Edit';
-import profile from '/src/assets/profile.jpg'; // Make sure this is the correct path
-import { useContext } from 'react';
+import profile from '/src/assets/profile.jpg'; // Ensure the correct path
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Typography,
+    Avatar,
+    Stack,
+} from '@mui/material';
 
 export default function Profile({ personalInfo, token }) {
     const location = useLocation();
     const navigate = useNavigate();
-    
-    // Use the personalInfo passed from the parent, falling back to location state if not passed
+
     const [isEditing, setIsEditing] = useState(false);
     const [userInfo, setUserInfo] = useState(personalInfo || location.state?.account || {});
 
@@ -26,10 +33,7 @@ export default function Profile({ personalInfo, token }) {
         try {
             const response = await axios.put(
                 `http://localhost:8081/api/user/putUserDetails?id=${userInfo.id}`,
-                {
-                    ...updatedInfo,
-                    id: userInfo.id,
-                },
+                { ...updatedInfo, id: userInfo.id },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -49,7 +53,7 @@ export default function Profile({ personalInfo, token }) {
             alert('Unable to delete. User ID is not found.');
             return;
         }
-    
+
         const confirmDelete = window.confirm('Are you sure you want to delete your account? This action cannot be undone.');
         if (!confirmDelete) return;
 
@@ -68,61 +72,82 @@ export default function Profile({ personalInfo, token }) {
     };
 
     return (
-        <div style={{ border:"3px solid #93BA95", width: "80%", height: "90%", marginLeft: "0", marginTop: "3vh", borderRadius: "10px", padding: "20px", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)" }}>
-            <div style={{ width: "96%", padding: "20px", display: "flex", alignItems: "center", gap: "20px", borderBottom: "3px solid #93BA95", marginBottom: "20px" }}>
-                {userInfo.profileImg ? (
-                    <img
-                        src={`http://localhost:8081/profileImages/${userInfo.profileImg}`}
-                        alt="Profile"
-                        style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
-                    />
-                ) : (
-                    <img
-                        src={profile} 
-                        alt="Default Profile"
-                        style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover" }}
-                    />
-                )}
+        <Box
+            sx={{
+                border: '3px solid #93BA95',
+                width: '80%',
+                height: '90%',
+                mx: 'auto',
+                mt: 3,
+                borderRadius: 2,
+                p: 2,
+                boxShadow: 3,
+                textAlign:"left",
+            }}
+        >
+            <Stack direction="row" spacing={2} alignItems="center" pb={2} borderBottom="3px solid #93BA95">
+                <Avatar
+                    src={userInfo.profileImg ? `http://localhost:8081/profileImages/${userInfo.profileImg}` : profile}
+                    alt="Profile"
+                    sx={{ width: 100, height: 100 }}
+                />
+                <Box>
+                    <Typography variant="h5" component="h2">
+                        {userInfo.name || 'N/A'}
+                    </Typography>
+                    <Typography variant="subtitle1" color="textSecondary">
+                        Name
+                    </Typography>
+                </Box>
+            </Stack>
 
-                <div>
-                    <h2 style={{ margin: 0, textAlign: "left" }}>Name</h2>
-                    <h3 style={{ marginTop: "4px", fontWeight: "normal" }}>{userInfo.name || 'N/A'}</h3>
-                </div>
-            </div>
+            <Card sx={{ mt: 2, p: 2, maxWidth: '100%' }}>
+                <CardContent>
+                    {isEditing ? (
+                        <EditProfile
+                            personalInfo={userInfo}
+                            onUpdate={handleUpdate}
+                            onCancel={() => setIsEditing(false)}
+                        />
+                    ) : (
+                        <>
+                            <Typography variant="h6">
+                                Name: <Typography component="span">{userInfo.name || 'N/A'}</Typography>
+                            </Typography>
+                            <Typography variant="h6">
+                                Username: <Typography component="span">{userInfo.username || 'N/A'}</Typography>
+                            </Typography>
+                            <Typography variant="h6">
+                                Email: <Typography component="span">{userInfo.email || 'N/A'}</Typography>
+                            </Typography>
+                            <Typography variant="h6">
+                                Password: <Typography component="span">{userInfo.password ? '*'.repeat(userInfo.password.length) : 'N/A'}</Typography>
+                            </Typography>
+                        </>
+                    )}
+                </CardContent>
+            </Card>
 
-            <div style={{ width: "80vh", padding: "20px", textAlign: "left" }}>
-                {isEditing ? (
-                    <EditProfile 
-                        personalInfo={userInfo} 
-                        onUpdate={handleUpdate}
-                        onCancel={() => setIsEditing(false)}  
-                    />
-                ) : (
-                    <>
-                        <h3 style={{ fontWeight: "bold" }}>Name: <span style={{ fontWeight: "normal" }}>{userInfo.name || 'N/A'}</span></h3>
-                        <h3 style={{ fontWeight: "bold" }}>Username: <span style={{ fontWeight: "normal" }}>{userInfo.username || 'N/A'}</span></h3>
-                        <h3 style={{ fontWeight: "bold" }}>Email: <span style={{ fontWeight: "normal" }}>{userInfo.email || 'N/A'}</span></h3>
-                        <h3 style={{ fontWeight: "bold" }}>
-                            Password: <span style={{ fontWeight: "normal" }}>{userInfo.password ? '*'.repeat(userInfo.password.length) : 'N/A'}</span>
-                        </h3>
-
-                        <div style={{ display: "flex", marginTop: "15vh", gap: "10px", marginLeft: "120vh" }}>
-                            <button 
-                                onClick={() => setIsEditing(true)} 
-                                style={{ width: "20vh", height: "6vh", background: "#579A59", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                            >
-                                Edit
-                            </button>
-                            <button 
-                                onClick={handleDelete} 
-                                style={{ width: "20vh", height: "6vh", background: "#CF514E", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
+            {!isEditing && (
+    <Stack direction="row" spacing={2} mt={4} justifyContent="flex-end">
+        <Button
+            variant="contained"
+            color="success"
+            onClick={() => setIsEditing(true)}
+            sx={{ width: '20vh', height: '6vh',top:"70px" }}
+        >
+            Edit
+        </Button>
+        <Button
+            variant="contained"s
+            color="error"
+            onClick={handleDelete}
+            sx={{ width: '20vh', height: '6vh', top:"70px" }}
+        >
+            Delete
+        </Button>
+    </Stack>
+)}
+        </Box>
     );
 }
