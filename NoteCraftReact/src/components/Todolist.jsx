@@ -212,7 +212,7 @@ const Todolist = () => {
                                                 <strong>Date Started:</strong> {task.taskStarted || 'N/A'}
                                             </Typography>
                                             <Typography variant="body1" sx={{ marginBottom: "10px"}}>
-                                                <strong>Date Ended:</strong> {task.taskEnded || 'N/A'}
+                                                <strong>Date Ended:</strong> {task.taskEnded || 'Ongoing'}
                                             </Typography>
                                             <Typography variant="body1">
                                                 <strong>Deadline:</strong> {task.deadline || 'N/A'}
