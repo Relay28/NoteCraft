@@ -86,22 +86,6 @@ const TaskDetail = () => {
         return remainingDays <= 5 ? 'red' : 'black';
     };
 
-    const toggleSubtaskCompletion = async (index, subTaskId) => {
-        try {
-            // Send a PUT request to toggle completion status
-            const response = await axios.put(`http://localhost:8080/api/subtask/toggleCompletion/${subTaskId}`);
-    
-            // Update local state with the response data
-            setTaskData(prevTaskData => {
-                const updatedSubtasks = [...prevTaskData.subTasks];
-                updatedSubtasks[index] = response.data; // Update with latest subtask data from server
-                return { ...prevTaskData, subTasks: updatedSubtasks };
-            });
-        } catch (error) {
-            console.error("Error toggling subtask completion:", error);
-        }
-    };
-
     return (
         <Box sx={{
             padding: '20px',
@@ -111,9 +95,24 @@ const TaskDetail = () => {
             color: "black"
         }}>
             <Box display="flex" alignItems="center" marginBottom="20px">
-                <IconButton onClick={handleBack} sx={{ backgroundColor: 'black', color: 'white', borderRadius: '50%', width: '40px', height: '40px', '&:hover': { backgroundColor: '#333' } }}>
-                    <Typography variant="h6" component="span">{'<'}</Typography>
-                </IconButton>
+            <IconButton
+                onClick={handleBack}
+                sx={{
+                    backgroundColor: '#8dbf8d',  // Slightly muted pastel green
+                    color: 'white',  // White text color
+                    borderRadius: '50%',  // Make the button circular
+                    width: '40px',  // Button width
+                    height: '40px',  // Button height
+                    outline: "none",
+                    transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and background color
+                    '&:hover': {
+                        transform: 'scale(1.1)',  // Slightly enlarges the button on hover
+                        backgroundColor: '#388e3c',  // Darker green for hover effect
+                    }
+                }}
+            >
+                <Typography variant="h6" component="span">{'<'}</Typography>
+            </IconButton>
                 <Typography variant="h4" component="h2" marginLeft="10px">
                     {taskData.taskName}
                 </Typography>

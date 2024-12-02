@@ -96,7 +96,14 @@ const Todolist = () => {
                     </Typography>
 
                     <Button 
-                    sx={{marginLeft:"60%"}}
+                        sx={{
+                            marginLeft: "60%",
+                            transition: 'transform 0.3s ease, background-color 0.3s ease', // Smooth transition for both scale and color
+                            '&:hover': {
+                                transform: 'scale(1.1)',  // Enlarges the button
+                                backgroundColor: 'darkgreen',  // Changes the color to a darker shade
+                            }
+                        }}
                         variant="contained" 
                         color="success" 
                         onClick={() => navigate('/add-task', { state: { user: personalInfo } })}
@@ -124,7 +131,15 @@ const Todolist = () => {
                                 }}
                                 onClick={() => handleTaskClick(task)}
                             >
-                                <CardContent>
+                                <CardContent
+                                    sx={{
+                                        transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                                        '&:hover': {
+                                            transform: 'scale(1.01)',  // Slightly enlarges the CardContent
+                                            backgroundColor: 'rgba(0, 0, 0, 0.1)',  // Grays it out with a slight transparency
+                                        }
+                                    }}
+                                >
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Box>
                                             <Typography variant="h5" sx={{ fontWeight: "bold"}}>
@@ -134,23 +149,44 @@ const Todolist = () => {
 
                                         <Box>
                                             <Button
-                                                variant="outlined"
-                                                color="secondary"
+                                                color="success"  // Use the same color as the "Add New To-Do List" button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleEdit(task);
                                                 }}
-                                                sx={{ marginRight: "10px" }}
+                                                sx={{
+                                                    marginTop: "15px",
+                                                    marginRight: "10px",
+                                                    backgroundColor: "#8dbf8d",  // Slightly pastel green
+                                                    color: "white",  // Keep text color white for contrast
+                                                    transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                                                    '&:hover': {
+                                                        transform: 'scale(1.1)',  // Enlarges the button
+                                                        backgroundColor: 'darkgreen',  // Darker shade on hover
+                                                        borderColor: 'darkgreen',  // Optional: Makes the border match the background color
+                                                    }
+                                                }}
                                             >
                                                 Edit
                                             </Button>
 
                                             <Button
-                                                variant="outlined"
                                                 color="error"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleOpenDeleteDialog(task, index);
+                                                }}
+                                                sx={{
+                                                    marginTop: "15px",
+                                                    backgroundColor: "#e28e8e",
+                                                    color: "white",
+                                                    marginRight: "10px",
+                                                    transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                                                    '&:hover': {
+                                                        transform: 'scale(1.1)',  // Enlarges the button
+                                                        backgroundColor: 'darkred',  // Darker shade on hover
+                                                        borderColor: 'darkred',  // Optional: Makes the border match the background color
+                                                    }
                                                 }}
                                             >
                                                 Delete
