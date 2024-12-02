@@ -47,7 +47,50 @@ public class NoteService {
         note.setGroupNote(true); // Mark as group-specific
         return noteRepository.save(note);
     }
+    
+    public NoteEntity editNoteWithGroup(int noteId, NoteEntity newNote, int userId, int studyGroupId) {
+        // Fetch the existing note
+        NoteEntity existingNote = getNoteById(noteId);
 
+        // Fetch the associated user
+        UserEntity user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+        // Fetch the associated study group
+        StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+            .orElseThrow(() -> new NoSuchElementException("Study Group not found with ID: " + studyGroupId));
+
+        // Update note properties
+        existingNote.setTitle(newNote.getTitle());
+        existingNote.setDescription(newNote.getDescription());
+        existingNote.setContent(newNote.getContent());
+        existingNote.setDateCreated(newNote.getDateCreated());
+        existingNote.setUser(user);
+        existingNote.setStudyGroup(studyGroup);
+
+        return noteRepository.save(existingNote);
+    }
+
+    /**
+     * Delete all notes associated with a specific study group.
+     * 
+     * @param studyGroupId the ID of the study group
+     * @return success message
+     */
+    public String deleteNoteGroup(int studyGroupId) {
+        // Fetch all notes associated with the study group
+        List<NoteEntity> groupNotes = noteRepository.findByStudyGroup_GroupId(studyGroupId);
+
+        if (groupNotes.isEmpty()) {
+            throw new NoSuchElementException("No notes found for Study Group with ID: " + studyGroupId);
+        }
+
+        // Delete all notes in the study group
+        noteRepository.deleteAll(groupNotes);
+
+        return "All notes for Study Group ID " + studyGroupId + " have been deleted successfully.";
+    }
+    
     // Fetch only personal notes for a specific user
     public List<NoteEntity> getPersonalNotesByUserId(int userId) {
         System.out.println("Fetching notes for user ID: " + userId);

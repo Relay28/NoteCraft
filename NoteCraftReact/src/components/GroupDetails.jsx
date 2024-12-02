@@ -42,7 +42,7 @@ export default function GroupDetailsPage() {
   const user = personalInfo;
   const { groupId } = useParams();
   const [groupDetails, setGroupDetails] = useState({
-    groupId: null,
+    groupId: groupId,
     groupName: '',
     description: '',
     files: [],
@@ -68,11 +68,13 @@ export default function GroupDetailsPage() {
   const [newTodo, setNewTodo] = useState('');
   const [newFile, setNewFile] = useState(null);
   const [newMemberId, setNewMemberId] = useState('');
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [noteToEdit, setNoteToEdit] = useState(null);
 
   const [tabIndex, setTabIndex] = useState(0);
 
   const apiBaseUrl = 'http://localhost:8081/api/study-groups';
-
+  console.log(groupDetails.groupId)
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
@@ -88,14 +90,64 @@ export default function GroupDetailsPage() {
     };
     fetchGroupData();
   }, [groupId]);
+  
 
   const [note, setNote] = useState({
+    noteId:'',
     title: '',
     description: '',
     content: '',
     dateCreated: new Date().toISOString(),
     userId: user ? user.id : null,
   });
+  console.log(notes)
+
+  const handleDeleteNote = async (noteId) => {
+    try {
+      await axios.delete(`http://localhost:8081/api/note/deleteNote/${noteId}`);
+      setNotes((prev) => prev.filter((note) => note.noteid !== noteId));
+      setResponseMessage('Note deleted successfully!');
+    } catch (error) {
+      setResponseMessage('Failed to delete note.');
+      console.error(error);
+    }
+  };
+  
+  
+  const handleEditNote = async (noteId, updatedNote) => {
+    try {
+      const response = await axios.put(
+        `${apiBaseUrl}/${noteId}/group`, // Corrected URL
+        updatedNote,
+        {
+          params: { userId: user.id, studyGroupId: groupDetails.groupId },
+        }
+      );
+  
+      // Update the notes in state
+      setNotes((prev) =>
+        prev.map((note) => (note.noteid === noteId ? response.data : note))
+      );
+      setResponseMessage('Note updated successfully!');
+    } catch (error) {
+      setResponseMessage('Failed to update note.');
+      console.error('Edit Note Error:', error);
+    }
+  };
+  
+  
+  // Open modal for editing
+  
+  
+  const handleOpenEditModal = (note) => {
+    setNoteToEdit(note);
+    setOpenEditModal(true);
+  };
+  
+  const handleEditChange = (field, value) => {
+    setNoteToEdit({ ...noteToEdit, [field]: value });
+  };
+  
 
   // Handle Note Creation
   const handleCreateNote = async () => {
@@ -205,15 +257,34 @@ useEffect
                 Add Note
               </Button>
               <List>
-                {notes.map((note) => (
-                  <ListItem key={note.noteid} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <ListItemText
-                      primary={note.title}
-                      secondary={`Created by: ${note.user?.name || 'Unknown'} on ${note.dateCreated}`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
+  {notes.map((note) => (
+    <ListItem key={note.noteid} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <ListItemText
+        primary={note.title}
+        secondary={`Created by: ${note.user?.name || 'Unknown'} on ${note.dateCreated}`}
+        
+      />
+      <Box>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => handleOpenEditModal(note)}
+          sx={{ mr: 1 }}
+        >
+          Edit
+        </Button>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => handleDeleteNote(note.noteid)}
+        >
+          Delete
+        </Button>
+      </Box>
+    </ListItem>
+  ))}
+</List>
+
             </CardContent>
           </Card>
         )}
@@ -286,6 +357,46 @@ useEffect
           </Button>
         </Box>
       </Modal>
+
+      <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
+  <Box sx={modalStyle}>
+    <TextField
+      label="Title"
+      fullWidth
+      value={noteToEdit?.title || ''}
+      onChange={(e) => handleEditChange('title', e.target.value)}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      label="Description"
+      fullWidth
+      value={noteToEdit?.description || ''}
+      onChange={(e) => handleEditChange('description', e.target.value)}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      label="Content"
+      fullWidth
+      multiline
+      rows={4}
+      value={noteToEdit?.content || ''}
+      onChange={(e) => handleEditChange('content', e.target.value)}
+      sx={{ mb: 2 }}
+    />
+    <Button
+      variant="contained"
+      color="success"
+      onClick={() => {
+        handleEditNote(noteToEdit.noteid, noteToEdit);
+        setOpenEditModal(false);
+      }}
+      sx={{ fontWeight: 'bold' }}
+    >
+      Save Changes
+    </Button>
+  </Box>
+</Modal>
+
     </Box>
   );
 }

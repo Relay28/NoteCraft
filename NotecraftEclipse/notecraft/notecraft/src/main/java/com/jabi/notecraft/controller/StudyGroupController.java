@@ -42,6 +42,29 @@ public class StudyGroupController {
 //    	return studyGroupService.createStudyGroup(null, null, 0)
 //    }
     
+    @PutMapping("/{noteId}/group")
+    public ResponseEntity<NoteEntity> editGroupNote(
+        @PathVariable int noteId,
+        @RequestBody NoteEntity newNote,
+        @RequestParam int userId,
+        @RequestParam int studyGroupId
+    ) {
+        NoteEntity updatedNote = noteService.editNoteWithGroup(noteId, newNote, userId, studyGroupId);
+        return ResponseEntity.ok(updatedNote);
+    }
+
+    /**
+     * Delete all notes for a specific study group.
+     * 
+     * @param studyGroupId the ID of the study group
+     * @return ResponseEntity containing the success message
+     */
+    @DeleteMapping("/delete-note/{studyGroupId}")
+    public ResponseEntity<String> deleteGroupNotes(@PathVariable int studyGroupId) {
+        String message = noteService.deleteNoteGroup(studyGroupId);
+        return ResponseEntity.ok(message);
+    }
+    
     @PostMapping("/{studyGroupId}/add-note")
     public ResponseEntity<NoteEntity> addNoteWithGroup(
             @PathVariable int studyGroupId,
