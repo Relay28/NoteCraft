@@ -13,7 +13,7 @@ export default function NoteForm() {
   const location = useLocation();
   const quillRef = useRef(null);
   const { personalInfo } = useContext(PersonalInfoContext);
-  const token = localStorage.getItem("token");
+ 
   const user = personalInfo;
 
   const [note, setNote] = useState(
@@ -41,12 +41,12 @@ export default function NoteForm() {
     if (noteId && !location.state?.noteData) {
       axios
         .get(`${BASE_URL}/api/note/getNoteById/${noteId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+         
         })
         .then((response) => setNote({ ...response.data, userId: user ? user.id : null }))
         .catch((error) => console.error("Error fetching note:", error));
     }
-  }, [noteId, location.state, token, user]);
+  }, [noteId, location.state, user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -126,10 +126,10 @@ export default function NoteForm() {
           userId: note.userId,
         },
         {
-          headers: { Authorization: `Bearer ${token}` },
+        
         }
       );
-      navigate("/notes", { state: { user } }); // Redirect after saving
+  navigate("/notes", { state: { user: user } }); // Redirect after saving
     } catch (error) {
       console.error("Error saving note:", error);
     }
@@ -158,6 +158,7 @@ export default function NoteForm() {
         marginTop: "1%",
         marginLeft: "1%",
         padding: "30px",
+        height:"fit-content",
         backgroundColor: "#ffffff",
         borderRadius: "12px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
@@ -165,7 +166,7 @@ export default function NoteForm() {
     >
       <Typography variant="h4" sx={{ color: "#487d4b", marginBottom: "20px", fontWeight: "600" }}>
         {noteId ? "Edit Note" : "Add New Note"}
-      </Typography>
+      </Typography>r
       <TextField
         label="Title"
         name="title"
@@ -196,7 +197,7 @@ export default function NoteForm() {
         formats={formats}
         style={{
           height: "300px",
-          marginBottom: "20px",
+          marginBottom: "50px",
           borderRadius: "8px",
           border: "1px solid #ddd",
         }}
@@ -220,7 +221,7 @@ export default function NoteForm() {
         </Button>
         <Button
           variant="outlined"
-          onClick={() => navigate("/notes")}
+          onClick={() => navigate("/notes", { state: { user: user } }) }
           sx={{
             borderColor: "#487d4b",
             color: "#487d4b",
