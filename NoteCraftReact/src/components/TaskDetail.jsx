@@ -90,55 +90,34 @@ const TaskDetail = () => {
     const handleToggleSubtaskCompletion = (subIndex) => {
         // Retrieve the original task from location state
         const originalTask = location.state.task;
-        
-        // Find the specific subtask ID from the original task's subtasks
-        const subtaskToToggle = originalTask.subTasks[subIndex];
-        const subTaskId = subtaskToToggle ? subtaskToToggle.subTaskID : null;
     
-        if (!subTaskId) {
-            console.error("No subtask ID found");
-            return;
-        }
-    
-        // Optimistically update the local state
-        setTaskData((prevTaskData) => ({
-            ...prevTaskData,
-            subTasks: prevTaskData.subTasks.map((subtask, index) => 
-                index === subIndex 
-                    ? { ...subtask, isSubTaskCompleted: !subtask.isSubTaskCompleted }
-                    : subtask
-            )
-        }));
-    
-        // Make the server call
-        axios
-            .put(`http://localhost:8081/api/todolist/toggleSubTaskCompletion/${originalTask.taskID}/${subTaskId}`, {})
-            .then((response) => {
-                // Confirm the state with server response
-                setTaskData((prevTaskData) => ({
-                    ...prevTaskData,
-                    subTasks: prevTaskData.subTasks.map((subtask, index) => 
-                        index === subIndex 
-                            ? { ...subtask, isSubTaskCompleted: response.data.isSubTaskCompleted }
-                            : subtask
-                    )
-                }));
-            })
-            .catch((error) => {
-                console.error("Error toggling subtask completion:", error.response || error.message);
-                alert("Failed to toggle subtask completion. Reverting changes.");
-    
-                // Roll back the state in case of an error
-                setTaskData((prevTaskData) => ({
-                    ...prevTaskData,
-                    subTasks: prevTaskData.subTasks.map((subtask, index) => 
-                        index === subIndex 
-                            ? { ...subtask, isSubTaskCompleted: !prevTaskData.subTasks[subIndex].isSubTaskCompleted }
-                            : subtask
-                    )
-                }));
-            });
-    };
+    // Find the specific subtask ID from the original task's subtasks
+    const subtaskToToggle = originalTask.subTasks[subIndex];
+    const subTaskId = subtaskToToggle ? subtaskToToggle.subTaskID : null;
+
+    if (!subTaskId) {
+        console.error("No subtask ID found");
+        return;
+    }
+
+    axios
+        .put(`http://localhost:8081/api/todolist/toggleSubTaskCompletion/${originalTask.taskID}/${subTaskId}`)
+        .then((response) => {
+            // Update the state to reflect the new completion status
+            setTaskData((prevTaskData) => ({
+                ...prevTaskData,
+                subTasks: prevTaskData.subTasks.map((subtask, index) => 
+                    index === subIndex 
+                        ? { ...subtask, isSubTaskCompleted: response.data.isSubTaskCompleted }
+                        : subtask
+                )
+            }));
+        })
+        .catch((error) => {
+            console.error("Error toggling subtask completion:", error.response || error.message);
+            alert("Failed to toggle subtask completion. Please try again.");
+        });
+};
 
     return (
         <Box sx={{
