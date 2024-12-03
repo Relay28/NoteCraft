@@ -43,6 +43,11 @@ public class ToDoListController {
 		return tdlserv.putToDoListDetails(id, newToDoListDetails, userId);
 	}
 	
+	@PutMapping("/updateTaskEnded")
+	public ToDoListEntity updateTaskEnded(@RequestParam int id, @RequestBody ToDoListEntity newToDoListDetails, @RequestParam int userId) {
+		return tdlserv.updateTaskEnded(id, newToDoListDetails, userId);
+	}
+	
 	@DeleteMapping("/deleteToDoList/{id}")
 	public String deleteToDoList(@PathVariable int id, @RequestParam int userId) {
 		return tdlserv.deleteToDoList(id, userId);

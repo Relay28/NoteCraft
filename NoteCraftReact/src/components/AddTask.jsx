@@ -271,27 +271,6 @@ const AddTask = () => {
                     }}
                 />
                 <TextField 
-                    label="Task Ended" 
-                    name="taskEnded" 
-                    type="date" 
-                    value={taskData.taskEnded} 
-                    onChange={handleInputChange} 
-                    fullWidth 
-                    margin="normal" 
-                    InputLabelProps={{ shrink: true }} 
-                    style={{ display: isEditing ? 'block' : 'none' }}
-                    sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition
-                        '&:hover': {
-                            transform: 'scale(1.01)',  // Slightly enlarges the text field
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',  // Light gray background color on hover
-                            '& input': {
-                                color: 'gray',  // Change the input text color to gray when hovered
-                            }
-                        }
-                    }}
-                />
-                <TextField 
                     label="Category" 
                     name="category" 
                     value={taskData.category} 

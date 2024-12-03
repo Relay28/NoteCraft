@@ -91,33 +91,62 @@ const TaskDetail = () => {
         // Retrieve the original task from location state
         const originalTask = location.state.task;
     
-    // Find the specific subtask ID from the original task's subtasks
-    const subtaskToToggle = originalTask.subTasks[subIndex];
-    const subTaskId = subtaskToToggle ? subtaskToToggle.subTaskID : null;
+        // Find the specific subtask ID from the original task's subtasks
+        const subtaskToToggle = originalTask.subTasks[subIndex];
+        const subTaskId = subtaskToToggle ? subtaskToToggle.subTaskID : null;
 
-    if (!subTaskId) {
-        console.error("No subtask ID found");
-        return;
-    }
+        if (!subTaskId) {
+            console.error("No subtask ID found");
+            return;
+        }
 
-    axios
-        .put(`http://localhost:8081/api/todolist/toggleSubTaskCompletion/${originalTask.taskID}/${subTaskId}`)
-        .then((response) => {
-            // Update the state to reflect the new completion status
-            setTaskData((prevTaskData) => ({
-                ...prevTaskData,
-                subTasks: prevTaskData.subTasks.map((subtask, index) => 
-                    index === subIndex 
-                        ? { ...subtask, isSubTaskCompleted: response.data.isSubTaskCompleted }
-                        : subtask
-                )
-            }));
-        })
-        .catch((error) => {
-            console.error("Error toggling subtask completion:", error.response || error.message);
-            alert("Failed to toggle subtask completion. Please try again.");
-        });
-};
+        axios
+            .put(`http://localhost:8081/api/todolist/toggleSubTaskCompletion/${originalTask.taskID}/${subTaskId}`)
+            .then((response) => {
+                // Update the state to reflect the new completion status
+                setTaskData((prevTaskData) => ({
+                    ...prevTaskData,
+                    subTasks: prevTaskData.subTasks.map((subtask, index) => 
+                        index === subIndex 
+                            ? { ...subtask, isSubTaskCompleted: response.data.isSubTaskCompleted }
+                            : subtask
+                    )
+                }));
+            })
+            .catch((error) => {
+                console.error("Error toggling subtask completion:", error.response || error.message);
+                alert("Failed to toggle subtask completion. Please try again.");
+            });
+    };
+
+    const handleCompleteTask = () => {
+        // Retrieve the original task from location state
+        const originalTask = location.state.task;
+    
+        // Prepare the data to send to the backend
+        const taskEndedDetails = {
+            taskEnded: new Date().toISOString().split('T')[0], // Current date in 'yyyy-mm-dd' format
+            isCompleted: true
+        };
+    
+        axios
+            .put(`http://localhost:8081/api/todolist/updateTaskEnded?id=${originalTask.taskID}&userId=${user.id}`, taskEndedDetails)
+            .then((response) => {
+                // Update the local state to reflect the changes
+                setTaskData(prevTaskData => ({
+                    ...prevTaskData,
+                    taskEnded: response.data.taskEnded,
+                    isCompleted: response.data.isCompleted
+                }));
+    
+                // Navigate back to the todo list or show a success message
+                navigate('/todolist', { state: { user: user } });
+            })
+            .catch((error) => {
+                console.error("Error completing task:", error.response || error.message);
+                alert("Failed to complete task. Please try again.");
+            });
+    };
 
     return (
         <Box sx={{
@@ -149,7 +178,27 @@ const TaskDetail = () => {
                 <Typography variant="h6" component="span">{'<'}</Typography>
             </IconButton>
                 <Typography variant="h4" component="h2" marginLeft="10px">
-                    {taskData.taskName}
+                    {taskData.taskEnded && (
+                        <Typography 
+                            variant="h4" 
+                            sx={{  
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            {taskData.taskName} (Task Complete)
+                        </Typography>
+                    )}
+
+                    {!taskData.taskEnded && (
+                        <Typography 
+                            variant="h4" 
+                            sx={{  
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            {taskData.taskName}
+                        </Typography>
+                    )}
                 </Typography>
             </Box>
 
@@ -203,8 +252,31 @@ const TaskDetail = () => {
                     </Box>
 
                     <Box sx={{ width: "45%", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <Box sx={{ width: "100%", textAlign: "end", marginBottom: "50px", marginRight: "50px" }}>
+                            {!taskData.taskEnded && (
+                                <button
+                                    onClick={handleCompleteTask}
+                                    disabled={!taskData.subTasks.every(subtask => subtask.isSubTaskCompleted)}
+                                    style={{
+                                        padding: "10px 20px",
+                                        backgroundColor: taskData.subTasks.every(subtask => subtask.isSubTaskCompleted) ? "green" : "gray",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "5px",
+                                        cursor: taskData.subTasks.every(subtask => subtask.isSubTaskCompleted) ? "pointer" : "not-allowed",
+                                        fontSize: "16px",
+                                    }}
+                                >
+                                    Complete Task
+                                </button>
+                            )}
+                        </Box>
+
                         <Calendar value={date} tileClassName={tileClassName} onClickDay={() => { }} />
-                        <Typography variant="h6" component="p" sx={{ color: renderDeadlineColor() }}>{renderDeadlineText()}</Typography>
+
+                        <Typography variant="h6" component="p" sx={{ color: renderDeadlineColor() }}>
+                            {renderDeadlineText()}
+                        </Typography>
 
                         {/* Legends for Calendar Colors */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-evenly', width: '100%', marginTop: '20px' }}>

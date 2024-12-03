@@ -1,5 +1,6 @@
 package com.jabi.notecraft.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -93,6 +94,25 @@ public class ToDoListService {
 
         return tdlrepo.save(existingToDoList);
     }
+	
+	public ToDoListEntity updateTaskEnded(int id, ToDoListEntity newTaskEndedDetails, int userId) {
+	    ToDoListEntity existingToDoList = tdlrepo.findById(id)
+	        .orElseThrow(() -> new NoSuchElementException("To-Do List record not found with ID: " + id));
+
+	    UserEntity user = urepo.findById(userId)
+	        .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+	    // Verify if the ToDoList belongs to the user
+	    if (!existingToDoList.getUser().equals(user)) {
+	        throw new SecurityException("To-Do List record does not belong to the user with ID: " + userId);
+	    }
+
+	    // Update only the taskEnded field
+	    existingToDoList.setTaskEnded(newTaskEndedDetails.getTaskEnded());
+        existingToDoList.setIsCompleted(newTaskEndedDetails.getIsCompleted());
+
+	    return tdlrepo.save(existingToDoList);
+	}
 	
 	public String deleteToDoList(int id, int userId) {
         ToDoListEntity toDoList = tdlrepo.findById(id)
