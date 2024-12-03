@@ -6,12 +6,16 @@
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #f0f0f0;
-
+  font-family: 'Minecraftia', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+body {
+  font-family: 'Minecraftia', sans-serif;
+}
+
 
 a {
   font-weight: 500;

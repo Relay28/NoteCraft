@@ -47,8 +47,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({ isSidebarOpen }) {
-  const { darkMode, toggleTheme } = useTheme();
+export default function PrimarySearchAppBar({ isSidebarOpen, toggleSidebar  }) {
+  const { darkMode, toggleTheme, theme } = useTheme(); 
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const { personalInfo } = useContext(PersonalInfoContext);

@@ -42,6 +42,14 @@ export const CustomThemeProvider = ({ children }) => {
               },
             },
           },
+          MuiNestedList: {
+            styleOverrides: {
+              root: {
+                backgroundColor: darkMode ? '#579A59' : '#579A59',
+                color: darkMode ? '#d1d5db' : '#d1d5db',
+              },
+            },
+          },
         },
       }),
     [darkMode]
@@ -50,7 +58,7 @@ export const CustomThemeProvider = ({ children }) => {
   const toggleTheme = () => setDarkMode((prev) => !prev);
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ darkMode, toggleTheme,theme }}>
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );
