@@ -18,7 +18,7 @@ export default function Home() {
 
     return (
         <div>
-           
+           I try to put sidebar and appbar here so that login and regsiter wont be affeced but is tha the right solutiion?
            So Far So good
            In Progress...
             <Outlet context={personalInfo} />

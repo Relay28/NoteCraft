@@ -77,7 +77,7 @@ export default function Profile({ personalInfo, token }) {
                 border: '3px solid #93BA95',
                 width: '80%',
                 height: '90%',
-                mx: 'auto',
+              
                 mt: 3,
                 borderRadius: 2,
                 p: 2,

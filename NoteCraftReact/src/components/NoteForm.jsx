@@ -166,7 +166,7 @@ export default function NoteForm() {
     >
       <Typography variant="h4" sx={{ color: "#487d4b", marginBottom: "20px", fontWeight: "600" }}>
         {noteId ? "Edit Note" : "Add New Note"}
-      </Typography>r
+      </Typography>
       <TextField
         label="Title"
         name="title"

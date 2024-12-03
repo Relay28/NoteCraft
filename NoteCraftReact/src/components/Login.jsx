@@ -34,7 +34,7 @@ export default function Login() {
                 const allUsersResponse = await axios.get('http://localhost:8081/api/user/getAllUsers', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-
+                console.log("TOKEN SAVED")
                 const userData = allUsersResponse.data.find(user => user.username === credentials.username);
 
                 if (userData) {
@@ -66,8 +66,7 @@ export default function Login() {
             justifyContent: "center",
             alignItems: "center",
             alignContent: "center",
-            marginTop:"4.5%",
-            marginLeft:"5%"
+          
             
         }} className='login-container'>
             <div

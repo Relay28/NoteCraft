@@ -82,10 +82,11 @@ const [openEditFileModal, setOpenEditFileModal] = useState(false);
       try {
         const response = await axios.get(`${apiBaseUrl}/getStudyGroupById/${groupId}`);
         setGroupDetails(response.data);
+        console.log(response.data)
         setNotes(response.data.notes || []);
         setFiles(response.data.files || []);
         setTodos(response.data.todos || []);
-        setMembers(response.data.members || []);
+        setMembers(response.data.users || []);
       } catch (error) {
         setResponseMessage('Error fetching group details.');
       }
