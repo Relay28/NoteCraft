@@ -1,8 +1,9 @@
 // npm install react-calendar
 // npm install @mui/icons-material
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, IconButton, FormControlLabel, Radio } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Checkbox from '@mui/material/Checkbox';
 import axios from 'axios';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -86,6 +87,59 @@ const TaskDetail = () => {
         return remainingDays <= 5 ? 'red' : 'black';
     };
 
+    const handleToggleSubtaskCompletion = (subIndex) => {
+        // Retrieve the original task from location state
+        const originalTask = location.state.task;
+        
+        // Find the specific subtask ID from the original task's subtasks
+        const subtaskToToggle = originalTask.subTasks[subIndex];
+        const subTaskId = subtaskToToggle ? subtaskToToggle.subTaskID : null;
+    
+        if (!subTaskId) {
+            console.error("No subtask ID found");
+            return;
+        }
+    
+        // Optimistically update the local state
+        setTaskData((prevTaskData) => ({
+            ...prevTaskData,
+            subTasks: prevTaskData.subTasks.map((subtask, index) => 
+                index === subIndex 
+                    ? { ...subtask, isSubTaskCompleted: !subtask.isSubTaskCompleted }
+                    : subtask
+            )
+        }));
+    
+        // Make the server call
+        axios
+            .put(`http://localhost:8081/api/todolist/toggleSubTaskCompletion/${originalTask.taskID}/${subTaskId}`, {})
+            .then((response) => {
+                // Confirm the state with server response
+                setTaskData((prevTaskData) => ({
+                    ...prevTaskData,
+                    subTasks: prevTaskData.subTasks.map((subtask, index) => 
+                        index === subIndex 
+                            ? { ...subtask, isSubTaskCompleted: response.data.isSubTaskCompleted }
+                            : subtask
+                    )
+                }));
+            })
+            .catch((error) => {
+                console.error("Error toggling subtask completion:", error.response || error.message);
+                alert("Failed to toggle subtask completion. Reverting changes.");
+    
+                // Roll back the state in case of an error
+                setTaskData((prevTaskData) => ({
+                    ...prevTaskData,
+                    subTasks: prevTaskData.subTasks.map((subtask, index) => 
+                        index === subIndex 
+                            ? { ...subtask, isSubTaskCompleted: !prevTaskData.subTasks[subIndex].isSubTaskCompleted }
+                            : subtask
+                    )
+                }));
+            });
+    };
+
     return (
         <Box sx={{
             padding: '20px',
@@ -138,12 +192,25 @@ const TaskDetail = () => {
                         {taskData.subTasks && taskData.subTasks.length > 0 ? (
                             <ul>
                                 {taskData.subTasks.map((subtask, subIndex) => (
-                                    <li key={subIndex}>
+                                    <li key={subIndex} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                        <Checkbox
+                                            checked={subtask.isSubTaskCompleted}
+                                            onChange={() => handleToggleSubtaskCompletion(subIndex)}
+                                            sx={{
+                                                padding: '0 9px',
+                                                marginRight: '10px',
+                                                color: subtask.isSubTaskCompleted ? 'green' : 'inherit', // Green checkmark when completed
+                                                '&.Mui-checked': {
+                                                    color: 'green', // Ensures green checkmark when checked
+                                                },
+                                            }}
+                                        />
                                         <Typography
                                             variant="body2"
                                             sx={{
                                                 fontSize: "18px",
-                                                marginBottom: "10px"
+                                                textDecoration: subtask.isSubTaskCompleted ? 'line-through' : 'none',
+                                                color: subtask.isSubTaskCompleted ? 'gray' : 'inherit'
                                             }}
                                         >
                                             {subtask.subTaskName}

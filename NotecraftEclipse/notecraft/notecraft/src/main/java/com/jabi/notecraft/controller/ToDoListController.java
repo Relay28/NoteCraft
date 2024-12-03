@@ -3,6 +3,7 @@ package com.jabi.notecraft.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jabi.notecraft.entity.ToDoListEntity;
+import com.jabi.notecraft.entity.SubTaskEntity;
 import com.jabi.notecraft.service.ToDoListService;
 
 @RestController
@@ -44,5 +46,16 @@ public class ToDoListController {
 	@DeleteMapping("/deleteToDoList/{id}")
 	public String deleteToDoList(@PathVariable int id, @RequestParam int userId) {
 		return tdlserv.deleteToDoList(id, userId);
+	}
+	
+	@DeleteMapping("/deleteSubTask/{taskId}/{subTaskId}")
+	public ResponseEntity<String> deleteSubTask(@PathVariable int taskId, @PathVariable int subTaskId) {
+		tdlserv.deleteSubTask(taskId, subTaskId);
+	    return ResponseEntity.ok("Subtask deleted successfully");
+	}
+	
+	@PutMapping("/toggleSubTaskCompletion/{taskId}/{subTaskId}")
+	public SubTaskEntity toggleSubTaskCompletion(@PathVariable int taskId, @PathVariable int subTaskId) {
+	    return tdlserv.toggleSubTaskCompletion(taskId, subTaskId);
 	}
 }

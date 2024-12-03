@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jabi.notecraft.entity.StudyGroupEntity;
+import com.jabi.notecraft.entity.SubTaskEntity;
 import com.jabi.notecraft.entity.ToDoListEntity;
 import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.repository.StudyGroupRepository;
+import com.jabi.notecraft.repository.SubTaskRepository;
 import com.jabi.notecraft.repository.ToDoListRepository;
 import com.jabi.notecraft.repository.UserRepository;
 
@@ -22,6 +24,9 @@ public class ToDoListService {
 	
 	@Autowired
 	UserRepository urepo;
+	
+	@Autowired
+	SubTaskRepository strepo;
 	
 	 @Autowired
 	  private StudyGroupRepository studyGroupRepository;
@@ -104,4 +109,36 @@ public class ToDoListService {
         tdlrepo.delete(toDoList);
         return "To-Do List record successfully deleted!";
     }
+	
+	public void deleteSubTask(int taskId, int subTaskId) {
+	    ToDoListEntity toDoList = tdlrepo.findById(taskId)
+	        .orElseThrow(() -> new NoSuchElementException("Task not found with ID: " + taskId));
+	    
+	    SubTaskEntity subTask = toDoList.getSubTasks().stream()
+	        .filter(st -> st.getSubTaskID() == subTaskId)
+	        .findFirst()
+	        .orElseThrow(() -> new NoSuchElementException("Subtask not found with ID: " + subTaskId));
+	    
+	    toDoList.getSubTasks().remove(subTask);
+	    strepo.delete(subTask); // Assuming subTaskRepo exists
+	    tdlrepo.save(toDoList); // Persist changes
+	}
+	
+	public SubTaskEntity toggleSubTaskCompletion(int taskId, int subTaskId) {
+	    ToDoListEntity toDoList = tdlrepo.findById(taskId)
+	        .orElseThrow(() -> new NoSuchElementException("Task not found with ID: " + taskId));
+	    
+	    SubTaskEntity subTask = toDoList.getSubTasks().stream()
+	        .filter(st -> st.getSubTaskID() == subTaskId)
+	        .findFirst()
+	        .orElseThrow(() -> new NoSuchElementException("Subtask not found with ID: " + subTaskId));
+	    
+	    // Toggle the isComplete status
+	    subTask.setIsSubTaskCompleted(!subTask.getIsSubTaskCompleted());
+	    
+	    // Save the updated subtask
+	    strepo.save(subTask);
+	    
+	    return subTask;
+	}
 }

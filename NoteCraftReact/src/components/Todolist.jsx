@@ -234,7 +234,19 @@ const Todolist = () => {
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={handleCloseDialog} color="primary">
+                        <Button
+                            onClick={handleCloseDialog}
+                            variant="contained"
+                            color="success"
+                            sx={{
+                                transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                                '&:hover': {
+                                    transform: 'scale(1.1)',  // Enlarges the button
+                                    backgroundColor: 'darkgreen',  // Darker shade on hover
+                                    borderColor: 'darkgreen',  // Optional: Makes the border match the background color
+                                }
+                            }}
+                        >
                             Cancel
                         </Button>
                         <Button
@@ -243,8 +255,17 @@ const Todolist = () => {
                                     handleDeleteTask(taskToDelete.task.taskID, taskToDelete.index);
                                 }
                             }}
-                            color="error"
                             autoFocus
+                            variant="contained"
+                            color="error"
+                            sx={{
+                                transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                                '&:hover': {
+                                    transform: 'scale(1.1)',  // Enlarges the button
+                                    backgroundColor: 'darkred',  // Darker shade on hover
+                                    borderColor: 'darkred',  // Optional: Makes the border match the background color
+                                }
+                            }}
                         >
                             Delete
                         </Button>

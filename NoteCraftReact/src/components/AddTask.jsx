@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -145,10 +146,57 @@ const AddTask = () => {
         const newErrors = {
             taskName: !taskData.taskName,
             deadline: !taskData.deadline,
-            description: taskData.description.length > MAX_DESCRIPTION_LENGTH
+            description: taskData.description.length > MAX_DESCRIPTION_LENGTH,
+            subTasks: taskData.subTasks.length === 0 || taskData.subTasks.some(subtask => !subtask.SubTaskName.trim())
         };
         setErrors(newErrors);
-        return !newErrors.taskName && !newErrors.deadline && !newErrors.description;
+        return !newErrors.taskName && !newErrors.deadline && !newErrors.description && !newErrors.subTasks;
+    };
+
+    const handleDeleteSubtask = (indexToRemove) => {
+        if (!isEditing) {
+            // Only remove the subtask locally during task creation
+            setTaskData((prevTaskData) => ({
+                ...prevTaskData,
+                subTasks: prevTaskData.subTasks.filter((_, index) => index !== indexToRemove),
+            }));
+            return;
+        }
+        // Retrieve the original task from location state
+        const originalTask = location.state.task;
+        
+        // Find the specific subtask ID from the original task's subtasks
+        const subtaskToDelete = originalTask.subTasks[indexToRemove];
+        const subTaskId = subtaskToDelete ? subtaskToDelete.subTaskID : null;
+    
+        console.log("Subtask to delete:", subTaskId);
+    
+        if (!subTaskId) {
+            // If no subTaskId is present, simply remove it from the state
+            setTaskData((prevTaskData) => ({
+                ...prevTaskData,
+                subTasks: prevTaskData.subTasks.filter((_, index) => index !== indexToRemove),
+            }));
+            return;
+        }
+    
+        const headers = { Authorization: `Bearer ${token}` };
+    
+        axios
+            .delete(`http://localhost:8081/api/todolist/deleteSubTask/${originalTask.taskID}/${subTaskId}`, { headers })
+            .then(() => {
+                // Update the state to remove the subtask locally
+                setTaskData((prevTaskData) => ({
+                    ...prevTaskData,
+                    subTasks: prevTaskData.subTasks.filter((_, index) => index !== indexToRemove),
+                }));
+            })
+            .catch((error) => {
+                console.log("Task ID:", originalTask.taskID);
+                console.log("Task ID:", subTaskId);
+                console.error("Error deleting subtask:", error.response || error.message);
+                alert("Failed to delete subtask. Please try again.");
+            });
     };
 
     return (
@@ -266,27 +314,46 @@ const AddTask = () => {
                     <Typography variant="h6" marginBottom="10px">
                         Subtasks
                     </Typography>
+
+                    <Typography variant="body2" color="error" style={{ marginTop: '-10px', marginBottom: '10px' }}>
+                        {errors.subTasks && "At least one subtask is required and delete empty subtasks."}
+                    </Typography>
+                    
                     {taskData.subTasks.map((subtask, index) => (
-                        <TextField 
-                            key={index}
-                            label={`Subtask ${index + 1}`}
-                            value={subtask.SubTaskName}
-                            onChange={(e) => handleSubtaskChange(index, e.target.value)}
-                            fullWidth
-                            margin="normal"
-                            error={errors.subTasks && subtask.SubTaskName.trim() === ''}
-                            helperText={errors.subTasks && subtask.SubTaskName.trim() === '' ? "Subtask is required." : ""}
-                            sx={{
-                                transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition
-                                '&:hover': {
-                                    transform: 'scale(1.01)',  // Slightly enlarges the text field
-                                    backgroundColor: 'rgba(0, 0, 0, 0.05)',  // Light gray background color on hover
-                                    '& input': {
-                                        color: 'gray',  // Change the input text color to gray when hovered
+                        <Box key={index} display="flex" alignItems="center">
+                            <TextField 
+                                label={`Subtask ${index + 1}`}
+                                value={subtask.SubTaskName}
+                                onChange={(e) => handleSubtaskChange(index, e.target.value)}
+                                fullWidth
+                                margin="normal"
+                                error={errors.subTasks && subtask.SubTaskName.trim() === ''}
+                                helperText={errors.subTasks && subtask.SubTaskName.trim() === '' ? "Subtask is required." : ""}
+                                sx={{
+                                    marginRight: "10px",
+                                    transition: 'transform 0.3s ease, background-color 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'scale(1.01)',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
                                     }
-                                }
-                            }}
-                        />
+                                }}
+                            />
+                            {taskData.subTasks.length > 1 && (
+                                <IconButton 
+                                    color="error" 
+                                    onClick={() => handleDeleteSubtask(index)}
+                                    sx={{
+                                        transition: 'transform 0.3s ease, color 0.3s ease',
+                                        '&:hover': {
+                                            transform: 'scale(1.2)',
+                                            color: 'darkred'
+                                        }
+                                    }}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            )}
+                        </Box>
                     ))}
                     <Button
                         variant="contained"
