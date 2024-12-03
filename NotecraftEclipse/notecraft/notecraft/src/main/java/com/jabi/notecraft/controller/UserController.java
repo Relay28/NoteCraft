@@ -144,4 +144,9 @@ public class UserController {
         boolean exists = userv.doesUserExist(username);
         return ResponseEntity.ok(exists);
     }
+    @GetMapping("/usernames")
+    public ResponseEntity<List<String>> getAllUsernames() {
+        List<String> usernames = userv.getAllUsernames();
+        return ResponseEntity.ok(usernames);
+    }
 }

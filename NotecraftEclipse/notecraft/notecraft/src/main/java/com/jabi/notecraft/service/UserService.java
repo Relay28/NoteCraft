@@ -133,4 +133,8 @@ public class UserService {
     public boolean doesUserExist(String username) {
     	return urepo.existsByUsername(username);
     }
+    
+    public List<String> getAllUsernames() {
+        return urepo.findAllUsernames(); // No need for stream and mapping
+    }
 }

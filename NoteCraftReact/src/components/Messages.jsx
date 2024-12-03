@@ -22,6 +22,10 @@
     const [isMessageBoxDisabled, setIsMessageBoxDisabled] = useState(false);
     const location = useLocation();
     const personalInfo = location.state?.user || { id: '', username: '' };
+
+    const [usernames, setUsernames] = React.useState([]); // To store fetched usernames
+    const [filteredUsernames, setFilteredUsernames] = React.useState([]); // To store filtered suggestions
+
    
 
     React.useEffect(() => {
@@ -90,7 +94,7 @@
             console.error("Error updating message:", error);
           }
         } else {
-          // Add new message logic (unchanged)
+          // Add new message logic
           const newMessageData = {
             sender: personalInfo.username,
             recipient: selectedConversation.receiver,
@@ -134,12 +138,20 @@
       }
     };    
     
-    const handleAddChatClick = () => {
+    const handleAddChatClick = async () => {
       setIsAddingChat(true);
       setSelectedConversation({ receiver: '', messages: [] }); // Initialize a new conversation with an empty receiver
       setNewMessage(""); // Clear any previous message input
       setIsReceiverFinalized(false); // Ensure receiver is not yet finalized
       setIsMessageBoxDisabled(true); // Disable message box until the receiver is confirmed
+
+      // Fetch usernames
+      try {
+        const response = await axios.get('http://localhost:8081/api/user/usernames');
+        setUsernames(response.data); // Assuming API returns a list of usernames
+      } catch (error) {
+        console.error("Error fetching usernames:", error);
+      }
     };
     
     const handleEditClick = (messageId, currentContent) => {
@@ -256,7 +268,7 @@
                 </ListItem>
               ))}
             </List>
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Box sx={{ mt: 2, textAlign: 'center'}}>
                 <button variant="contained" onClick={handleAddChatClick}>Add Chat</button>
             </Box>
           </Grid>
@@ -273,9 +285,32 @@
                     fullWidth
                     placeholder="Enter receiver's name"
                     value={selectedConversation?.receiver || ''}
-                    onChange={(e) => setSelectedConversation((prev) => ({ ...prev, receiver: e.target.value }))}
+                    onChange={(e) => {
+                      const input = e.target.value;
+                      setSelectedConversation((prev) => ({ ...prev, receiver: input }));
+                      const suggestions = usernames.filter((username) =>
+                        username.toLowerCase().startsWith(input.toLowerCase())
+                      );
+                      setFilteredUsernames(suggestions);
+                    }}
                     disabled={isReceiverFinalized}
                   />
+                  {!isReceiverFinalized && filteredUsernames.length > 0 && (
+                    <List sx={{ maxHeight: 100, overflowY: 'auto', backgroundColor: '#f0f0f0' }}>
+                      {filteredUsernames.map((username, index) => (
+                        <ListItem
+                          key={index}
+                          button
+                          onClick={() => {
+                            setSelectedConversation((prev) => ({ ...prev, receiver: username }));
+                            setFilteredUsernames([]); // Clear suggestions
+                          }}
+                        >
+                          <ListItemText primary={username} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
                   {/* Confirm Button */}
                   <Box sx={{ mt: 1, textAlign: 'right' }}>
                     <button onClick={handleReceiverConfirm}>Confirm</button>
