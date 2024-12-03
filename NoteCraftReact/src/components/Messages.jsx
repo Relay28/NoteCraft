@@ -238,7 +238,7 @@
       };
 
     return (
-      <Paper sx={{ height: '80vh', display: 'flex', flexDirection: 'column', paddingLeft:'60px',ml:"1%", width:'130vh'}}>
+      <Paper sx={{ height: '80vh', display: 'flex', flexDirection: 'column', paddingLeft:'10px', width:'165vh'}}>
         {/* Dialog for Delete Confirmation */}
         <Dialog open={openDialog} onClose={closeConfirmationDialog}>
           <DialogTitle>Confirm Delete</DialogTitle>
