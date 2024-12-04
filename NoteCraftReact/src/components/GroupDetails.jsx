@@ -63,7 +63,16 @@ export default function GroupDetailsPage() {
   const [openTodoModal, setOpenTodoModal] = useState(false);
   const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   const [openMemberDrawer, setOpenMemberDrawer] = useState(false);
-  const [todo, setTodo] = useState([]);
+  const [todo, setTodo] = useState({
+    taskName: '',
+    description: '',
+    deadline: '',
+    taskStarted: new Date().toISOString().split('T')[0],
+    taskEnded: '',
+    isCompleted: false,
+    category: '',
+    subTasks: [{ SubTaskName: '' }]
+  });
   const [newNote, setNewNote] = useState('');
   const [todos, setTodos] = useState([]);
 const [newTodoTitle, setNewTodoTitle] = useState('');
@@ -111,23 +120,42 @@ const fetchToDos = async () => {
 
 const handleAddToDo = async () => {
   try {
-    const response = await axios.post(`${apiBaseUrl}/${groupId}/add-todo`, todo, {
-      params: { userId: user.id },
-    });
+    // Prepare the todo data for submission
+    const todoWithDates = {
+      ...todo,
+      dateCreated: new Date().toISOString().split('T')[0],
+      subTasks: todo.subTasks
+        .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '')
+        .map(subtask => ({
+          subTaskName: subtask.SubTaskName.trim()
+        }))
+    };
+
+    const response = await axios.post(
+      `${apiBaseUrl}/${groupId}/add-todo`, 
+      todoWithDates, 
+      { params: { userId: user.id } }
+    );
+
+    // Update the todos state with the new todo
     setTodos((prev) => [...prev, response.data]);
+    
+    // Reset the todo state
     setTodo({
       taskName: '',
       description: '',
       deadline: '',
-      taskStarted: '',
+      taskStarted: new Date().toISOString().split('T')[0],
       taskEnded: '',
       isCompleted: false,
       category: '',
+      subTasks: [{ SubTaskName: '' }]
     });
-    console.log(response.data)
+
     setOpenTodoModal(false);
   } catch (error) {
     console.error('Failed to add To-Do', error);
+    alert(`Failed to save task: ${error.response?.data?.message || "Please try again."}`);
   }
 };
 
@@ -135,15 +163,36 @@ const handleAddToDo = async () => {
 // Edit To-Do
 const handleEditToDo = async () => {
   try {
+    // Store the original subtask IDs if they exist
+    const originalSubtaskIds = selectedTodo.subTasks 
+      ? selectedTodo.subTasks.map(subtask => subtask.subTaskID)
+      : [];
+
+    const updatedTodo = {
+      ...selectedTodo,
+      subTasks: selectedTodo.subTasks
+        .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '')
+        .map((subtask, index) => ({
+          ...(originalSubtaskIds[index] ? { subTaskID: originalSubtaskIds[index] } : {}),
+          subTaskName: subtask.SubTaskName.trim() || ''
+        }))
+    };
+
     const response = await axios.put(
-      `${apiBaseUrl}/${selectedTodo.id}/group/${groupId}/user/${user.id}`,
-      selectedTodo
+      `${apiBaseUrl}/${updatedTodo.id}/group/${groupId}/user/${user.id}`,
+      updatedTodo
     );
-    setTodos((prev) => prev.map((todo) => (todo.id === selectedTodo.id ? response.data : todo)));
+
+    // Update the todos state
+    setTodos((prev) => 
+      prev.map((todo) => (todo.id === updatedTodo.id ? response.data : todo))
+    );
+
     setOpenEditTodoModal(false);
     setSelectedTodo(null);
   } catch (error) {
     console.error('Failed to edit To-Do', error);
+    alert(`Failed to edit task: ${error.response?.data?.message || "Please try again."}`);
   }
 };
 
@@ -155,6 +204,31 @@ const handleDeleteToDo = async (todoId) => {
   } catch (error) {
     console.error('Failed to delete To-Do', error);
   }
+};
+
+const handleSubtaskChange = (index, value) => {
+  setSelectedTodo((prevTodo) => {
+    const newSubtasks = [...(prevTodo.subTasks || [])];
+    newSubtasks[index] = { SubTaskName: value };
+    return {
+      ...prevTodo,
+      subTasks: newSubtasks
+    };
+  });
+};
+
+const addSubtaskField = () => {
+  setSelectedTodo((prevTodo) => ({
+    ...prevTodo,
+    subTasks: [...(prevTodo.subTasks || []), { SubTaskName: '' }]
+  }));
+};
+
+const handleDeleteSubtask = (indexToRemove) => {
+  setSelectedTodo((prevTodo) => ({
+    ...prevTodo,
+    subTasks: prevTodo.subTasks.filter((_, index) => index !== indexToRemove)
+  }));
 };
   
 
@@ -289,21 +363,6 @@ const handleDeleteToDo = async (todoId) => {
         setResponseMessage("Failed to upload file.");
     }
 };
-
-
-  // Handle Todo Creation
-  const handleAddTodo = async () => {
-    try {
-      const response = await axios.post(`${apiBaseUrl}/${groupId}/add-todo`, { todo: todo });
-      setTodos((prev) => [...prev, response.data]);
-      setOpenTodoModal(false);
-      settodo('');
-      setResponseMessage('To-do added successfully!');
-    } catch {
-      setResponseMessage('Failed to add to-do.');
-    }
-  };
-
     
   const handleAddMember = async () => {
     try {
@@ -539,6 +598,7 @@ useEffect
     </List>
   </Box>
 </Drawer>
+
 {/* Add To-Do Modal */}
 <Modal open={openTodoModal} onClose={() => setOpenTodoModal(false)}>
   <Box sx={modalStyle}>
@@ -574,24 +634,123 @@ useEffect
       onChange={(e) => setTodo({ ...todo, category: e.target.value })}
       sx={{ mb: 2 }}
     />
+    
+    {/* Subtasks Section */}
+    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Subtasks</Typography>
+    {todo.subTasks.map((subtask, index) => (
+      <Box key={index} display="flex" alignItems="center" sx={{ mb: 1 }}>
+        <TextField
+          label={`Subtask ${index + 1}`}
+          fullWidth
+          value={subtask.SubTaskName}
+          onChange={(e) => {
+            const newSubtasks = [...todo.subTasks];
+            newSubtasks[index] = { SubTaskName: e.target.value };
+            setTodo({ ...todo, subTasks: newSubtasks });
+          }}
+          sx={{ mr: 1 }}
+        />
+        {todo.subTasks.length > 1 && (
+          <IconButton 
+            color="error" 
+            onClick={() => {
+              setTodo({
+                ...todo,
+                subTasks: todo.subTasks.filter((_, i) => i !== index)
+              });
+            }}
+          >
+            <Delete />
+          </IconButton>
+        )}
+      </Box>
+    ))}
+    <Button
+      variant="outlined"
+      color="primary"
+      onClick={() => {
+        setTodo({
+          ...todo,
+          subTasks: [...todo.subTasks, { SubTaskName: '' }]
+        });
+      }}
+      sx={{ mb: 2 }}
+    >
+      Add Subtask
+    </Button>
+
     <Button variant="contained" color="success" onClick={handleAddToDo}>
       Add To-Do
     </Button>
   </Box>
 </Modal>
 
-
-
 {/* Edit To-Do Modal */}
 <Modal open={openEditTodoModal} onClose={() => setOpenEditTodoModal(false)}>
   <Box sx={modalStyle}>
     <TextField
-      label="To-Do Title"
+      label="Task Name"
       fullWidth
-      value={selectedTodo?.title || ''}
-      onChange={(e) => setSelectedTodo({ ...selectedTodo, title: e.target.value })}
+      value={selectedTodo?.taskName || ''}
+      onChange={(e) => setSelectedTodo({ ...selectedTodo, taskName: e.target.value })}
       sx={{ mb: 2 }}
     />
+    <TextField
+      label="Description"
+      fullWidth
+      multiline
+      rows={3}
+      value={selectedTodo?.description || ''}
+      onChange={(e) => setSelectedTodo({ ...selectedTodo, description: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      label="Deadline"
+      type="date"
+      fullWidth
+      value={selectedTodo?.deadline || ''}
+      onChange={(e) => setSelectedTodo({ ...selectedTodo, deadline: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      label="Category"
+      type="text"
+      fullWidth
+      value={selectedTodo?.category || ''}
+      onChange={(e) => setSelectedTodo({ ...selectedTodo, category: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    
+    {/* Subtasks Section */}
+    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Subtasks</Typography>
+    {(selectedTodo?.subTasks || []).map((subtask, index) => (
+      <Box key={index} display="flex" alignItems="center" sx={{ mb: 1 }}>
+        <TextField
+          label={`Subtask ${index + 1}`}
+          fullWidth
+          value={subtask.SubTaskName}
+          onChange={(e) => handleSubtaskChange(index, e.target.value)}
+          sx={{ mr: 1 }}
+        />
+        {(selectedTodo?.subTasks || []).length > 1 && (
+          <IconButton 
+            color="error" 
+            onClick={() => handleDeleteSubtask(index)}
+          >
+            <Delete />
+          </IconButton>
+        )}
+      </Box>
+    ))}
+    <Button
+      variant="outlined"
+      color="primary"
+      onClick={addSubtaskField}
+      sx={{ mb: 2 }}
+    >
+      Add Subtask
+    </Button>
+
     <Button variant="contained" color="primary" onClick={handleEditToDo}>
       Save Changes
     </Button>

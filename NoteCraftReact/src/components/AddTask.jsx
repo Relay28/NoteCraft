@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Button, TextField, Typography, IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { PersonalInfoContext } from './PersonalInfoProvider';
-import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, Button, TextField, Typography, IconButton } from '@mui/material';
+import { PersonalInfoContext } from './PersonalInfoProvider';
+
+import axios from 'axios';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const MAX_DESCRIPTION_LENGTH = 200;
 
 const AddTask = () => {
+    const user = personalInfo;
+    const token = localStorage.getItem('token');
     const location = useLocation();
     const isEditing = !!location.state?.task;
-    const { personalInfo } = useContext(PersonalInfoContext);
-    const token = localStorage.getItem('token');
-    const user = personalInfo;
     const navigate = useNavigate();
-
+    
+    const { personalInfo } = useContext(PersonalInfoContext);
     const [taskData, setTaskData] = useState(location.state?.task || {
         taskName: '',
         description: '',
@@ -33,27 +34,11 @@ const AddTask = () => {
         subTasks: false
     });
 
-    /* useEffect(() => {
-        // Ensure user is authenticated and has a valid userId
-        if (!token || !user?.id) {
-            navigate('/login'); // Redirect to login if authentication fails
-        }
-    
-        // Verify user is authorized to edit the task
-        if (isEditing && location.state.task.id !== user.id) {
-            alert("Unauthorized access to this task.");
-            navigate('/todolist'); // Redirect to task list
-        }
-    }, [token, user, isEditing, location.state?.task, navigate]); */
-
-    // Prevent editing of taskStarted in edit mode
-    // Modify the useEffect hook to handle subtasks correctly
     useEffect(() => {
         if (isEditing) {
             setTaskData((prevData) => ({
                 ...prevData,
                 ...location.state.task,
-                // Ensure subtasks are in the correct format
                 subTasks: location.state.task.subTasks && location.state.task.subTasks.length > 0 
                     ? location.state.task.subTasks.map(subtask => ({
                         SubTaskName: subtask.subTaskName || subtask.SubTaskName || ''
@@ -200,7 +185,7 @@ const AddTask = () => {
     };
 
     return (
-        <Box sx={{ padding: '10px',width:"80%",overflow:"auto"  }}>
+        <Box sx={{padding: '10px',width:"80%",overflow:"auto"  }}>
             <Typography variant="h4" component="h2" marginBottom="20px" sx={{ color: "black" }}>
                 {isEditing ? "Edit Task" : "Add New Task"}
             </Typography>
@@ -216,12 +201,12 @@ const AddTask = () => {
                     error={errors.taskName}
                     helperText={errors.taskName ? "Task Name is required." : ""}
                     sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition
+                        transition: 'transform 0.3s ease, background-color 0.3s ease',
                         '&:hover': {
-                            transform: 'scale(1.01)',  // Slightly enlarges the text field
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',  // Light gray background color on hover
+                            transform: 'scale(1.01)',
+                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
                             '& input': {
-                                color: 'gray',  // Change the input text color to gray when hovered
+                                color: 'gray',
                             }
                         }
                     }}
@@ -238,12 +223,12 @@ const AddTask = () => {
                     error={errors.description}
                     helperText={errors.description ? `Description is too long (max ${MAX_DESCRIPTION_LENGTH} characters).` : ""}
                     sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition
+                        transition: 'transform 0.3s ease, background-color 0.3s ease',
                         '&:hover': {
-                            transform: 'scale(1.01)',  // Slightly enlarges the text field
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',  // Light gray background color on hover
+                            transform: 'scale(1.01)',
+                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
                             '& input': {
-                                color: 'gray',  // Change the input text color to gray when hovered
+                                color: 'gray',
                             }
                         }
                     }}
@@ -260,12 +245,12 @@ const AddTask = () => {
                     error={errors.deadline}
                     helperText={errors.deadline ? "Deadline is required." : ""}
                     sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition
+                        transition: 'transform 0.3s ease, background-color 0.3s ease',
                         '&:hover': {
-                            transform: 'scale(1.01)',  // Slightly enlarges the text field
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',  // Light gray background color on hover
+                            transform: 'scale(1.01)',
+                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
                             '& input': {
-                                color: 'gray',  // Change the input text color to gray when hovered
+                                color: 'gray',
                             }
                         }
                     }}
@@ -278,12 +263,12 @@ const AddTask = () => {
                     fullWidth 
                     margin="normal"
                     sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition
+                        transition: 'transform 0.3s ease, background-color 0.3s ease',
                         '&:hover': {
-                            transform: 'scale(1.01)',  // Slightly enlarges the text field
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',  // Light gray background color on hover
+                            transform: 'scale(1.01)',
+                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
                             '& input': {
-                                color: 'gray',  // Change the input text color to gray when hovered
+                                color: 'gray',
                             }
                         }
                     }}
