@@ -34,18 +34,20 @@ const AuthLayout = () => {
 
       {/* Main Content */}
       <Box
-      style={{backgroundColor: (theme) => theme.palette.background.default,  marginTop: '8%',}}
+      style={{backgroundColor: (theme) => theme.palette.background.default,   paddingBottom:8,  }}
         sx={{
           flexGrow: 1,
           backgroundColor: (theme) => theme.palette.background.default,
-          marginLeft: isSidebarHovered ? '260px' : '90px',
+          marginLeft: isSidebarHovered ? '20%' : '10%',
           transition: 'margin-left 0.3s ease',
           width: '100%',
           left:"0",
           marginRight:0,
           overflow:"auto",
-          height:"100%",
-          marginTop: '10%',
+          
+          maxHeight:"100%",
+       
+          marginTop: '5%',
         }}
       >
         <Outlet />
