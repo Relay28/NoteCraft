@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -6,7 +7,9 @@ import IconButton from '@mui/material/IconButton';
 
 export default function SignIn() {
     const [personalInfo, setPersonalInfo] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
+        birthdate: '',
         email: '',
         username: '',
         password: '',
@@ -16,7 +19,9 @@ export default function SignIn() {
         username: '',
         password: '',
         email: '',
-        name: '',
+        firstName: '',
+        lastName: '',
+        birthdate: '',
     });
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
@@ -98,17 +103,48 @@ export default function SignIn() {
                 }}>Register</h1>
 
                 <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
-                    <input
+                <input
                         type="text"
-                        name="name"
-                        placeholder="Full Name"
-                        value={personalInfo.name}
+                        name="firstName"
+                        placeholder="First Name"
+                        value={personalInfo.firstName}
                         onChange={handleChange}
                         required
                         style={{
                             width: '100%',
                             padding: '12px',
-                            marginBottom: '3.5vh',
+                            borderRadius: '5px',
+                            border: '1px solid #ced4da',
+                            outline: 'none',
+                            fontSize: '16px',
+                        }}
+                    />
+                    <input
+                        type="text"
+                        name="lastName"
+                        placeholder="Last Name"
+                        value={personalInfo.lastName}
+                        onChange={handleChange}
+                        required
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '5px',
+                            border: '1px solid #ced4da',
+                            outline: 'none',
+                            fontSize: '16px',
+                        }}
+                    />
+                    <input
+                        type="date"
+                        name="birthdate"
+                        placeholder="Birthdate"
+                        value={personalInfo.birthdate}
+                        onChange={handleChange}
+                        required
+                        style={{
+                            width: '100%',
+                            padding: '12px',
                             borderRadius: '5px',
                             border: '1px solid #ced4da',
                             outline: 'none',
