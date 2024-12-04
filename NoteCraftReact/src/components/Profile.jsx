@@ -1,153 +1,247 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import EditProfile from './Edit';
 import profile from '/src/assets/profile.jpg'; // Ensure the correct path
 import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Typography,
-    Avatar,
-    Stack,
+  Box,
+  Avatar,
+  Typography,
+  Grid,
+  Paper,
+  IconButton,
+  Divider,
+  Button,
 } from '@mui/material';
+import { Edit } from '@mui/icons-material';
 
 export default function Profile({ personalInfo, token }) {
-    const location = useLocation();
-    const navigate = useNavigate();
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-indexed, so add 1
+    const day = d.getDate().toString().padStart(2, '0'); // Ensure day is 2 digits
+    return `${year}-${month}-${day}`; // Return in yyyy-MM-dd format
+  };
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [userInfo, setUserInfo] = useState(personalInfo || location.state?.account || {});
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        setUserInfo(personalInfo || location.state?.account || {});
-    }, [personalInfo, location.state]);
+  const [userInfo, setUserInfo] = useState(personalInfo || location.state?.account || {});
 
-    const handleUpdate = async (updatedInfo) => {
-        if (!userInfo.id) {
-            alert('Unable to update. User ID is not found.');
-            return;
-        }
+  console.log("Personal Info in Profile:", personalInfo);
 
-        try {
-            const response = await axios.put(
-                `http://localhost:8081/api/user/putUserDetails?id=${userInfo.id}`,
-                { ...updatedInfo, id: userInfo.id },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+  useEffect(() => {
+    if (location.state?.personalInfo) {
+      setUserInfo(location.state.personalInfo); // Update state if new data is passed
+    }
+  }, [location.state]);
 
-            setUserInfo(response.data);
-            setIsEditing(false);
-        } catch (error) {
-            alert('Error updating user details: ' + (error.response?.data?.message || 'Unknown error'));
-        }
-    };
+  const handleDelete = async () => {
+    if (!userInfo.id) {
+      alert('Unable to delete. User ID is not found.');
+      return;
+    }
 
-    const handleDelete = async () => {
-        if (!userInfo.id) {
-            alert('Unable to delete. User ID is not found.');
-            return;
-        }
-
-        const confirmDelete = window.confirm('Are you sure you want to delete your account? This action cannot be undone.');
-        if (!confirmDelete) return;
-
-        try {
-            await axios.delete(`http://localhost:8081/api/user/deleteUserDetails/${userInfo.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            alert('Account deleted successfully.');
-            navigate('/login');
-        } catch (error) {
-            alert('Error deleting user: ' + (error.response?.data?.message || 'Unknown error'));
-        }
-    };
-
-    return (
-        <Box
-            sx={{
-                border: '3px solid #93BA95',
-                width: '80%',
-                height: '90%',
-              
-                mt: 3,
-                borderRadius: 2,
-                p: 2,
-                boxShadow: 3,
-                textAlign:"left",
-            }}
-        >
-            <Stack direction="row" spacing={2} alignItems="center" pb={2} borderBottom="3px solid #93BA95">
-                <Avatar
-                    src={userInfo.profileImg ? `http://localhost:8081/profileImages/${userInfo.profileImg}` : profile}
-                    alt="Profile"
-                    sx={{ width: 100, height: 100 }}
-                />
-                <Box>
-                    <Typography variant="h5" component="h2">
-                        {userInfo.name || 'N/A'}
-                    </Typography>
-                    <Typography variant="subtitle1" color="textSecondary">
-                        Name
-                    </Typography>
-                </Box>
-            </Stack>
-
-            <Card sx={{ mt: 2, p: 2, maxWidth: '100%' }}>
-                <CardContent>
-                    {isEditing ? (
-                        <EditProfile
-                            personalInfo={userInfo}
-                            onUpdate={handleUpdate}
-                            onCancel={() => setIsEditing(false)}
-                        />
-                    ) : (
-                        <>
-                            <Typography variant="h6">
-                                Name: <Typography component="span">{userInfo.name || 'N/A'}</Typography>
-                            </Typography>
-                            <Typography variant="h6">
-                                Username: <Typography component="span">{userInfo.username || 'N/A'}</Typography>
-                            </Typography>
-                            <Typography variant="h6">
-                                Email: <Typography component="span">{userInfo.email || 'N/A'}</Typography>
-                            </Typography>
-                            <Typography variant="h6">
-                                Password: <Typography component="span">{userInfo.password ? '*'.repeat(userInfo.password.length) : 'N/A'}</Typography>
-                            </Typography>
-                        </>
-                    )}
-                </CardContent>
-            </Card>
-
-            {!isEditing && (
-    <Stack direction="row" spacing={2} mt={4} justifyContent="flex-end">
-        <Button
-            variant="contained"
-            color="success"
-            onClick={() => setIsEditing(true)}
-            sx={{ width: '20vh', height: '6vh',top:"70px" }}
-        >
-            Edit
-        </Button>
-        <Button
-            variant="contained"s
-            color="error"
-            onClick={handleDelete}
-            sx={{ width: '20vh', height: '6vh', top:"70px" }}
-        >
-            Delete
-        </Button>
-    </Stack>
-)}
-        </Box>
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone.'
     );
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`http://localhost:8081/api/user/deleteUserDetails/${userInfo.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert('Account deleted successfully.');
+      navigate('/login');
+    } catch (error) {
+      alert('Error deleting user: ' + (error.response?.data?.message || 'Unknown error'));
+    }
+  };
+
+  const handleDeactivate = async () => {
+    const isConfirmed = window.confirm(
+      'Are you sure you want to deactivate your account? This action cannot be undone.'
+    );
+    if (!isConfirmed) return;
+
+    try {
+      await axios.put(
+        `http://localhost:8081/api/user/deactivate?id=${userInfo.id}`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      alert('Your account has been successfully deactivated.');
+      navigate('/logout');
+    } catch (error) {
+      alert('Error deactivating account: ' + (error.response?.data?.message || 'Unknown error'));
+    }
+  };
+
+  const calculateAge = (birthdate) => {
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: '8%',
+        left: '5%',
+        width: '91vw',
+        height: '125vh',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: 4,
+        background: '#fff',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Profile Header */}
+      <Paper
+        sx={{
+          padding: 3,
+          borderRadius: 2,
+          marginBottom: 3,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #D3D3D3',
+        }}
+      >
+        <Avatar
+          src={
+            userInfo.profileImg
+              ? `http://localhost:8081/profileImages/${userInfo.profileImg}`
+              : profile
+          }
+          alt="Profile"
+          sx={{ width: 80, height: 80, border: '2px solid #ddd' }}
+        />
+        <Box sx={{ flex: 1, textAlign: 'left' }}>
+          <Typography variant="h6" fontWeight="bold">
+            {`${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || 'Full Name'}
+          </Typography>
+        </Box>
+        <Box>
+          <IconButton
+            color="primary"
+            onClick={() => navigate('/myprofile/edit', { state: { personalInfo: userInfo } })} 
+          >
+            <Edit />
+          </IconButton>
+        </Box>
+      </Paper>
+
+      {/* Personal Information */}
+      <Paper
+        sx={{
+          padding: 3,
+          borderRadius: 2,
+          marginBottom: 3,
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          textAlign: 'left',
+          border: '1px solid #D3D3D3',
+        }}
+      >
+        <Typography variant="h6" fontWeight="bold" marginBottom={2} fontSize={22}>
+          Personal Information
+        </Typography>
+        <Divider />
+        <Grid container spacing={2} sx={{ marginTop: 2 }}>
+          {[
+            { label: 'First Name', value: userInfo.firstName },
+            { label: 'Last Name', value: userInfo.lastName },
+            { label: 'Username', value: userInfo.username },
+            { label: 'Birthday', value: userInfo.birthdate ? formatDate(userInfo.birthdate) : 'N/A' },
+            { label: 'Email', value: userInfo.email },
+            {
+              label: 'Age',
+              value: userInfo.birthdate ? calculateAge(userInfo.birthdate) : 'N/A',
+            },
+          ].map(({ label, value }, index) => (
+            <Grid item xs={6} key={index}>
+              <Typography
+                variant="subtitle1"
+                fontWeight="bold"
+                color="text.secondary"
+                fontSize={16}
+              >
+                {label}
+              </Typography>
+              <Typography variant="body1" fontSize={18}>
+                {value || 'N/A'}
+              </Typography>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+
+      {/* Account Actions */}
+      <Grid item xs={6}>
+        <Paper
+          sx={{
+            padding: '24px',
+            borderRadius: 2,
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+            textAlign: 'left',
+            height: '200px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            border: '1px solid #D3D3D3',
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" marginBottom={1.5} fontSize={22}>
+            Account Removal
+          </Typography>
+          <Divider />
+          <Typography variant="body2" color="text.secondary" marginTop={3.5}>
+            Disabling your account means you can recover it at any time after taking this
+            action.
+          </Typography>
+          <Grid container spacing={2} sx={{ marginTop: 2 }}>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleDeactivate}
+                sx={{ textTransform: 'none', minWidth: '100%' }}
+              >
+                Disable Account
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleDelete}
+                sx={{
+                  textTransform: 'none',
+                  minWidth: '100%',
+                  border: '2px solid',
+                }}
+              >
+                Delete Account
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+      </Grid>
+    </Box>
+  );
 }

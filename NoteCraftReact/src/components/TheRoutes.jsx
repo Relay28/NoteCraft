@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import AuthLayout from './AuthLayout';
 import NonAuthLayout from './NonAuthLayout';
@@ -17,8 +17,12 @@ import Messages from './Messages';
 import NotFound from './NotFound';
 import StudyGroupPage from './StudyGroupPage';
 import GroupDetailsPage from './GroupDetails';
+import { PersonalInfoContext } from './PersonalInfoProvider';
+
+
 
 const TheRoutes = () => {
+  const { personalInfo } = useContext(PersonalInfoContext);
   return (
     <Routes>
       {/* NonAuthLayout */}
@@ -35,7 +39,7 @@ const TheRoutes = () => {
         <Route path="/notes/edit/:noteId" element={<NoteForm />} />
         <Route path="/files" element={<Files />} />
         <Route path="/messages" element={<Messages />} />
-        <Route path="/myprofile" element={<Profile />} />
+        <Route path="/myprofile" element={<Profile personalInfo={personalInfo} />} />
         <Route path="/myprofile/edit" element={<EditProfile />} />
         <Route path="/todolist" element={<Todolist />} />
         <Route path="/add-task" element={<AddTask />} />
