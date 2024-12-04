@@ -31,6 +31,9 @@ export const CustomThemeProvider = ({ children }) => {
           fontFamily: '"Minecraftia", Arial, sans-serif', // Minecraft-inspired font
           button: { textTransform: 'none' },
           h6: { fontWeight: 'bold', fontSize: '20px' }, // Headers
+          body1: { color: darkMode ? '#000' : '#000' },
+          h5: { color: darkMode ? '#000' : '#000' },
+          h4: { color: darkMode ? '#000' : '#000' },
         },
         shape: {
           borderRadius: 4, // Slightly blocky but modern

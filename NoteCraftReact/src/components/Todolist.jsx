@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Box, Button, Typography, List, ListItem, ListItemText, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Select, MenuItem, Grid } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from './ThemeProvider';
 
 const Todolist = () => {
     const [tasks, setTasks] = useState([]);
@@ -9,6 +11,7 @@ const Todolist = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [filteredTasks, setFilteredTasks] = useState([]);
     const [filter, setFilter] = useState('All');
+    const { darkMode, toggleTheme, theme } = useTheme(); 
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -16,13 +19,11 @@ const Todolist = () => {
     console.log(personalInfo.id);
 
     useEffect(() => {
-        // If the user ID is missing, redirect to the login page
         if (!personalInfo.id) {
             navigate('/login');
             return;
         }
 
-        // Fetch the to-do list for the logged-in user
         axios.get('http://localhost:8081/api/todolist/getAllToDoList', {
             params: { userId: personalInfo.id },
         })
@@ -97,7 +98,6 @@ const Todolist = () => {
             flexDirection: "column",
             alignItems: "center",
             width: "100%",
-            overflowX: "auto"
         }}>
             <Box sx={{
                 display: "flex",
@@ -106,7 +106,7 @@ const Todolist = () => {
                 width: "100%",
                 marginBottom: "20px"
             }}>
-                <Typography variant="h4" component="h2" sx={{ color: "black" }}>
+                <Typography variant="h4" component="h2" sx={{ color: "black", textAlign: 'left' }}>
                     To-Do List
                 </Typography>
 
@@ -128,10 +128,10 @@ const Todolist = () => {
                 <Button
                     sx={{
                         marginLeft: "60%",
-                        transition: 'transform 0.3s ease, background-color 0.3s ease', // Smooth transition for both scale and color
+                        transition: 'transform 0.3s ease, background-color 0.3s ease',
                         '&:hover': {
-                            transform: 'scale(1.1)',  // Enlarges the button
-                            backgroundColor: 'darkgreen',  // Changes the color to a darker shade
+                            transform: 'scale(1.1)',
+                            backgroundColor: 'darkgreen',
                         }
                     }}
                     variant="contained"
@@ -159,76 +159,85 @@ const Todolist = () => {
                                             sx={{
                                                 height: '100%',
                                                 borderRadius: "10px",
-                                                cursor: "pointer"
+                                                cursor: "pointer",
+                                                backgroundColor: darkMode
+                                                    ? task.isCompleted 
+                                                        ? '#b2d8b2'
+                                                        : '#f4b2b2'
+                                                    : task.isCompleted 
+                                                        ? '#b2d8b2'
+                                                        : '#f4b2b2',
                                             }}
                                             onClick={() => handleTaskClick(task)}
                                         >
                                             <CardContent
                                                 sx={{
-                                                    transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                                                    position: 'relative',
+                                                    transition: 'transform 0.3s ease, background-color 0.3s ease',
                                                     '&:hover': {
-                                                        transform: 'scale(1.01)',  // Slightly enlarges the CardContent
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.1)',  // Grays it out with a slight transparency
+                                                        transform: 'scale(1.01)',
+                                                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
                                                     }
                                                 }}
                                             >
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                                    <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: "10px" }}>
-                                                        {task.taskName}
-                                                    </Typography>
-                                                    <Box sx={{ flex: 1 }}>
-                                                        <Typography variant="body1" sx={{ marginBottom: "5px" }}>
-                                                            <strong>Category:</strong> {task.category || 'N/A'}
-                                                        </Typography>
-                                                        <Typography variant="body1" sx={{ marginBottom: "5px" }}>
-                                                            <strong>Status:</strong> {task.isCompleted ? "Completed" : "Incomplete"}
-                                                        </Typography>
-                                                        <Typography variant="body1" sx={{ marginBottom: "5px" }}>
-                                                            <strong>Deadline:</strong> {task.deadline || 'N/A'}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <Box sx={{ 
+                                                        position: 'absolute', 
+                                                        top: 0, 
+                                                        right: 0, 
+                                                        display: 'flex', 
+                                                        gap: 1 
+                                                    }}>
                                                         {!task.taskEnded && (
                                                             <Button
-                                                                variant="contained"
-                                                                color="success"
+                                                                variant="text"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleEdit(task);
                                                                 }}
                                                                 sx={{
-                                                                    marginTop: "10px",
-                                                                    marginRight: "10px",
-                                                                    transition: 'transform 0.3s ease, background-color 0.3s ease',
-                                                                    '&:hover': {
-                                                                        transform: 'scale(1.1)',
-                                                                        backgroundColor: 'darkgreen',
-                                                                        borderColor: 'darkgreen',
-                                                                    }
+                                                                    minWidth: 'auto',
+                                                                    padding: '4px',
+                                                                    color: 'green',
+                                                                    marginTop: "15px",
+                                                                    marginRight: "10px"
                                                                 }}
                                                             >
-                                                                Edit
+                                                                <EditIcon />
                                                             </Button>
                                                         )}
                                                         <Button
-                                                            variant="contained"
-                                                            color="error"
+                                                            variant="text"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleOpenDeleteDialog(task, index);
                                                             }}
                                                             sx={{
-                                                                marginTop: "10px",
-                                                                transition: 'transform 0.3s ease, background-color 0.3s ease',
-                                                                '&:hover': {
-                                                                    transform: 'scale(1.1)',
-                                                                    backgroundColor: 'darkred',
-                                                                    borderColor: 'darkred',
-                                                                }
+                                                                minWidth: 'auto',
+                                                                padding: '4px',
+                                                                color: 'red',
+                                                                marginTop: "15px",
+                                                                marginRight: "10px"
                                                             }}
                                                         >
-                                                            Delete
+                                                            <DeleteIcon />
                                                         </Button>
+                                                    </Box>
+                                                    <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: "10px", textAlign: 'left' }}>
+                                                        {task.taskName}
+                                                    </Typography>
+                                                    <Box sx={{ flex: 1 }}>
+                                                        <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
+                                                            <strong>Date Started:</strong> {task.taskStarted}
+                                                        </Typography>
+                                                        {task.isCompleted && (
+                                                            <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
+                                                                <strong>Date Ended:</strong> {task.taskEnded}
+                                                            </Typography>
+                                                        )}
+                                                        <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
+                                                            <strong>Deadline:</strong> {task.deadline}
+                                                        </Typography>
                                                     </Box>
                                                 </Box>
                                             </CardContent>
@@ -257,11 +266,11 @@ const Todolist = () => {
                         variant="contained"
                         color="success"
                         sx={{
-                            transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                            transition: 'transform 0.3s ease, background-color 0.3s ease',
                             '&:hover': {
-                                transform: 'scale(1.1)',  // Enlarges the button
-                                backgroundColor: 'darkgreen',  // Darker shade on hover
-                                borderColor: 'darkgreen',  // Optional: Makes the border match the background color
+                                transform: 'scale(1.1)',
+                                backgroundColor: 'darkgreen',
+                                borderColor: 'darkgreen',
                             }
                         }}
                     >
@@ -277,11 +286,11 @@ const Todolist = () => {
                         variant="contained"
                         color="error"
                         sx={{
-                            transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
+                            transition: 'transform 0.3s ease, background-color 0.3s ease',
                             '&:hover': {
-                                transform: 'scale(1.1)',  // Enlarges the button
-                                backgroundColor: 'darkred',  // Darker shade on hover
-                                borderColor: 'darkred',  // Optional: Makes the border match the background color
+                                transform: 'scale(1.1)',
+                                backgroundColor: 'darkred',
+                                borderColor: 'darkred',
                             }
                         }}
                     >
