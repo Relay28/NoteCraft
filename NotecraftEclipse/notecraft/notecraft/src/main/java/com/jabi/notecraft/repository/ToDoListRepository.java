@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.jabi.notecraft.entity.StudyGroupEntity;
 import com.jabi.notecraft.entity.ToDoListEntity;
 import com.jabi.notecraft.entity.UserEntity;
 
@@ -12,4 +13,5 @@ import com.jabi.notecraft.entity.UserEntity;
 public interface ToDoListRepository extends JpaRepository<ToDoListEntity, Integer>{
 	public ToDoListEntity findByTaskName(String taskName);
 	List<ToDoListEntity> findByUser(UserEntity user);
+	List<ToDoListEntity> findByUserAndStudyGroup(UserEntity user, StudyGroupEntity studyGroup);
 }

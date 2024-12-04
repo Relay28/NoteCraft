@@ -56,9 +56,10 @@ public class StudyGroupService {
     }
     public StudyGroupEntity createStudyGroup(StudyGroupEntity studyGroup) {
         // Ensure the owner exists in the database
-        UserEntity owner = userRepository.findById(studyGroup.getOwner().getId())
-                .orElseThrow(() -> new RuntimeException("Owner not found with ID: " + studyGroup.getOwner().getId()));
+        UserEntity owner =(studyGroup.getOwner());
+                //.orElseThrow(() -> new RuntimeException("Owner not found with ID: " + studyGroup.getOwner().getId()));
         studyGroup.setOwner(owner);
+        
 
         // Ensure all users exist in the database
         Set<UserEntity> existingUsers =new HashSet<>();

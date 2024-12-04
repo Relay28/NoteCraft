@@ -21,7 +21,8 @@ const AuthLayout = () => {
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   return (
-    <Box style={{ height: '100vh', width: '100vw', display: 'flex' }}>
+    <Box style={{ height: '80vh', width: '100vw', display: 'flex', marginLeft:0,paddingLeft:0}}
+    sx={{  backgroundColor: (theme) => theme.palette.background.default,}}>
       {/* Sidebar */}
       <NestedList
         open={isSidebarOpen}
@@ -35,12 +36,14 @@ const AuthLayout = () => {
       <Box
         sx={{
           flexGrow: 1,
-          padding: 4,
+          backgroundColor: (theme) => theme.palette.background.default,
           marginLeft: isSidebarHovered ? '260px' : '90px',
           transition: 'margin-left 0.3s ease',
-          width: '100%',
-          height: 'calc(100% - 68px)',
-          marginTop: '68px',
+          width: '100vw',
+          left:"0",
+          overflow:"hidden",
+          height: '100%',
+          marginTop: '55px',
         }}
       >
         <Outlet />

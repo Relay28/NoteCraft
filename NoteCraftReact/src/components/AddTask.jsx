@@ -200,7 +200,7 @@ const AddTask = () => {
     };
 
     return (
-        <Box sx={{ padding: '10px',width:"80%"  }}>
+        <Box sx={{ padding: '10px',width:"80%",overflow:"auto"  }}>
             <Typography variant="h4" component="h2" marginBottom="20px" sx={{ color: "black" }}>
                 {isEditing ? "Edit Task" : "Add New Task"}
             </Typography>

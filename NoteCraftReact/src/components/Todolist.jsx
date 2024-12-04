@@ -97,7 +97,7 @@ const Todolist = () => {
             flexDirection: "row",
             width:"85%",
             alignItems: "flex-start",
-            overflowX: "hidden"
+            overflowX: "auto"
         }}>
             <Box sx={{
                 flex: 2,

@@ -54,7 +54,7 @@ export default function GroupDetailsPage() {
 
   const [notes, setNotes] = useState([]);
   const [files, setFiles] = useState([]);
-  const [todos, setTodos] = useState([]);
+ 
   const [members, setMembers] = useState([]);
   const [responseMessage, setResponseMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -63,9 +63,12 @@ export default function GroupDetailsPage() {
   const [openTodoModal, setOpenTodoModal] = useState(false);
   const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   const [openMemberDrawer, setOpenMemberDrawer] = useState(false);
-
+  const [todo, setTodo] = useState([]);
   const [newNote, setNewNote] = useState('');
-  const [newTodo, setNewTodo] = useState('');
+  const [todos, setTodos] = useState([]);
+const [newTodoTitle, setNewTodoTitle] = useState('');
+const [selectedTodo, setSelectedTodo] = useState(null);
+const [openEditTodoModal, setOpenEditTodoModal] = useState(false);
   const [newFile, setNewFile] = useState(null);
   const [newMemberId, setNewMemberId] = useState('');
   const [openEditModal, setOpenEditModal] = useState(false);
@@ -76,13 +79,13 @@ const [openEditFileModal, setOpenEditFileModal] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
 
   const apiBaseUrl = 'http://localhost:8081/api/study-groups';
-  console.log(groupDetails.groupId)
+  //console.log(groupDetails.groupId)
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
         const response = await axios.get(`${apiBaseUrl}/getStudyGroupById/${groupId}`);
         setGroupDetails(response.data);
-        console.log(response.data)
+        //console.log(response.data)
         setNotes(response.data.notes || []);
         setFiles(response.data.files || []);
         setTodos(response.data.todos || []);
@@ -97,6 +100,62 @@ const [openEditFileModal, setOpenEditFileModal] = useState(false);
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
 };
+const fetchToDos = async () => {
+  try {
+    const response = await axios.get(`${apiBaseUrl}/group/${groupId}/user/${user.id}`);
+    setTodos(response.data);
+  } catch (error) {
+    console.error('Failed to fetch To-Dos', error);
+  }
+};
+
+const handleAddToDo = async () => {
+  try {
+    const response = await axios.post(`${apiBaseUrl}/${groupId}/add-todo`, todo, {
+      params: { userId: user.id },
+    });
+    setTodos((prev) => [...prev, response.data]);
+    setTodo({
+      taskName: '',
+      description: '',
+      deadline: '',
+      taskStarted: '',
+      taskEnded: '',
+      isCompleted: false,
+      category: '',
+    });
+    console.log(response.data)
+    setOpenTodoModal(false);
+  } catch (error) {
+    console.error('Failed to add To-Do', error);
+  }
+};
+
+
+// Edit To-Do
+const handleEditToDo = async () => {
+  try {
+    const response = await axios.put(
+      `${apiBaseUrl}/${selectedTodo.id}/group/${groupId}/user/${user.id}`,
+      selectedTodo
+    );
+    setTodos((prev) => prev.map((todo) => (todo.id === selectedTodo.id ? response.data : todo)));
+    setOpenEditTodoModal(false);
+    setSelectedTodo(null);
+  } catch (error) {
+    console.error('Failed to edit To-Do', error);
+  }
+};
+
+// Delete To-Do
+const handleDeleteToDo = async (todoId) => {
+  try {
+    await axios.delete(`${apiBaseUrl}/${todoId}/group/${groupId}/user/${user.id}`);
+    setTodos((prev) => prev.filter((todo) => todo.id !== todoId));
+  } catch (error) {
+    console.error('Failed to delete To-Do', error);
+  }
+};
   
 
   const [note, setNote] = useState({
@@ -107,7 +166,7 @@ const [openEditFileModal, setOpenEditFileModal] = useState(false);
     dateCreated: new Date().toISOString(),
     userId: user ? user.id : null,
   });
-  console.log(notes)
+  //console.log(notes)
 
   const handleDeleteNote = async (noteId) => {
     try {
@@ -235,10 +294,10 @@ const [openEditFileModal, setOpenEditFileModal] = useState(false);
   // Handle Todo Creation
   const handleAddTodo = async () => {
     try {
-      const response = await axios.post(`${apiBaseUrl}/${groupId}/add-todo`, { todo: newTodo });
+      const response = await axios.post(`${apiBaseUrl}/${groupId}/add-todo`, { todo: todo });
       setTodos((prev) => [...prev, response.data]);
       setOpenTodoModal(false);
-      setNewTodo('');
+      settodo('');
       setResponseMessage('To-do added successfully!');
     } catch {
       setResponseMessage('Failed to add to-do.');
@@ -401,15 +460,58 @@ useEffect
           </Card>
         )}
 
-        {tabIndex === 2 && (
-          <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
-            <CardContent>
-              <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                To-Dos functionality coming soon!
-              </Typography>
-            </CardContent>
-          </Card>
-        )}
+{tabIndex === 2 && (
+  <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
+    <CardContent>
+      <Button
+        variant="contained"
+        color="success"
+        onClick={() => setOpenTodoModal(true)}
+        startIcon={<AddCircle />}
+        sx={{ mb: 2, fontWeight: 'bold', textTransform: 'none' }}
+      >
+        Add To-Do
+      </Button>
+      {todos.length > 0 ? (
+        <List>
+          {todos.map((todo) => (
+            <ListItem key={todo.id} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <ListItemText
+                primary={todo.title}
+                secondary={`Created on: ${new Date(todo.dateCreated).toLocaleDateString()}`}
+              />
+              <Box>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => {
+                    setSelectedTodo(todo);
+                    setOpenEditTodoModal(true);
+                  }}
+                  sx={{ mr: 1 }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleDeleteToDo(todo.id)}
+                >
+                  Delete
+                </Button>
+              </Box>
+            </ListItem>
+          ))}
+        </List>
+      ) : (
+        <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
+          No To-Dos yet. Start by adding one!
+        </Typography>
+      )}
+    </CardContent>
+  </Card>
+)}
+
       </Box>
 
       {/* Member Drawer */}
@@ -437,6 +539,65 @@ useEffect
     </List>
   </Box>
 </Drawer>
+{/* Add To-Do Modal */}
+<Modal open={openTodoModal} onClose={() => setOpenTodoModal(false)}>
+  <Box sx={modalStyle}>
+    <TextField
+      label="Task Name"
+      fullWidth
+      value={todo.taskName}
+      onChange={(e) => setTodo({ ...todo, taskName: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      label="Description"
+      fullWidth
+      multiline
+      rows={3}
+      value={todo.description}
+      onChange={(e) => setTodo({ ...todo, description: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      label="Deadline"
+      type="date"
+      fullWidth
+      value={todo.deadline}
+      onChange={(e) => setTodo({ ...todo, deadline: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      label="Category"
+      type="text"
+      fullWidth
+      value={todo.category}
+      onChange={(e) => setTodo({ ...todo, category: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <Button variant="contained" color="success" onClick={handleAddToDo}>
+      Add To-Do
+    </Button>
+  </Box>
+</Modal>
+
+
+
+{/* Edit To-Do Modal */}
+<Modal open={openEditTodoModal} onClose={() => setOpenEditTodoModal(false)}>
+  <Box sx={modalStyle}>
+    <TextField
+      label="To-Do Title"
+      fullWidth
+      value={selectedTodo?.title || ''}
+      onChange={(e) => setSelectedTodo({ ...selectedTodo, title: e.target.value })}
+      sx={{ mb: 2 }}
+    />
+    <Button variant="contained" color="primary" onClick={handleEditToDo}>
+      Save Changes
+    </Button>
+  </Box>
+</Modal>
+
 
       {/* Modals for Notes, Files, To-Dos, and Adding Members */}
       <Modal open={openNoteModal} onClose={() => setOpenNoteModal(false)}>
@@ -492,6 +653,7 @@ useEffect
             fullWidth
             sx={{ mt: 2 }}
           />
+
           <Button
             variant="contained"
             color="primary"

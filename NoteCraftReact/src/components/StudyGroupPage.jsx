@@ -15,7 +15,6 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import NestedList from "./SideBar"; // Assuming Sidebar is in the same directory
 
 const modalStyle = {
   position: "absolute",
@@ -53,7 +52,9 @@ export default function StudyGroupPage() {
       const response = await axios.get(
         `${apiBaseUrl}/getGroupsForUser/${userId}`
       );
-      setStudyGroups(response.data);
+      setStudyGroups(response.data || []);
+      console.log("Updated studyGroups:", studyGroups);
+      console.log(response)
     } catch (error) {
       console.error("Error fetching study groups:", error);
       setResponseMessage("Error fetching study groups.");
@@ -61,9 +62,11 @@ export default function StudyGroupPage() {
       setSnackbarOpen(true);
     }
   };
-  console.log(studyGroups)
+
   useEffect(() => {
-    fetchUserGroups();
+    if (userId) {
+      fetchUserGroups();
+    }
   }, [userId]);
 
   const handleGroupClick = (groupId) => {
@@ -81,18 +84,20 @@ export default function StudyGroupPage() {
     setLoading(true);
     try {
       const newGroup = {
-        groupName,
-        description,
+        groupName: groupName,
+        description: description,
         owner: { id: userId },
       };
 
       const response = await axios.post(`${apiBaseUrl}/createStudyGroup`, newGroup);
-      setStudyGroups((prev) => [...prev, response.data]);
-      setResponseMessage("Group created successfully!");
-      setResponseType("success");
-      setOpenCreateModal(false);
-      setGroupName("");
-      setDescription("");
+      if (response.data) {
+        setStudyGroups((prev) => [...(prev || []), response.data]);
+        setResponseMessage("Group created successfully!");
+        setResponseType("success");
+        setOpenCreateModal(false);
+        setGroupName("");
+        setDescription("");
+      }
     } catch (error) {
       console.error("Error creating group:", error);
       setResponseMessage("Failed to create group. Try again.");
@@ -117,11 +122,13 @@ export default function StudyGroupPage() {
         `${apiBaseUrl}/${groupIdToJoin}/add-users`,
         [userId]
       );
-      setStudyGroups((prev) => [...prev, response.data]);
-      setResponseMessage("Joined group successfully!");
-      setResponseType("success");
-      setOpenJoinModal(false);
-      setGroupIdToJoin("");
+      if (response.data) {
+        setStudyGroups((prev) => [...(prev || []), response.data]);
+        setResponseMessage("Joined group successfully!");
+        setResponseType("success");
+        setOpenJoinModal(false);
+        setGroupIdToJoin("");
+      }
     } catch (error) {
       console.error("Error joining group:", error);
       setResponseMessage("Failed to join group. Check the Group ID.");
@@ -137,54 +144,67 @@ export default function StudyGroupPage() {
   };
 
   return (
-    <Box sx={{ display: "flex",left:"0",margin:"0",width:"75%" }}>
-    
+    <Box sx={{ display: "flex", left: "0", margin: "0", width: "75%", height: "100vh", }}>
       <Box sx={{ flexGrow: 1, p: 3 }}>
         <Typography variant="h4" sx={{ mb: 2, color: "#487d4b" }}>
           Group Manager
         </Typography>
 
+        {/* Buttons at the top */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+          <Box>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => setOpenCreateModal(true)}
+              sx={{ mr: 2 }}
+            >
+              Create New Group
+            </Button>
+            <Button
+              variant="outlined"
+              color="success"
+              onClick={() => setOpenJoinModal(true)}
+            >
+              Join Group
+            </Button>
+          </Box>
+        </Box>
+
         <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
           Your Groups
         </Typography>
 
-        <List>
-          {studyGroups.map((group) => (
-            <React.Fragment key={group.groupId}>
-              <ListItem button onClick={() => handleGroupClick(group.groupId)}>
-                <ListItemText
-                  primary={group.groupName}
-                  secondary={`Description: ${group.description}`}
-                />
-              </ListItem>
-              <Divider />
-            </React.Fragment>
-          ))}
-        </List>
-
-        {/* Buttons */}
-        <Box sx={{ mt: 3 }}>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => setOpenCreateModal(true)}
-            sx={{ mr: 2 }}
-          >
-            Create New Group
-          </Button>
-          <Button
-            variant="outlined"
-            color="success"
-            onClick={() => setOpenJoinModal(true)}
-          >
-            Join Group
-          </Button>
-        </Box>
+        {studyGroups.length > 0 ? (
+          <List sx={{ maxHeight: "70vh", overflow: "auto", padding: 0 }}>
+            {studyGroups.map((group) => (
+              <React.Fragment key={group.groupId}>
+                <ListItem button onClick={() => handleGroupClick(group.groupId)}>
+                  <ListItemText
+                    primary={group.groupName}
+                    secondary={`Description: ${group.description}`}
+                  />
+                </ListItem>
+                <Divider />
+              </React.Fragment>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No groups found. Create or join a group to get started!
+          </Typography>
+        )}
 
         {/* Create Group Modal */}
-        <Modal open={openCreateModal} onClose={() => setOpenCreateModal(false)}>
+        <Modal 
+          open={openCreateModal} 
+          onClose={() => setOpenCreateModal(false)}
+          // Add these props to prevent undefined error
+          aria-labelledby="create-group-modal-title"
+          aria-describedby="create-group-modal-description"
+        >
           <Box sx={modalStyle}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography id="create-group-modal-title" variant="h6" sx={{ mb: 2 }}>
               Create a New Study Group
             </Typography>
             <TextField
@@ -215,9 +235,15 @@ export default function StudyGroupPage() {
         </Modal>
 
         {/* Join Group Modal */}
-        <Modal open={openJoinModal} onClose={() => setOpenJoinModal(false)}>
+        <Modal 
+          open={openJoinModal} 
+          onClose={() => setOpenJoinModal(false)}
+          // Add these props to prevent undefined error
+          aria-labelledby="join-group-modal-title"
+          aria-describedby="join-group-modal-description"
+        >
           <Box sx={modalStyle}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography id="join-group-modal-title" variant="h6" sx={{ mb: 2 }}>
               Join a Study Group
             </Typography>
             <TextField

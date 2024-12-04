@@ -15,14 +15,16 @@ export const CustomThemeProvider = ({ children }) => {
           mode: darkMode ? 'dark' : 'light',
           ...(darkMode
             ? {
-                primary: { main: '#4caf50' },
-                background: { default: '#1e2c1d', paper: '#2e3e2f' },
-                text: { primary: '#d1d5db', secondary: '#9ca3af' },
+                primary: { main: '#81a1c1' }, // Calming teal/blue accent
+                background: { default: '#2b2f3a', paper: '#383e4a' }, // Neutral dark tones
+                text: { primary: '#d8dee9', secondary: '#a1a9b3' }, // Readable grays
+                secondary: { main: '#d4af37' }, // Subtle gold accent
               }
             : {
-                primary: { main: '#5e8c31' },
-                background: { default: '#f4f7ed', paper: '#fff' },
-                text: { primary: '#374151', secondary: '#6b7280' },
+                primary: { main: '#4caf50' }, // Fresh green for light mode
+                background: { default: '#f4f7ed', paper: '#fff' }, // Light and airy
+                text: { primary: '#374151', secondary: '#6b7280' }, // Gray tones
+                secondary: { main: '#8d6e63' }, // Soft brown
               }),
         },
         typography: {
@@ -37,16 +39,22 @@ export const CustomThemeProvider = ({ children }) => {
           MuiAppBar: {
             styleOverrides: {
               root: {
-                backgroundColor: darkMode ? '#1e2c1d' : '#5e8c31',
-                color: darkMode ? '#d1d5db' : '#fff',
+                backgroundColor: darkMode ? '#383e4a' : '#4caf50',
+                color: darkMode ? '#d8dee9' : '#fff',
               },
             },
           },
-          MuiNestedList: {
+          MuiBox: {
             styleOverrides: {
               root: {
-                backgroundColor: darkMode ? '#579A59' : '#579A59',
-                color: darkMode ? '#d1d5db' : '#d1d5db',
+                backgroundColor: darkMode ? '#2b2f3a' : '#f4f7ed',
+                color: darkMode ? '#d8dee9' : '#374151',
+                backgroundImage: darkMode
+                  ? `radial-gradient(circle, rgba(255, 255, 255, 0.05) 2px, transparent 2px),
+                     radial-gradient(circle, rgba(135, 206, 250, 0.05) 2px, transparent 2px)`
+                  : 'none', // Subtle starry effect for dark mode
+                backgroundSize: darkMode ? '60px 60px, 90px 90px' : 'none',
+                backgroundPosition: darkMode ? '0 0, 30px 30px' : 'none',
               },
             },
           },
@@ -58,7 +66,7 @@ export const CustomThemeProvider = ({ children }) => {
   const toggleTheme = () => setDarkMode((prev) => !prev);
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleTheme,theme }}>
+    <ThemeContext.Provider value={{ darkMode, toggleTheme, theme }}>
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );

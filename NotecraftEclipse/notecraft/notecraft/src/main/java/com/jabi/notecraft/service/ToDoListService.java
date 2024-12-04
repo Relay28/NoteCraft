@@ -64,6 +64,62 @@ public class ToDoListService {
 
 	    return tdlrepo.save(toDoList);
 	}
+	
+	public List<ToDoListEntity> getAllToDoListsWithGroup(int studyGroupId, int userId) {
+	    UserEntity user = urepo.findById(userId)
+	        .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+	    StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+	        .orElseThrow(() -> new NoSuchElementException("Study Group not found with ID: " + studyGroupId));
+
+	    return tdlrepo.findByUserAndStudyGroup(user, studyGroup);
+	}
+
+	public ToDoListEntity editToDoListWithGroup(int id, ToDoListEntity updatedToDoListDetails, int userId, int studyGroupId) {
+	    ToDoListEntity existingToDoList = tdlrepo.findById(id)
+	        .orElseThrow(() -> new NoSuchElementException("To-Do List record not found with ID: " + id));
+
+	    UserEntity user = urepo.findById(userId)
+	        .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+	    StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+	        .orElseThrow(() -> new NoSuchElementException("Study Group not found with ID: " + studyGroupId));
+
+	    // Verify if the ToDoList belongs to the user and the study group
+	    if (!existingToDoList.getUser().equals(user) || !existingToDoList.getStudyGroup().equals(studyGroup)) {
+	        throw new SecurityException("To-Do List does not belong to the user or study group");
+	    }
+
+	    // Update details
+	    existingToDoList.setTaskName(updatedToDoListDetails.getTaskName());
+	    existingToDoList.setDeadline(updatedToDoListDetails.getDeadline());
+	    existingToDoList.setTaskStarted(updatedToDoListDetails.getTaskStarted());
+	    existingToDoList.setTaskEnded(updatedToDoListDetails.getTaskEnded());
+	    existingToDoList.setIsCompleted(updatedToDoListDetails.getIsCompleted());
+	    existingToDoList.setCategory(updatedToDoListDetails.getCategory());
+
+	    return tdlrepo.save(existingToDoList);
+	}
+
+	public String deleteToDoListWithGroup(int id, int userId, int studyGroupId) {
+	    ToDoListEntity toDoList = tdlrepo.findById(id)
+	        .orElseThrow(() -> new NoSuchElementException("To-Do List record not found with ID: " + id));
+
+	    UserEntity user = urepo.findById(userId)
+	        .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+	    StudyGroupEntity studyGroup = studyGroupRepository.findById(studyGroupId)
+	        .orElseThrow(() -> new NoSuchElementException("Study Group not found with ID: " + studyGroupId));
+
+	    // Verify if the ToDoList belongs to the user and study group
+	    if (!toDoList.getUser().equals(user) || !toDoList.getStudyGroup().equals(studyGroup)) {
+	        throw new SecurityException("To-Do List does not belong to the user or study group");
+	    }
+
+	    tdlrepo.delete(toDoList);
+	    return "To-Do List record successfully deleted!";
+	}
+
 
 	public List<ToDoListEntity>getAllToDoList(int userId){
 		UserEntity user = urepo.findById(userId)
