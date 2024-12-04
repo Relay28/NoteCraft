@@ -28,10 +28,12 @@ export default function EditProfile({ token }) {
     return `${year}-${month}-${day}`; // Return in yyyy-MM-dd format
   };
   
-  const [formData, setFormData] = useState({
+  const [initialFormData, setInitialFormData] = useState({
     ...location.state?.personalInfo,
     birthdate: formatDate(location.state?.personalInfo?.birthdate),
   });
+  
+  const [formData, setFormData] = useState({ ...initialFormData });
 
   
   const calculateAge = (birthdate) => {
@@ -84,13 +86,20 @@ export default function EditProfile({ token }) {
           },
         }
       );
-
+    
+      setFormData(response.data);
+      setInitialFormData(response.data);
+    
       alert('Profile updated successfully!');
       navigate('/myprofile', { state: { personalInfo: response.data } });
     } catch (error) {
       console.error('Error updating user details:', error);
       setError('Failed to update user details. Please try again.');
     }
+  };
+
+  const handleCancel = () => {
+    navigate('/myprofile', { state: { personalInfo: formData } });
   };
 
   return (
@@ -110,7 +119,7 @@ export default function EditProfile({ token }) {
     >
       <Button
         startIcon={<ArrowBack />}
-        onClick={() => navigate('/myprofile')}
+        onClick={handleCancel}
         sx={{
           textTransform: 'none',
           marginBottom: 3,
@@ -284,7 +293,7 @@ export default function EditProfile({ token }) {
         <Button
           variant="outlined"
           color="secondary"
-          onClick={() => navigate('/myprofile')}
+          onClick={handleCancel}
           sx={{ textTransform: 'none' }}
         >
           Cancel
