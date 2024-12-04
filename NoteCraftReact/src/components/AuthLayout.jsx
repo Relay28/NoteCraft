@@ -41,7 +41,7 @@ const AuthLayout = () => {
           transition: 'margin-left 0.3s ease',
           width: '100vw',
           left:"0",
-          overflow:"hidden",
+          overflow:"auto",
           height: '100%',
           marginTop: '55px',
         }}

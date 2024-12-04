@@ -16,6 +16,7 @@ import { PersonalInfoContext } from './PersonalInfoProvider';
 import Box from '@mui/material/Box';
 import profile from '/src/assets/profile.jpg';
 import { Group } from '@mui/icons-material';
+import { useTheme } from './ThemeProvider';
 
 export default function NestedList({  open, toggleNestedList, setSidebarHovered}) {
   const navigate = useNavigate();
@@ -23,7 +24,9 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
   const [isHovered, setIsHovered] = React.useState(false);
   const user = personalInfo
   const [imgSrc, setImgSrc] = React.useState(profile);
+  const { darkMode,toggleTheme,theme  } = useTheme(); // Prevent `undefined` access
 
+console.log('Theme:', theme); 
   React.useEffect(() => {
     if (user?.profileImg) {
       const imageUrl = `http://localhost:8081/profileImages/${user.profileImg}`;
@@ -77,8 +80,13 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
         height: '100vh',
         position: 'fixed',
         left: 0,
+        marginRight:0,
         top: 0,
+        
         display: 'flex',
+        gap:0,
+        backgroundColor: (theme) => theme.palette.background.default,  // Using theme for background color
+        color: (theme) => theme.palette.text.primary, 
         flexDirection: 'column',
         zIndex: 2,
       }}
@@ -89,12 +97,15 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
           height: '100vh',
           bgcolor: 'white',
           position: 'relative',
-          color: '#487d4b',
+          backgroundColor: (theme) => theme.palette.background.default,  // Using theme for background color
+          color: (theme) => theme.palette.text.primary,
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-          borderRight: '1px solid #e0e0e0',
+          borderRight: darkMode?'1px solid green':'1px solid #e0e0e0',
           display: 'flex',
+          marginRight:0,
+          gap:0,
           flexDirection: 'column',
-          transition: 'width 0.3s ease', 
+          transition: 'width 0.6s ease', 
           overflow: 'hidden', 
         }}
         onMouseEnter={handleMouseEnter} // Expand sidebar on hover
@@ -109,8 +120,8 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
             alignItems: 'center',
             justifyContent: isSidebarOpen ? 'space-between' : 'center',
             padding: '15px',
-            borderBottom: '1px solid #e0e0e0',
-            transition: 'all 0.3s ease', 
+            borderBottom: darkMode?'1px solid green':'1px solid #e0e0e0',
+            transition: 'all 0.8s ease', 
           }}
         >
           <div
@@ -136,9 +147,10 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                 sx={{
                   fontWeight: 'bold',
                   color: '#487d4b',
+                  fontFamily: 'Minecraftia, sans-serif',
                   fontSize: '16px',
                   opacity: isSidebarOpen ? 1 : 0,
-                  transition: 'opacity 0.3s ease', 
+                  transition: 'opacity 1s ease', 
                 }}
               >
                 NoteCraft
@@ -166,9 +178,10 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                 alignItems: 'center',
                 padding: isSidebarOpen ? '8px 16px' : '8px 0',
                 minHeight: '48px',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.8s ease',
                 display: 'flex',
                 flexDirection: 'row',
+                gap: isSidebarOpen ? '16px' : 0, 
               }}
             >
               <ListItemIcon
@@ -177,9 +190,10 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                   justifyContent: 'center',
                   alignItems: 'center',
                   color: '#579A59',
-                  width: isSidebarOpen ? '60px' : 'auto',
+                  minWidth: '48px', // Ensures consistent spacing between icons and text
+                  width: '48px',
                   height: '60px',
-                  transition: 'all 0.3s ease',
+                  transition: 'all 0.8s ease',
                   '& svg': {
                     fontSize: '1.7rem',
                   },
@@ -194,9 +208,9 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                   overflow: 'hidden',
                   opacity: isSidebarOpen ? 1 : 0,
                   visibility: isSidebarOpen ? 'visible' : 'hidden',
-                  transition: 'opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease',
+                  transition: 'opacity 0.8s ease, visibility 0.3s ease, width 0.8s ease',
                   whiteSpace: 'nowrap',
-                  width: isSidebarOpen ? 'auto' : 0,
+                  width: isSidebarOpen ? 'auto': 0,
                 }}
               >
                 <ListItemText
@@ -205,7 +219,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                     '& span': {
                       fontSize: '15px',
                       fontWeight: 500,
-                      transition: 'opacity 0.3s ease',
+                      transition: 'opacity 0.8s ease',
                     },
                   }}
                 />
@@ -223,7 +237,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
             justifyContent: isSidebarOpen ? 'flex-start' : 'center',
             padding: '25px',
             gap: '15px',
-            borderTop: '1px solid #e0e0e0',
+            borderTop: darkMode?'1px solid green':'1px solid #e0e0e0',
             transition: 'all 0.3s ease',
           }}
         >
@@ -235,18 +249,18 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
               width: '40px',
               height: '40px',
               borderRadius: '50%',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.8s ease',
             }}
           />
           {isSidebarOpen && (
             <Box sx={{ textAlign: 'left' }}>
               <Typography
                 variant="body1"
-                sx={{ fontWeight: 'bold', fontSize: '15px', color: '#333' }}
+                sx={{ fontWeight: 'bold', fontSize: '15px', color:darkMode?"#fff": '#333' }}
               >
                 {personalInfo?.name || 'Guest'} 
               </Typography>
-              <Typography variant="body2" sx={{ fontSize: '13px', color: '#666' }}>
+              <Typography variant="body2" sx={{ fontSize: '13px', color:darkMode?"#fff": '#333'  }}>
                 {personalInfo?.email || 'guest@email.com'} 
               </Typography>
             </Box>
