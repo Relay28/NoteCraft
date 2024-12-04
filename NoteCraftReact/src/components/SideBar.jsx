@@ -77,7 +77,7 @@ console.log('Theme:', theme);
   return (
     <div
       style={{
-        height: '100vh',
+        height: '100%',
         position: 'fixed',
         left: 0,
         marginRight:0,
@@ -94,7 +94,7 @@ console.log('Theme:', theme);
       <List
         sx={{
           width: isSidebarOpen ? '260px' : '90px', 
-          height: '100vh',
+          height: '100%',
           bgcolor: 'white',
           position: 'relative',
           backgroundColor: (theme) => theme.palette.background.default,  // Using theme for background color
