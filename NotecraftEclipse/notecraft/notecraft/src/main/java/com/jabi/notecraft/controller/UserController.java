@@ -1,5 +1,8 @@
 package com.jabi.notecraft.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 //import javax.naming.NameNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -75,26 +79,42 @@ public class UserController {
     public ResponseEntity<UserEntity> putUserDetails(
             @RequestParam int id,
             @RequestParam(value = "profileImg", required = false) MultipartFile profileImg,
-            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "birthdate", required = false) String birthdateStr,
+            @RequestParam(value = "firstName", required = false) String firstName,
+            @RequestParam(value = "lastName", required = false) String lastName,
             @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "password", required = false) String password) {
-        
+
         UserEntity newUserDetails = new UserEntity();
-        newUserDetails.setName(name);
+        newUserDetails.setFirstName(firstName);
+        newUserDetails.setLastName(lastName);
         newUserDetails.setUsername(username);
         newUserDetails.setEmail(email);
         newUserDetails.setPassword(password);
 
+        // Parse the birthdate
+        Date birthdate = null;
+        if (birthdateStr != null) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                birthdate = sdf.parse(birthdateStr);
+            } catch (ParseException e) {
+                return ResponseEntity.badRequest().body(null); // Invalid date format
+            }
+        }
+        newUserDetails.setBirthdate(birthdate);
+
         try {
             UserEntity updatedUser = userv.putUserDetails(id, newUserDetails, profileImg);
-            return ResponseEntity.ok(updatedUser); 
+            return ResponseEntity.ok(updatedUser);
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); 
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 
 
     @DeleteMapping("/deleteUserDetails/{id}")

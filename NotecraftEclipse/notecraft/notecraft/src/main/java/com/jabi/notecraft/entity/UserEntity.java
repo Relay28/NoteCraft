@@ -2,6 +2,7 @@ package com.jabi.notecraft.entity;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,8 +29,10 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "userId")
 	private int id;
-	private String name;
-	  
+	
+	private String firstName;
+	private String lastName;
+	private Date birthdate;
     private String password;
 
 	@Column(unique = true)
@@ -55,11 +58,7 @@ public class UserEntity {
 
 
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-    @JsonIgnore
     private Set<StudyGroupEntity> studyGroups = new HashSet<>();
-
-
-  
 
     public Set<StudyGroupEntity>  getStudyGroups() {
 		return studyGroups;
@@ -100,12 +99,7 @@ public class UserEntity {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
+	
 	public String getPassword() {
 		return password;
 	}
@@ -130,16 +124,41 @@ public class UserEntity {
 	public void setProfileImg(String profileImg) {
 		this.profileImg = profileImg;
 	}
-	
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public Date getBirthdate() {
+		return birthdate;
+	}
+
+	public void setBirthdate(Date birthdate) {
+		this.birthdate = birthdate;
+	}
+
    
  
     public UserEntity() {
         super();
     }
-    public UserEntity(int id, String name, String password, String email, String username, String profileImg) {
+    public UserEntity(int id, String firstName,String lastName, Date birthdate, String password, String email, String username, String profileImg) {
         super();
         this.id=id;
-        this.name=name;
+        this.birthdate = birthdate;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.password=password;
         this.email=email;
         this.username=username;

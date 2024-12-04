@@ -55,11 +55,18 @@ public class UserService {
 
     
     public UserEntity putUserDetails(int id, UserEntity newUserDetails, MultipartFile profileImg) {
+        // Find the existing user or throw an exception if not found
         UserEntity user = urepo.findById(id).orElseThrow(() -> new NoSuchElementException("User " + id + " not found"));
 
         // Update user details from newUserDetails
-        if (newUserDetails.getName() != null) {
-            user.setName(newUserDetails.getName());
+        if (newUserDetails.getLastName() != null) {
+            user.setLastName(newUserDetails.getLastName());
+        }
+        if (newUserDetails.getFirstName() != null) {
+            user.setFirstName(newUserDetails.getFirstName());
+        }
+        if (newUserDetails.getBirthdate() != null) {
+            user.setBirthdate(newUserDetails.getBirthdate()); // Update birthdate if provided
         }
         if (newUserDetails.getUsername() != null) {
             user.setUsername(newUserDetails.getUsername());
@@ -79,6 +86,7 @@ public class UserService {
         // Save the updated user entity to the repository
         return urepo.save(user);
     }
+
 
     private void saveProfileImage(MultipartFile profileImg, UserEntity user) {
         try {
