@@ -9,13 +9,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 const MAX_DESCRIPTION_LENGTH = 200;
 
 const AddTask = () => {
-    const user = personalInfo;
     const token = localStorage.getItem('token');
     const location = useLocation();
+    const { personalInfo } = useContext(PersonalInfoContext);
     const isEditing = !!location.state?.task;
     const navigate = useNavigate();
-    
-    const { personalInfo } = useContext(PersonalInfoContext);
     const [taskData, setTaskData] = useState(location.state?.task || {
         taskName: '',
         description: '',
@@ -26,6 +24,8 @@ const AddTask = () => {
         category: '',
         subTasks: [{ SubTaskName: '' }]
     });
+
+    const user = personalInfo;
 
     const [errors, setErrors] = useState({
         taskName: false,
