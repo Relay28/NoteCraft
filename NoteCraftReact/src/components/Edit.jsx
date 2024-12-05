@@ -18,7 +18,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { Edit } from '@mui/icons-material';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import profile from '/src/assets/profile.jpg';
 
 export default function EditProfile({ token }) {
@@ -167,9 +167,13 @@ export default function EditProfile({ token }) {
               transform: 'translateX(-50%)',
               background: '#fff',
               boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+              "&:hover": {
+                background: '#fff', // Retain the white background
+                opacity: 1, // Ensure it stays fully opaque
+              },
             }}
           >
-            <Edit />
+            <CameraAltIcon />
             <input
               type="file"
               hidden
@@ -177,6 +181,7 @@ export default function EditProfile({ token }) {
               onChange={handleImageChange}
             />
           </IconButton>
+
 
           <Box
             sx={{
