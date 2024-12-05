@@ -122,10 +122,10 @@ export default function EditProfile({ token }) {
   return (
     <Box
       sx={{
-        position: 'absolute',
-        top: '14%',
-        left: '9%',
-        width: '87vw',
+        position: 'relative',
+        top: '-1%',
+        left: '1%',
+        width: '80vw',
         height: '83vh',
         display: 'flex',
         flexDirection: 'column',
@@ -185,7 +185,7 @@ export default function EditProfile({ token }) {
               gap: 2,
               position: 'absolute',
               bottom: 20,
-              left: "160vh"
+              left: "140vh"
             }}
           >
             <Button

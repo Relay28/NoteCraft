@@ -103,10 +103,10 @@ export default function Profile({ token }) {
   return (
     <Box
       sx={{
-        position: 'absolute',
-        top: '14%',
-        left: '9%',
-        width: '87vw',
+        position: "relative", 
+        top: '-1%',
+        left: '1%',
+        width: '80vw',
         height: '80vh', // Adjust height to viewport height
         display: 'flex',
         flexDirection: 'column',
