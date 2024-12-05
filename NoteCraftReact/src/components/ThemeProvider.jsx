@@ -33,10 +33,15 @@ export const CustomThemeProvider = ({ children }) => {
           button: { textTransform: 'none' },
           h6: { fontWeight: 'bold', fontSize: '20px' }, // Headers
           body1: { color: darkMode ? '#000' : '#000' },
-          h5: { color: darkMode ? '#000' : '#000' },
-          h4: { color: darkMode ? '#000' : '#000' },
+          h5: { color: darkMode ? '#fff' : '#000' },
+          h4: { color: darkMode ? '#fff' : '#000' },
           h2: { color: darkMode ? '#fff' : '#000' },
-          
+          h6: { color: darkMode ? '#fff' : '#000' },
+        },
+        TextField: {
+          label: {
+            color: darkMode ? '#fff' : '#000',
+          },
         },
         shape: {
           borderRadius: 4, // Slightly blocky but modern

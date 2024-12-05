@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from './ThemeProvider';
 import Checkbox from '@mui/material/Checkbox';
 import axios from 'axios';
 import Calendar from 'react-calendar';
@@ -23,6 +24,7 @@ const TaskDetail = () => {
         subtasks: []
     });
     const [date, setDate] = useState(new Date());
+    const { darkMode, toggleTheme, theme } = useTheme(); 
 
     console.log("Task Data in TaskDetail:", taskData);
 
@@ -149,13 +151,19 @@ const TaskDetail = () => {
     };
 
     return (
-        <Box sx={{
-            padding: '20px',
-
-            width: "90%",
-            height: "70vh",
-            color: "black"
-        }}>
+        <Box
+            sx={{
+                padding: '20px',
+                overflow: 'auto',
+                width: '90%',
+                height: '70vh',
+                color: 'black',
+                '&::-webkit-scrollbar': {
+                    display: 'none', // Hides the scrollbar in WebKit browsers (Chrome, Edge, Safari)
+                },
+                scrollbarWidth: 'none', // Hides the scrollbar in Firefox
+            }}
+        >
             <Box display="flex" alignItems="center" marginBottom="20px">
             <IconButton
                 variant="contained"
@@ -202,17 +210,20 @@ const TaskDetail = () => {
                 </Typography>
             </Box>
 
-            <Box sx={{ backgroundColor: "#fff", borderRadius: "25px", padding: "30px", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box sx={{ borderRadius: "25px", padding: "30px", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', width: "100%", marginBottom: '20px', marginLeft: "25px" }}>
                     
                     <Box sx={{ width: "45%", textAlign: "left" }}>
-                        <Typography gutterBottom sx={{ fontSize: "18px" }}> {taskData.description || "N/A"}</Typography>
+                        <Typography gutterBottom sx={{ fontSize: "18px", color: darkMode ? '#fff' : '#000' }}>
+                            {taskData.description || "N/A"}
+                        </Typography>
 
                         <Typography variant="h6" gutterBottom sx={{ marginTop: "30px" }}>
                             <Typography sx={{
                                 textDecoration: "underline",
                                 fontWeight: "bold",
-                                fontSize: "20px"
+                                fontSize: "20px",
+                                color: darkMode ? '#fff' : '#000'
                             }}>
                                 Subtasks:
                             </Typography>
@@ -227,9 +238,9 @@ const TaskDetail = () => {
                                             sx={{
                                                 padding: '0 9px',
                                                 marginRight: '10px',
-                                                color: subtask.isSubTaskCompleted ? 'green' : 'inherit', // Green checkmark when completed
+                                                color: darkMode ? (subtask.isSubTaskCompleted ? 'lightgreen' : '#fff') : (subtask.isSubTaskCompleted ? 'green' : '#000'), // Dynamic color
                                                 '&.Mui-checked': {
-                                                    color: 'green', // Ensures green checkmark when checked
+                                                    color: darkMode ? 'lightgreen' : 'green', // Green for checked, adjusts for dark mode
                                                 },
                                             }}
                                         />
@@ -238,7 +249,11 @@ const TaskDetail = () => {
                                             sx={{
                                                 fontSize: "18px",
                                                 textDecoration: subtask.isSubTaskCompleted ? 'line-through' : 'none',
-                                                color: subtask.isSubTaskCompleted ? 'gray' : 'inherit'
+                                                color: subtask.isSubTaskCompleted
+                                                    ? 'gray' // If subtask is completed, color is gray
+                                                    : darkMode
+                                                    ? '#fff' // If dark mode is active and subtask is not completed, color is white
+                                                    : '#000', // Otherwise, color is black
                                             }}
                                         >
                                             {subtask.subTaskName}
@@ -272,9 +287,14 @@ const TaskDetail = () => {
                             )}
                         </Box>
 
-                        <Calendar value={date} tileClassName={tileClassName} onClickDay={() => { }} />
+                        <Calendar
+                            value={date}
+                            tileClassName={tileClassName}
+                            onClickDay={() => {}}
+                            className={darkMode ? 'calendar-dark' : 'calendar-light'} // Dynamic class based on mode
+                        />
 
-                        <Typography variant="h6" component="p" sx={{ color: renderDeadlineColor() }}>
+                        <Typography variant="h6" component="p" sx={{ color: darkMode ? '#fff' : '#000', marginTop: "5px" }}>
                             {renderDeadlineText()}
                         </Typography>
 
@@ -282,12 +302,12 @@ const TaskDetail = () => {
                         <Box sx={{ display: 'flex', justifyContent: 'space-evenly', width: '100%', marginTop: '20px' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(255, 99, 71, 0.5)', marginRight: '5px' }}></Box>
-                                <Typography variant="body1">= deadline</Typography>
+                                <Typography variant="body1" sx={{ color: darkMode ? '#fff' : '#000' }}>= deadline</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(144, 238, 144, 0.5)', marginRight: '5px' }}></Box>
-                                <Typography variant="body1">= date started</Typography>
+                                <Typography variant="body1" sx={{ color: darkMode ? '#fff' : '#000' }}>= date started</Typography>
                             </Box>
                         </Box>
 
@@ -295,12 +315,12 @@ const TaskDetail = () => {
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(255, 255, 153, 0.5)', marginRight: '5px' }}></Box>
-                                <Typography variant="body1">= current date</Typography>
+                                <Typography variant="body1" sx={{ color: darkMode ? '#fff' : '#000' }}>= current date</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Box sx={{ width: '20px', height: '20px', backgroundColor: 'rgba(173, 216, 230, 0.5)', marginRight: '5px' }}></Box>
-                                <Typography variant="body1">= date ended</Typography>
+                                <Typography variant="body1" sx={{ color: darkMode ? '#fff' : '#000' }}>= date ended</Typography>
                             </Box>
                         </Box>
                     </Box>
@@ -308,40 +328,70 @@ const TaskDetail = () => {
             </Box>
 
             <style>
-            {`
-                .task-started { background-color: rgba(144, 238, 144, 0.5) !important; color: black !important; }
-                .task-ended { background-color: rgba(173, 216, 230, 0.5) !important; color: black !important; }
-                .deadline { background-color: rgba(255, 99, 71, 0.5) !important; color: black !important; }
-                .today { background-color: rgba(255, 255, 153, 0.5) !important; color: gray !important; }
+                {`
+                    /* Light mode styles */
+                    .calendar-light {
+                        background-color: white;
+                        color: black;
+                    }
 
-                /* Double border styles for special cases */
-                .today-deadline {
-                    background-color: rgba(255, 255, 153, 0.5) !important;
-                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(255, 99, 71, 0.5);
-                    color: gray !important;
-                }
-                .today-started {
-                    background-color: rgba(255, 255, 153, 0.5) !important;
-                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(144, 238, 144, 0.5);
-                    color: gray !important;
-                }
-                .today-ended {
-                    background-color: rgba(255, 255, 153, 0.5) !important;
-                    box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(173, 216, 230, 0.5);
-                    color: gray !important;
-                }
+                    .calendar-light .react-calendar__month-view__days__day {
+                        background-color: rgba(255, 255, 255, 0.9);
+                        color: black !important;
+                    }
 
-                /* Standard calendar styles */
-                .react-calendar__month-view__days__day {
-                    color: black !important;
-                }
-                .react-calendar__month-view__days__day--weekend {
-                    color: orange !important;
-                }
-                .react-calendar__navigation button {
-                    color: black !important;
-                }
-            `}
+                    .calendar-light .react-calendar__navigation button {
+                        color: black;
+                    }
+
+                    /* Dark mode styles */
+                    .calendar-dark {
+                        background-color: #2b2f3a; /* Match dark mode background */
+                        color: white;
+                    }
+
+                    .calendar-dark .react-calendar__month-view__days__day {
+                        background-color: rgba(43, 47, 58, 0.9); /* Slightly transparent dark color */
+                        color: white !important;
+                    }
+
+                    .calendar-dark .react-calendar__month-view__days__day--weekend {
+                        color: orange !important; /* Orange for weekends */
+                    }
+
+                    .calendar-dark .react-calendar__navigation button {
+                        color: white;
+                    }
+
+                    /* Styles for special tiles */
+                    .task-started { background-color: rgba(144, 238, 144, 0.5) !important; color: black !important; }
+                    .task-ended { background-color: rgba(173, 216, 230, 0.5) !important; color: black !important; }
+                    .deadline { background-color: rgba(255, 99, 71, 0.5) !important; color: black !important; }
+                    .today { background-color: rgba(255, 255, 153, 0.5) !important; color: gray !important; }
+
+                    /* Double border styles for special cases */
+                    .today-deadline {
+                        background-color: rgba(255, 255, 153, 0.5) !important;
+                        box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(255, 99, 71, 0.5);
+                        color: gray !important;
+                    }
+                    .today-started {
+                        background-color: rgba(255, 255, 153, 0.5) !important;
+                        box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(144, 238, 144, 0.5);
+                        color: gray !important;
+                    }
+                    .today-ended {
+                        background-color: rgba(255, 255, 153, 0.5) !important;
+                        box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(173, 216, 230, 0.5);
+                        color: gray !important;
+                    }
+                    .today-started-ended {
+                        background-color: rgba(255, 255, 153, 0.5) !important;
+                        box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(144, 238, 144, 0.5),
+                                    0 0 0 6px rgba(173, 216, 230, 0.5); /* Extra layer for ended styling */
+                        color: gray !important;
+                    }
+                `}
             </style>
         </Box>
     );
