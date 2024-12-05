@@ -4,7 +4,7 @@
   import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
   import axios from 'axios';
   import { useLocation } from 'react-router';
-  import { useTheme } from './ThemeProvider';
+  import { useTheme, CustomThemeProvider } from './ThemeProvider';
 
 
   const API_BASE_URL = 'http://localhost:8081/api/chat';
@@ -257,206 +257,318 @@
     };
 
     return (
-      <Paper sx={{ height: '99%', display: 'flex', flexDirection: 'column', width:'98%'}}>
-        {/* Dialog for Delete Confirmation */}
-        <Dialog open={openDialog} onClose={closeConfirmationDialog}>
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>Are you sure you want to delete this {deleteTarget.messageId ? "message" : "chat"}?</DialogContent>
-          <DialogActions>
-            <Button variant="contained" onClick={closeConfirmationDialog} color="error">Cancel</Button>
-            <Button variant="contained" onClick={handleDeleteClick} color="primary">Yes</Button>
-          </DialogActions>
-        </Dialog>
+      <Paper sx={{ 
+            height: '99%', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            width:'98%', 
+            background: darkMode ? '#2b2f3a' : '#f4f7ed',
+            color: darkMode ? '#fff' : '#000' 
+          }}>
+          {/* Dialog for Delete Confirmation */}
+          <Dialog open={openDialog} onClose={closeConfirmationDialog}>
+            <DialogTitle sx={{ color: theme.palette.text.primary }}>Confirm Delete</DialogTitle>
+            <DialogContent sx={{ color: theme.palette.text.secondary }}>Are you sure you want to delete this {deleteTarget.messageId ? "message" : "chat"}?</DialogContent>
+            <DialogActions>
+              <Button variant="contained" onClick={closeConfirmationDialog} color="error" sx={{ backgroundColor: theme.palette.error.main }}>Cancel</Button>
+              <Button variant="contained" onClick={handleDeleteClick} color="primary" sx={{ backgroundColor: theme.palette.primary.main }}>Yes</Button>
+            </DialogActions>
+          </Dialog>
 
-        <Grid container sx={{ flex: 1, overflow:'auto' }}>
-          {/* Left column - Conversations List */}
-          <Grid item xs={4} sx={{ borderRight: '1px solid #ccc', padding: '10px', overflow:'auto', height:'100%' }}>
-          <List>
-            {chats.map((conversation) => {
-              if (!conversation.receiver || !conversation.sender) return null; // Ensure the conversation is valid
+          <Grid container sx={{ flex: 1, overflow:'auto' }}>
+            {/* Left column - Conversations List */}
+            <Grid item xs={4} sx={{ borderRight: '1px solid #ccc', 
+                padding: '10px', 
+                overflow:'auto', 
+                height:'100%', 
+                backgroundColor: darkMode ? '#383e4a' : '#fff' 
+              }}>
+            <List>
+              {chats.map((conversation) => {
+                if (!conversation.receiver || !conversation.sender) return null; // Ensure the conversation is valid
 
-              // Extract usernames based on whether they are strings or objects
-              const senderUsername = typeof conversation.sender === 'string' 
-                ? conversation.sender 
-                : conversation.sender.username;
+                // Extract usernames based on whether they are strings or objects
+                const senderUsername = typeof conversation.sender === 'string' 
+                  ? conversation.sender 
+                  : conversation.sender.username;
 
-              const receiverUsername = typeof conversation.receiver === 'string' 
-                ? conversation.receiver 
-                : conversation.receiver.username;
+                const receiverUsername = typeof conversation.receiver === 'string' 
+                  ? conversation.receiver 
+                  : conversation.receiver.username;
 
-              // Check if the logged-in user is the sender or receiver and display the other person's username
-              const displayName = personalInfo?.username === senderUsername 
-                ? receiverUsername 
-                : senderUsername;
+                // Check if the logged-in user is the sender or receiver and display the other person's username
+                const displayName = personalInfo?.username === senderUsername 
+                  ? receiverUsername 
+                  : senderUsername;
 
-              return (
-                <ListItem key={conversation.chatId} button onClick={() => handleChatClick(conversation)}>
-                  <ListItemAvatar>
-                    <Avatar alt={displayName} />
-                  </ListItemAvatar>
-                  <ListItemText primary={displayName} secondary={conversation.lastMessage} />
-                  <IconButton color="secondary" onClick={(e) => {
-                    e.stopPropagation(); // Prevent the click from triggering the ListItem onClick
-                    openConfirmationDialog(conversation.chatId);
-                  }}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </ListItem>
-              );
-            })}
-          </List>
-            <Box sx={{ mt: 2, textAlign: 'center'}}>
-                <button variant="contained" onClick={handleAddChatClick}>Add Chat</button>
-            </Box>
-          </Grid>
-
-          {/* Right column - Messages List */}
-          <Grid item xs={8} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            {/* Fixed container for Receiver's Name */}
-            <Box sx={{ padding: '10px', backgroundColor: '#E8F5E9', position: 'sticky', top: 0, zIndex: 1 }}>
-              {isAddingChat && !isReceiverFinalized ? (
-                <>
-                  {/* Input for Receiver's Name */}
-                  <TextField
-                    variant="outlined"
-                    fullWidth
-                    placeholder="Enter receiver's name"
-                    value={selectedConversation?.receiver || ''}
-                    onChange={(e) => {
-                      const input = e.target.value;
-                      setSelectedConversation((prev) => ({ ...prev, receiver: input }));
-                      const suggestions = usernames.filter((username) =>
-                        username.toLowerCase().startsWith(input.toLowerCase())
-                      );
-                      setFilteredUsernames(suggestions);
+                return (
+                  <ListItem 
+                      sx={{ 
+                        borderBottom: '1px solid #ccc', 
+                        backgroundColor: darkMode ? '#4a5568' : '#fff' 
+                      }} 
+                      key={conversation.chatId} 
+                      button 
+                      onClick={() => handleChatClick(conversation)}
+                    >
+                    <ListItemAvatar>
+                      <Avatar 
+                        alt={displayName} 
+                        sx={{ 
+                          backgroundColor: darkMode ? '#1e88e5' : '#4caf50' 
+                        }} 
+                      />
+                    </ListItemAvatar>
+                    <ListItemText 
+                      primary={displayName} 
+                      secondary={conversation.lastMessage} 
+                      primaryTypographyProps={{
+                        style: { color: darkMode ? '#fff' : '#000' }
+                      }}
+                      secondaryTypographyProps={{
+                        style: { color: darkMode ? '#b0b0b0' : '#666' }
+                      }}
+                    />
+                    <IconButton sx={{ 
+                          color: darkMode ? '#fff' : '#000' 
+                        }} 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openConfirmationDialog(conversation.chatId);
+                        }}
+                      >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+              <Box sx={{ mt: 2, textAlign: 'center'}}>
+                  <Button 
+                    variant="contained" 
+                    onClick={handleAddChatClick}
+                    sx={{
+                      backgroundColor: darkMode ? '#1e88e5' : '#4caf50',
+                      color: '#fff', // Always white text
+                      '&:hover': {
+                        backgroundColor: darkMode ? '#1976d2' : '#45a049'
+                      }
                     }}
-                    disabled={isReceiverFinalized}
-                  />
-                  {!isReceiverFinalized && filteredUsernames.length > 0 && (
-                    <List sx={{ maxHeight: 100, overflowY: 'auto', backgroundColor: '#f0f0f0' }}>
-                      {filteredUsernames.map((username, index) => (
-                        <ListItem
-                          key={index}
-                          button
-                          onClick={() => {
-                            setSelectedConversation((prev) => ({ ...prev, receiver: username }));
-                            setFilteredUsernames([]); // Clear suggestions
-                          }}
-                        >
-                          <ListItemText primary={username} />
-                        </ListItem>
-                      ))}
-                    </List>
-                  )}
-                  {/* Confirm Button */}
-                  <Box sx={{ mt: 1, textAlign: 'right' }}>
-                    <button onClick={handleReceiverConfirm}>Confirm</button>
-                  </Box>
-                </>
-              ) : (
-                <Typography variant="h6">
-                  {selectedConversation?.sender?.username === personalInfo?.username
-                    ? selectedConversation?.receiver?.username
-                    : selectedConversation?.sender?.username}
-                </Typography>
-              )}
-            </Box>
+                  >
+                    Add Chat
+                  </Button>
+              </Box>
+            </Grid>
 
-            {/* Scrollable container for Messages List */}
-            <div style={{ padding: '20px', overflowY: 'auto', flexGrow: 1, backgroundColor: '#E8F5E9' }}>
-              <Box sx={{ mt: 2 }}>
-                {Array.isArray(selectedConversation?.messages) && selectedConversation.messages.length > 0 ? (
-                  selectedConversation.messages.map((msg) => {
-                    const senderName = msg.sender?.username || 'Unknown';  // Access sender's username (with fallback)
-                    
-                    return (
-                      <Box key={msg.messageId} sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: senderName === personalInfo.username ? 'flex-end' : 'flex-start',
-                        marginBottom: '10px',
-                        maxWidth: '100%',
-                        borderRadius: '10px',
-                        marginRight: senderName === personalInfo.username ? '0px' : 'auto',
-                        marginLeft: senderName === personalInfo.username ? 'auto' : '0px',
+            {/* Right column - Messages List */}
+            <Grid item xs={8} sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              {/* Fixed container for Receiver's Name */}
+              <Box sx={{ 
+                padding: '10px', 
+                backgroundColor: darkMode ? '#2b2f3a' : '#f4f7ed',
+                position: 'sticky', 
+                top: 0, 
+                zIndex: 1 
+              }}>
+                {isAddingChat && !isReceiverFinalized ? (
+                  <>
+                    {/* Input for Receiver's Name */}
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      placeholder="Enter receiver's name"
+                      value={selectedConversation?.receiver || ''}
+                      onChange={(e) => {
+                        const input = e.target.value;
+                        setSelectedConversation((prev) => ({ ...prev, receiver: input }));
+                        const suggestions = usernames.filter((username) =>
+                          username.toLowerCase().startsWith(input.toLowerCase())
+                        );
+                        setFilteredUsernames(suggestions);
+                      }}
+                      disabled={isReceiverFinalized}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: theme.palette.background.paper,
+                          color: theme.palette.text.primary
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: theme.palette.text.secondary
+                        }
+                      }}
+                    />
+                    {!isReceiverFinalized && filteredUsernames.length > 0 && (
+                      <List sx={{ 
+                        maxHeight: 100, 
+                        overflowY: 'auto', 
+                        backgroundColor: theme.palette.background.paper 
                       }}>
-                        <Typography variant="caption" sx={{ color: 'gray', marginTop: '5px' }}>
-                          {senderName === personalInfo.username ? 'You' : senderName}
-                        </Typography>
-                        <Typography sx={{
-                          padding: '10px',
-                          backgroundColor: senderName === personalInfo.username ? '#C8E6C9' : '#E1F5FE',
-                          borderRadius: '10px',
-                          maxWidth: '70%',
-                          wordWrap: 'break-word',
-                        }}>
-                          {msg.messageContent}
-                        </Typography>
-                        {senderName === personalInfo.username && ( // Only show edit and delete options for messages sent by the user
-                          <Box sx={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                            <Typography
-                              variant="body2"
-                              sx={{ color: 'gray', cursor: 'pointer' }}
-                              onClick={() => handleEditClick(msg.messageId, msg.messageContent)}
-                            >
-                              Edit
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{ color: 'gray', cursor: 'pointer' }}
-                              onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}
-                            >
-                              Delete
-                            </Typography>
-                          </Box>
-                        )}
-                      </Box>
-                    );
-                  })
+                        {filteredUsernames.map((username, index) => (
+                          <ListItem
+                            key={index}
+                            button
+                            sx={{ 
+                              backgroundColor: theme.palette.background.default,
+                              '&:hover': { 
+                                backgroundColor: theme.palette.action.hover 
+                              }
+                            }}
+                            onClick={() => {
+                              setSelectedConversation((prev) => ({ ...prev, receiver: username }));
+                              setFilteredUsernames([]); // Clear suggestions
+                            }}
+                          >
+                            <ListItemText 
+                              primary={username} 
+                              primaryTypographyProps={{ color: 'text.primary' }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    )}
+                    {/* Confirm Button */}
+                    <Box sx={{ mt: 1, textAlign: 'right' }}>
+                      <button onClick={handleReceiverConfirm}>Confirm</button>
+                    </Box>
+                  </>
                 ) : (
-                  <Typography variant="body2" sx={{ color: 'gray' }}>
-                    No messages yet. Start the conversation!
+                  <Typography variant="h6">
+                    {selectedConversation?.sender?.username === personalInfo?.username
+                      ? selectedConversation?.receiver?.username
+                      : selectedConversation?.sender?.username}
                   </Typography>
                 )}
               </Box>
-            </div>
 
-            {/* Bottom section - New Message Box */}
-            {(selectedConversation && (isReceiverFinalized || selectedConversation.receiver)) && (
-              <Box sx={{ display: 'flex', padding: 2, borderTop: '1px solid #ccc' }}>
-                <TextField
-                  label="New Message"
-                  variant="outlined"
-                  placeholder="Type a message"
-                  fullWidth
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  sx={{ marginRight: '10px' }}
-                />
-                {editMessageId && (
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => {
-                      setEditMessageId(null); // Clear the edit state
-                      setNewMessage(""); // Clear the message box content
+              {/* Scrollable container for Messages List */}
+              <div style={{ 
+                  padding: '20px', 
+                  overflowY: 'auto', 
+                  flexGrow: 1, 
+                  backgroundColor: darkMode ? '#383e4a' : '#E8F5E9' 
+                }}>
+                <Box sx={{ mt: 2 }}>
+                  {Array.isArray(selectedConversation?.messages) && selectedConversation.messages.length > 0 ? (
+                    selectedConversation.messages.map((msg) => {
+                      const senderName = msg.sender?.username || 'Unknown';  // Access sender's username (with fallback)
+                      
+                      return (
+                        <Box key={msg.messageId} sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: senderName === personalInfo.username ? 'flex-end' : 'flex-start',
+                          marginBottom: '10px',
+                          maxWidth: '100%',
+                          borderRadius: '10px',
+                          marginRight: senderName === personalInfo.username ? '0px' : 'auto',
+                          marginLeft: senderName === personalInfo.username ? 'auto' : '0px',
+                        }}>
+                          <Typography variant="caption" sx={{ color: darkMode ? '#b0b0b0' : 'gray', marginTop: '5px' }}>
+                            {senderName === personalInfo.username ? 'You' : senderName}
+                          </Typography>
+                          <Typography sx={{
+                              padding: '10px',
+                              backgroundColor: 
+                                senderName === personalInfo.username
+                                  ? (darkMode 
+                                      ? '#2e7d32'   // Dark green for sent messages in dark mode
+                                      : '#81c784')  // Bright green for sent messages in light mode
+                                  : (darkMode 
+                                      ? '#808080'   // Darker gray for received messages in dark mode
+                                      : '#e0e0e0'), // Lighter gray for received messages in light mode
+                              borderRadius: '10px',
+                              maxWidth: '70%',
+                              wordWrap: 'break-word',
+                              color: 
+                                senderName === personalInfo.username
+                                  ? (darkMode ? '#fff' : '#000')  // White or black text for sent messages
+                                  : (darkMode ? '#fff' : '#000'), // White or black text for received messages
+                            }}>
+                            {msg.messageContent}
+                          </Typography>
+                          {senderName === personalInfo.username && ( // Only show edit and delete options for messages sent by the user
+                            <Box sx={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: 'gray', cursor: 'pointer' }}
+                                onClick={() => handleEditClick(msg.messageId, msg.messageContent)}
+                              >
+                                Edit
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: 'gray', cursor: 'pointer' }}
+                                onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}
+                              >
+                                Delete
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      );
+                    })
+                  ) : (
+                    <Typography variant="body2" sx={{ color: darkMode ? '#b0b0b0' : 'gray' }}>
+                      No messages yet. Start the conversation!
+                    </Typography>
+                  )}
+                </Box>
+              </div>
+
+              {/* Bottom section - New Message Box */}
+              {(selectedConversation && (isReceiverFinalized || selectedConversation.receiver)) && (
+                <Box sx={{ display: 'flex', padding: 2, borderTop: '1px solid #ccc' }}>
+                  <TextField
+                    label="New Message"
+                    variant="outlined"
+                    placeholder="Type a message"
+                    fullWidth
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    sx={{ 
+                      marginRight: '10px',
+                      '& .MuiInputLabel-root': {
+                        color: darkMode ? '#fff' : '#000' // Label color changes
+                      },
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
+                          borderColor: darkMode ? '#1976d2' : '#4caf50' // Border color changes
+                        },
+                        '&:hover fieldset': {
+                          borderColor: darkMode ? '#2196f3' : '#45a049' // Hover border color
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: darkMode ? '#2196f3' : '#4caf50' // Focused border color
+                        }
+                      }
                     }}
-                    sx={{ marginRight: '10px' }}
+                  />
+                  {editMessageId && (
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => {
+                        setEditMessageId(null);
+                        setNewMessage("");
+                      }}
+                      sx={{ marginRight: '10px' }}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                  <IconButton
+                    onClick={handleSendMessage}
+                    disabled={isMessageBoxDisabled}
+                    sx={{ 
+                      color: darkMode ? '#1976d2' : '#4caf50' // SendIcon color changes
+                    }}
                   >
-                    Cancel
-                  </Button>
-                )}
-                <IconButton
-                  color="primary"
-                  onClick={handleSendMessage}
-                  disabled={isMessageBoxDisabled}
-                >
-                  <SendIcon />
-                </IconButton>
-              </Box>
-            )}
+                    <SendIcon />
+                  </IconButton>
+                </Box>
+              )}
+            </Grid>
           </Grid>
-        </Grid>
-      </Paper>
+        </Paper>
     );
   }
