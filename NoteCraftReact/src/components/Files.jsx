@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { List, ListItem, ListItemText, Button, Box, Typography, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Pagination } from "@mui/material";
+import { 
+    List, ListItem, ListItemText, Button, Box, Typography, IconButton, 
+    Dialog, DialogActions, DialogContent, DialogTitle, Pagination, TextField 
+} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import DownloadIcon from '@mui/icons-material/Download';
-import { useTheme } from './ThemeProvider'; // Import the hook
+import { useTheme } from './ThemeProvider';
 
 export default function File() {
     const [files, setFiles] = useState([]);
@@ -12,14 +15,19 @@ export default function File() {
     const [userId, setUserId] = useState(null);
     const [openModal, setOpenModal] = useState(false);
     const [imageUrl, setImageUrl] = useState("");
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false); // State for delete modal
-    const [fileToDelete, setFileToDelete] = useState(null); // State for the file to delete
-    const [currentPage, setCurrentPage] = useState(1); // State for current page
-    const filesPerPage = 4; // Number of files per page
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [uploadErrorModalOpen, setUploadErrorModalOpen] = useState(false);
+    const [uploadSuccessModalOpen, setUploadSuccessModalOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [fileToEdit, setFileToEdit] = useState(null);
+    const [newFileName, setNewFileName] = useState("");
+    
+    const filesPerPage = 4;
 
-    const { darkMode, toggleTheme } = useTheme(); // Use theme hook for dark mode toggle
+    const { darkMode, toggleTheme } = useTheme();
 
-    // Fetch userId from localStorage and files for that user
     useEffect(() => {
         const storedUserId = localStorage.getItem('userId');
         if (storedUserId) {
@@ -28,7 +36,6 @@ export default function File() {
         }
     }, []);
 
-    // Fetch files from API
     const fetchFiles = async (userId) => {
         try {
             const response = await axios.get(`http://localhost:8081/api/files/getFilesByUser/${userId}`);
@@ -38,15 +45,13 @@ export default function File() {
         }
     };
 
-    // Handle file selection
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]);
     };
 
-    // Upload file
     const handleUploadFile = async () => {
         if (!selectedFile) {
-            alert("Please select a file to upload");
+            setUploadErrorModalOpen(true);
             return;
         }
 
@@ -60,24 +65,22 @@ export default function File() {
             });
             setFiles(prevFiles => [...prevFiles, response.data]);
             setSelectedFile(null);
+            setUploadSuccessModalOpen(true);
         } catch (error) {
             console.error("There was an error uploading the file!", error);
         }
     };
 
-    // Open delete confirmation modal
     const handleOpenDeleteModal = (fileId) => {
         setFileToDelete(fileId);
         setDeleteModalOpen(true);
     };
 
-    // Close delete confirmation modal
     const handleCloseDeleteModal = () => {
         setDeleteModalOpen(false);
         setFileToDelete(null);
     };
 
-    // Confirm delete file
     const confirmDeleteFile = async () => {
         if (!fileToDelete) return;
         try {
@@ -89,34 +92,38 @@ export default function File() {
         }
     };
 
-    // Edit file (Update file name)
-    const handleUpdateFile = async (fileId) => {
-        const newFileName = prompt("Enter new file name:");
-        if (!newFileName) return;
+    const handleOpenEditModal = (file) => {
+        setFileToEdit(file);
+        setNewFileName(file.fileName);
+        setEditModalOpen(true);
+    };
+
+    const confirmUpdateFile = async () => {
+        if (!fileToEdit || !newFileName) return;
 
         try {
             const response = await axios.put(`http://localhost:8081/api/files/updateFile`, null, {
                 params: {
-                    fileId: fileId,
+                    fileId: fileToEdit.fileId,
                     newFileName: newFileName
                 }
             });
-            setFiles(files.map(file => (file.fileId === fileId ? response.data : file)));
+            setFiles(files.map(file => (file.fileId === fileToEdit.fileId ? response.data : file)));
+            setEditModalOpen(false);
+            setFileToEdit(null);
         } catch (error) {
             console.error("There was an error updating the file!", error);
         }
     };
 
-    // Handle download of file
     const handleDownloadFile = (file) => {
         const fileUrl = `http://localhost:8081/api/files/download/${file.fileId}`;
         const link = document.createElement("a");
         link.href = fileUrl;
-        link.download = file.fileName; // Set the filename for download
-        link.click(); // Trigger the download
+        link.download = file.fileName;
+        link.click();
     };
 
-    // Handle image preview in modal
     const handlePreviewImage = (file) => {
         if (file.fileType === "image/png" || file.fileType === "image/jpeg") {
             setImageUrl(`http://localhost:8081/api/files/download/${file.fileId}`);
@@ -124,7 +131,6 @@ export default function File() {
         }
     };
 
-    // Pagination logic
     const indexOfLastFile = currentPage * filesPerPage;
     const indexOfFirstFile = indexOfLastFile - filesPerPage;
     const currentFiles = files.slice(indexOfFirstFile, indexOfLastFile);
@@ -155,14 +161,6 @@ export default function File() {
             >
                 Files Dashboard
             </Typography>
-
-            <Button
-                variant="outlined"
-                onClick={toggleTheme}
-                sx={{ position: "absolute", top: 10, right: 20 }}
-            >
-                Toggle {darkMode ? "Light" : "Dark"} Mode
-            </Button>
 
             <Box sx={{ display: "flex", gap: "20px", justifyContent: "center" }}>
                 <Box
@@ -217,7 +215,7 @@ export default function File() {
                                     />
                                     <Box>
                                         <IconButton onClick={() => handleDownloadFile(file)}><DownloadIcon /></IconButton>
-                                        <IconButton onClick={() => handleUpdateFile(file.fileId)}><EditIcon /></IconButton>
+                                        <IconButton onClick={() => handleOpenEditModal(file)}><EditIcon /></IconButton>
                                         <IconButton onClick={() => handleOpenDeleteModal(file.fileId)}><DeleteIcon /></IconButton>
                                     </Box>
                                 </ListItem>
@@ -233,7 +231,6 @@ export default function File() {
                     />
                 </Box>
 
-                {/* Upload Section */}
                 <Box
                     sx={{
                         height: "200px",
@@ -270,6 +267,32 @@ export default function File() {
                 </Box>
             </Box>
 
+            {/* Upload Error Modal */}
+            <Dialog open={uploadErrorModalOpen} onClose={() => setUploadErrorModalOpen(false)}>
+                <DialogTitle>Error</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1">Please select a file to upload.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setUploadErrorModalOpen(false)} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Upload Success Modal */}
+            <Dialog open={uploadSuccessModalOpen} onClose={() => setUploadSuccessModalOpen(false)}>
+                <DialogTitle>Success</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1">File uploaded successfully!</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setUploadSuccessModalOpen(false)} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* Delete Confirmation Modal */}
             <Dialog open={deleteModalOpen} onClose={handleCloseDeleteModal}>
                 <DialogTitle>Confirm Deletion</DialogTitle>
@@ -282,6 +305,30 @@ export default function File() {
                     </Button>
                     <Button onClick={confirmDeleteFile} color="primary">
                         Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Edit Modal */}
+            <Dialog open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+                <DialogTitle>Edit File Name</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="New File Name"
+                        fullWidth
+                        variant="standard"
+                        value={newFileName}
+                        onChange={(e) => setNewFileName(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditModalOpen(false)} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={confirmUpdateFile} color="primary">
+                        Save
                     </Button>
                 </DialogActions>
             </Dialog>
