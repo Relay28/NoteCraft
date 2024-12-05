@@ -36,6 +36,14 @@ export default function SignIn() {
       document.body.style.overflow = "";
     };
   }, []);
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-indexed, so add 1
+    const day = d.getDate().toString().padStart(2, '0'); // Ensure day is 2 digits
+    return `${year}-${month}-${day}`; // Return in yyyy-MM-dd format
+  };
   const [showPassword, setShowPassword] = useState(false);
   const [usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -185,6 +193,9 @@ export default function SignIn() {
             required
             sx={{ marginBottom: 2, fontSize: "12px" }}
             size="small"
+            inputProps={{
+              max: formatDate(new Date()), // Sets the maximum selectable date to today
+            }}
           />
           <TextField
             label="Email"
