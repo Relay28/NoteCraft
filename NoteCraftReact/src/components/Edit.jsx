@@ -71,36 +71,41 @@ export default function EditProfile({ token }) {
   };
 
   const handleSubmit = async () => {
-    setIsModalOpen(false); // Close the confirmation modal
+    setIsModalOpen(false); 
   
     const updatedFormData = new FormData();
+  
+    // Add all fields from the formData object
     for (const key in formData) {
-      updatedFormData.append(key, formData[key]);
+      if (formData[key] !== undefined && formData[key] !== null) {
+        updatedFormData.append(key, formData[key]);
+      }
     }
+  
     if (profileImage) {
       updatedFormData.append('profileImg', profileImage);
     }
   
     try {
-      // Sending the update request
       const response = await axios.put(
         `http://localhost:8081/api/user/putUserDetails?id=${formData.id}`,
         updatedFormData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data', 
           },
         }
       );
   
-      // Navigate back to Profile with state to show Snackbar
       navigate('/myprofile', {
-        state: { showSnackbar: true, personalInfo: formData },
+        state: { showSnackbar: true, personalInfo: response.data },
       });
     } catch (error) {
       setError(error.response?.data?.message || 'Unknown error occurred');
     }
   };
+  
   
   
   
