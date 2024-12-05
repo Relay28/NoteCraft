@@ -2,6 +2,8 @@ package com.jabi.notecraft.controller;
 
 import com.jabi.notecraft.entity.NoteEntity;
 import com.jabi.notecraft.service.NoteService;
+import com.jabi.notecraft.service.TagService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,13 +16,26 @@ public class NoteController {
 
     @Autowired
     private NoteService noteService;
-
+    @Autowired
+    private TagService tagService;
+    
     // Insert a personal note
     @PostMapping("/insertNote")
     public NoteEntity insertNote(@RequestBody NoteEntity note, @RequestParam("userId") int userId) {
         return noteService.insertNote(note, userId);
     }
+    @PostMapping("/addTag")
+    public NoteEntity addTagToNote(
+        @RequestParam int noteId, 
+        @RequestParam String tagName
+    ) {
+        return tagService.addTagToNote(noteId, tagName);
+    }
 
+    @GetMapping("/byTag")
+    public List<NoteEntity> getNotesByTag(@RequestParam String tagName) {
+        return tagService.getNotesByTag(tagName);
+    }
     // Insert a group note
     @PostMapping("/insertGroupNote")
     public NoteEntity insertNoteWithGroup(

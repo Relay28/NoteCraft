@@ -1,10 +1,16 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  height:"100vh";
+
   text-align: center;
   color: "black";
+  font-family: 'Minecraftia', sans-serif;
+  
 }
+/* Global font usage */
+
+
 
 .logo {
   height: 6em;
@@ -33,49 +39,3 @@
     animation: logo-spin infinite 20s linear;
   }
 }
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInRight {
-  0% {
-      transform: translateX(100%);
-      opacity: 0;
-  }
-  100% {
-      transform: translateX(0);
-      opacity: 1;
-  }
-}
-
-.login-container,
-.register-container {
-  display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center;    /* Center vertically */
-  overflow: hidden;
-}
-body.login-body{
-  overflow: hidden;
-}
-
-body.register-body {
-  overflow: hidden;
-}
-

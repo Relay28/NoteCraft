@@ -26,7 +26,6 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
   const [imgSrc, setImgSrc] = React.useState(profile);
   const { darkMode,toggleTheme,theme  } = useTheme(); // Prevent `undefined` access
 
-console.log('Theme:', theme); 
   React.useEffect(() => {
     if (user?.profileImg) {
       const imageUrl = `http://localhost:8081/profileImages/${user.profileImg}`;
@@ -48,7 +47,9 @@ console.log('Theme:', theme);
 
   const isSidebarOpen = isHovered ;
 
-  
+  const handleHomeClick = () => {
+    navigate('/home', { state: { user: personalInfo } });
+  };
   
   const handleMessagesClick = () => {
     navigate('/messages', { state: { user: personalInfo } });
@@ -77,11 +78,12 @@ console.log('Theme:', theme);
   return (
     <div
       style={{
-        height: '100%',
+        height: '100vh',
         position: 'fixed',
         left: 0,
         marginRight:0,
         top: 0,
+        overflow:"hidden",
         
         display: 'flex',
         gap:0,
@@ -138,17 +140,24 @@ console.log('Theme:', theme);
                 height: '36px',
                 backgroundColor: '#d9d9d9',
                 borderRadius: '50%',
+                
               }}
+                onClick={handleHomeClick}
+              
             />
             {isSidebarOpen && (
               <Typography
                 variant="h6"
                 noWrap
+              
+                
                 sx={{
                   fontWeight: 'bold',
+                  cursor:"pointer",
                   color: '#487d4b',
                   fontFamily: 'Minecraftia, sans-serif',
                   fontSize: '16px',
+                  
                   opacity: isSidebarOpen ? 1 : 0,
                   transition: 'opacity 1s ease', 
                 }}
@@ -179,6 +188,7 @@ console.log('Theme:', theme);
                 padding: isSidebarOpen ? '8px 16px' : '8px 0',
                 minHeight: '48px',
                 transition: 'all 0.8s ease',
+              
                 display: 'flex',
                 flexDirection: 'row',
                 gap: isSidebarOpen ? '16px' : 0, 
@@ -192,6 +202,7 @@ console.log('Theme:', theme);
                   color: '#579A59',
                   minWidth: '48px', // Ensures consistent spacing between icons and text
                   width: '48px',
+                  
                   height: '60px',
                   transition: 'all 0.8s ease',
                   '& svg': {
@@ -217,6 +228,7 @@ console.log('Theme:', theme);
                   primary={item.label}
                   sx={{
                     '& span': {
+                      color: (theme)=>theme.palette.text.primary,
                       fontSize: '15px',
                       fontWeight: 500,
                       transition: 'opacity 0.8s ease',

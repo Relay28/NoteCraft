@@ -85,6 +85,7 @@ export default function EditProfile({ token }) {
             Authorization: `Bearer ${token}`,
           },
         }
+        
       );
     
       setFormData(response.data);

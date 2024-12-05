@@ -15,6 +15,8 @@ public interface NoteRepository extends JpaRepository<NoteEntity,Integer>{
 	 List<NoteEntity> findByUserIdAndIsGroupNoteFalse(int userId);
 	 List<NoteEntity> findByStudyGroup_GroupId(int groupId);
 	 List<NoteEntity> findByUser_IdAndIsGroupNoteFalse(int userId);
+	// List<NoteEntity> findByUser_IdAndIsGroupNoteFalse(int userId);
+	    List<NoteEntity> findByTags_TagName(String tagName);
 
 
 

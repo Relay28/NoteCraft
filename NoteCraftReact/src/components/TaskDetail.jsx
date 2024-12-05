@@ -152,7 +152,7 @@ const TaskDetail = () => {
         <Box sx={{
             padding: '20px',
 
-            width: "70vw",
+            width: "90%",
             height: "70vh",
             color: "black"
         }}>

@@ -15,10 +15,11 @@ export const CustomThemeProvider = ({ children }) => {
           mode: darkMode ? 'dark' : 'light',
           ...(darkMode
             ? {
-                primary: { main: '#81a1c1' }, // Calming teal/blue accent
+                primary: { main: '#4caf50' }, // Calming teal/blue accent
                 background: { default: '#2b2f3a', paper: '#383e4a' }, // Neutral dark tones
                 text: { primary: '#d8dee9', secondary: '#a1a9b3' }, // Readable grays
                 secondary: { main: '#d4af37' }, // Subtle gold accent
+                h2: { color: darkMode ? '#ffff' : '#000' },
               }
             : {
                 primary: { main: '#4caf50' }, // Fresh green for light mode
@@ -34,6 +35,8 @@ export const CustomThemeProvider = ({ children }) => {
           body1: { color: darkMode ? '#000' : '#000' },
           h5: { color: darkMode ? '#000' : '#000' },
           h4: { color: darkMode ? '#000' : '#000' },
+          h2: { color: darkMode ? '#fff' : '#000' },
+          
         },
         shape: {
           borderRadius: 4, // Slightly blocky but modern

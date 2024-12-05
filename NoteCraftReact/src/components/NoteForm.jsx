@@ -153,65 +153,93 @@ export default function NoteForm() {
   return (
     <Box
       sx={{
-        width: "80%",
+        width: "90%",
         maxWidth: "900px",
-        marginTop: "1%",
-        marginLeft: "1%",
-        padding: "30px",
-        height:"fit-content",
+        height: "100vh", // Occupy full viewport height
+        margin: "auto",
+        padding: "2%",
         backgroundColor: "#ffffff",
         borderRadius: "12px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <Typography variant="h4" sx={{ color: "#487d4b", marginBottom: "20px", fontWeight: "600" }}>
+      {/* Header */}
+      <Typography 
+        variant="h4" 
+        sx={{ color: "#487d4b", marginBottom: "10px", fontWeight: "600", textAlign: "center" }}
+      >
         {noteId ? "Edit Note" : "Add New Note"}
       </Typography>
-      <TextField
-        label="Title"
-        name="title"
-        value={note.title}
-        onChange={handleInputChange}
-        fullWidth
-        margin="normal"
-        sx={{ marginBottom: "20px", fontWeight: "bold" }}
-      />
-      <TextField
-        label="Description"
-        name="description"
-        value={note.description}
-        onChange={handleInputChange}
-        fullWidth
-        margin="normal"
-        sx={{ marginBottom: "20px" }}
-      />
-
-      <Typography variant="h6" sx={{ marginBottom: "10px", color: "#579A59" }}>
-        Content
-      </Typography>
-      <ReactQuill
-        ref={quillRef}
-        value={note.content}
-        onChange={handleContentChange}
-        modules={quillModules}
-        formats={formats}
-        style={{
-          height: "300px",
-          marginBottom: "50px",
-          borderRadius: "8px",
-          border: "1px solid #ddd",
+  
+      {/* Content Wrapper */}
+      <Box
+        sx={{
+          flex: 1, // Occupy remaining space
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", // Eliminate overflow scrolling
         }}
-      />
-
-      <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+      >
+        {/* Title Field */}
+        <TextField
+          label="Title"
+          name="title"
+          value={note.title}
+          onChange={handleInputChange}
+          fullWidth
+          margin="normal"
+          sx={{ marginBottom: "10px" }}
+        />
+        
+        {/* Description Field */}
+        <TextField
+          label="Description"
+          name="description"
+          value={note.description}
+          onChange={handleInputChange}
+          fullWidth
+          margin="normal"
+          sx={{ marginBottom: "10px" }}
+        />
+  
+        {/* ReactQuill Editor */}
+        <Typography variant="h6" sx={{ marginBottom: "5px", color: "#579A59" }}>
+          Content
+        </Typography>
+        <ReactQuill
+          ref={quillRef}
+          value={note.content}
+          onChange={handleContentChange}
+          modules={quillModules}
+          formats={formats}
+          style={{
+            flex: 1, // Adjust height dynamically to fit available space
+            marginBottom: "10px",
+            borderRadius: "8px",
+            border: "1px solid #ddd",
+          }}
+        />
+      </Box>
+  
+      {/* Buttons */}
+      <Box 
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "10px",
+        }}
+      >
         <Button
           variant="contained"
           onClick={handleSaveNote}
           disabled={!note.title.trim() || !note.content.trim()}
           sx={{
+            flex: 1,
             backgroundColor: "#487d4b",
             color: "#fff",
-            padding: "10px 30px",
+            padding: "10px",
             "&:hover": { backgroundColor: "#579A59" },
             fontWeight: "bold",
             borderRadius: "8px",
@@ -221,12 +249,13 @@ export default function NoteForm() {
         </Button>
         <Button
           variant="outlined"
-          onClick={() => navigate("/notes", { state: { user: user } }) }
+          onClick={() => navigate("/notes", { state: { user: user } })}
           sx={{
+            flex: 1,
             borderColor: "#487d4b",
             color: "#487d4b",
             fontWeight: "bold",
-            padding: "10px 30px",
+            padding: "10px",
             "&:hover": { backgroundColor: "#eaf6e9", borderColor: "#579A59" },
             borderRadius: "8px",
           }}
@@ -234,7 +263,8 @@ export default function NoteForm() {
           Cancel
         </Button>
       </Box>
-
+  
+      {/* Image Preview Dialog */}
       <Dialog open={openImagePreview} onClose={() => setOpenImagePreview(false)} maxWidth="lg">
         <DialogContent>
           <img src={previewImageUrl} alt="Preview" style={{ width: "100%", height: "auto", borderRadius: "8px" }} />
@@ -242,4 +272,4 @@ export default function NoteForm() {
       </Dialog>
     </Box>
   );
-}
+}  

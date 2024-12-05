@@ -1,6 +1,9 @@
 package com.jabi.notecraft.entity;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,7 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
 @Entity
@@ -47,7 +52,32 @@ public class NoteEntity {
         return isGroupNote;
     }
 
-    public void setGroupNote(boolean isGroupNote) {
+    @ManyToMany
+    @JoinTable(
+        name = "note_tags",
+        joinColumns = @JoinColumn(name = "note_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<TagEntity> tags;
+    public List<TagEntity> getTags() {
+		return tags;
+	}
+	public void setTags(List<TagEntity> tags) {
+		this.tags = tags;
+	}
+	 public void addTag(TagEntity tag) {
+	        if (!this.tags.contains(tag)) {
+	            this.tags.add(tag);
+	            tag.getNotes().add(this);
+	        }
+	    }
+
+	    // Method to remove a tag
+	    public void removeTag(TagEntity tag) {
+	        this.tags.remove(tag);
+	        tag.getNotes().remove(this);
+	    }
+	public void setGroupNote(boolean isGroupNote) {
         this.isGroupNote = isGroupNote;
     }
     public StudyGroupEntity getStudyGroup() {
