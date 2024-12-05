@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Typography,
   Button,
@@ -11,6 +11,7 @@ import {
   Modal,
   Drawer,
   IconButton,
+  Pagination,
   Card,
   CardContent,
   Avatar,
@@ -19,7 +20,7 @@ import {
   Tab,
   Chip,
 } from '@mui/material';
-import { PersonAdd, People, AddCircle, Delete, Edit, Download, Label } from '@mui/icons-material';
+import { PersonAdd, People, AddCircle, Delete, Edit, Download, Label, BackHandOutlined, ArrowBack, LocalOffer } from '@mui/icons-material';
 import axios from 'axios';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 
@@ -39,6 +40,17 @@ const modalStyle = {
 };
 
 export default function GroupDetailsPage() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 2;
+
+  // Pagination calculations
+ 
+
+ 
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
   const { personalInfo } = useContext(PersonalInfoContext);
   const user = personalInfo;
   const { groupId } = useParams();
@@ -61,7 +73,7 @@ export default function GroupDetailsPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [openNoteModal, setOpenNoteModal] = useState(false);
   const [openFileModal, setOpenFileModal] = useState(false);
- 
+  const navigate = useNavigate(); 
   const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   const [openMemberDrawer, setOpenMemberDrawer] = useState(false);
   const [newTodoTitle, setNewTodoTitle] = useState('');
@@ -74,7 +86,7 @@ export default function GroupDetailsPage() {
   const [noteToEdit, setNoteToEdit] = useState(null);
   const [fileToEdit, setFileToEdit] = useState(null);
   const [openEditFileModal, setOpenEditFileModal] = useState(false);
-
+  const [currentNoteId, setCurrentNoteId] = useState(null);
   const [tabIndex, setTabIndex] = useState(0);
 
   const apiBaseUrl = 'http://localhost:8081/api/study-groups';
@@ -94,7 +106,28 @@ export default function GroupDetailsPage() {
   });
   //console.log(notes)
 
+
+  //TagSSS Create
   const [selectedTag, setSelectedTag] = useState(null);
+
+  const handleOpenTagModal = (noteId) => {
+    setCurrentNoteId(noteId);
+    setNewTagName('');
+    setOpenTagModal(true);
+  };
+
+  const handleCloseTagModal = () => {
+    setOpenTagModal(false);
+    setCurrentNoteId(null);
+    setNewTagName('');
+  };
+
+  const handleAddTag = () => {
+    if (newTagName.trim() && currentNoteId) {
+      handleAddTagToNote(currentNoteId, newTagName.trim());
+    }
+    handleCloseTagModal();
+  };
 
 // Get a unique list of tags from notes
   const allTags = [...new Set(notes.flatMap((note) => note.tags.map((tag) => tag.tagName)))];
@@ -119,13 +152,7 @@ export default function GroupDetailsPage() {
 
 
 // Handle tag selection
-  const handleTagSelection = (tagName) => {
-    setSelectedTag(tagName === selectedTag ? null : tagName); // Toggle tag selection
-  };
 
-  const filteredNotes = selectedTag
-    ? notes.filter((note) => note.tags.some((tag) => tag.tagName === selectedTag))
-    : notes;
     
   const handleAddTagToNote = async (noteId, tagName) => {
     console.log(tagName)
@@ -198,6 +225,7 @@ export default function GroupDetailsPage() {
   };
 
   const handleDeleteFile = async (fileId) => {
+    console.log(fileId)
     try {
       await axios.delete(`http://localhost:8081/api/files/delete/${fileId}`, {
   
@@ -252,6 +280,7 @@ export default function GroupDetailsPage() {
       const response = await axios.post(`${apiBaseUrl}/${groupId}/add-note`, payload, { params: { userId: user.id } });
       setNotes((prev) => [...prev, response.data]);
       setOpenNoteModal(false);
+      console.log(notes);
       setNote({ title: '', description: '', content: '', dateCreated: new Date().toISOString(), userId: user.id });
       setResponseMessage('Note added successfully!');
     } catch (error) {
@@ -282,48 +311,77 @@ export default function GroupDetailsPage() {
         );
         console.log(response)
 
-        setFiles((prev) => [...prev, response.data]); // Update the file list
-        setOpenFileModal(false);
-        setResponseMessage("File uploaded successfully!");
-    } catch (error) {
-        console.error("File upload error:", error);
-        setResponseMessage("Failed to upload file.");
-    }
-};
+              setFiles((prev) => [...prev, response.data]); // Update the file list
+              setOpenFileModal(false);
+              setResponseMessage("File uploaded successfully!");
+          } catch (error) {
+              console.error("File upload error:", error);
+              setResponseMessage("Failed to upload file.");
+          }
+      };
     
-  const handleAddMember = async () => {
-    try {
-      const response = await axios.post(`${apiBaseUrl}/${groupId}/add-users`, [newMemberId]);
-      setGroupDetails((prev) => ({
-        ...prev,
-        users: response.data.users,
-      }));
-      setMembers( response.data.users);
-      setNewMemberId('');
-      setOpenAddMemberModal(false);
-      setResponseMessage('Member added successfully!');
-    } catch {
-      setResponseMessage('Failed to add member.');
-    }
-  };
-useEffect
+      const handleAddMember = async () => {
+        try {
+          const response = await axios.post(`${apiBaseUrl}/${groupId}/add-users`, [newMemberId]);
+          setGroupDetails((prev) => ({
+            ...prev,
+            users: response.data.users,
+          }));
+          setMembers( response.data.users);
+          setNewMemberId('');
+          setOpenAddMemberModal(false);
+          setResponseMessage('Member added successfully!');
+        } catch {
+          setResponseMessage('Failed to add member.');
+        }
+      };
   // Tab Switch Handler
-  const handleTabChange = (event, newValue) => {
-    setTabIndex(newValue);
-  };
+      const handleTabChange = (event, newValue) => {
+        setTabIndex(newValue);
+      };
+
+      const handleTagSelection = (tagName) => {
+        setSelectedTag(tagName === selectedTag ? null : tagName); // Toggle tag selection
+      };
+
+      const filteredNotes = selectedTag
+        ? notes.filter((note) => note.tags.some((tag) => tag.tagName === selectedTag))
+        : notes;
+
+        const totalPagesNotes = Math.ceil(filteredNotes.length / itemsPerPage);
+        const totalPagesFiles = Math.ceil(files.length / itemsPerPage);
+
+        const paginatedNotes = filteredNotes.slice(
+          (currentPage - 1) * itemsPerPage,
+          currentPage * itemsPerPage
+        );
+        const paginatedFiles = files.slice(
+          (currentPage - 1) * itemsPerPage,
+          currentPage * itemsPerPage
+        );
 
   return (
     <Box p={3} sx={{ maxWidth: '75%', margin: '0 auto', marginLeft: 0 }}>
+         <ArrowBack
+        variant="outlined"
+        color="primary"
+        primary="Back"
+        onClick={() => navigate('/group',{ state: { user: personalInfo } })}
+        sx={{ mb: 1, fontWeight: 'bold', textTransform: 'none' ,cursor:"pointer",position:'absolute',left:120}}
+      >
+     
+      </ArrowBack>
+      
       {/* Group Title and Description */}
       <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', borderBottom: `2px solid ${sidebarGreen}`, pb: 1 }}>
         {groupDetails.groupName}
       </Typography>
-      <Typography variant="subtitle1" align="center" sx={{ color: 'text.secondary', mb: 4 }}>
+      <Typography variant="subtitle1" align="center" sx={{ color: 'text.secondary', mb: 1 }}>
         {groupDetails.description}
       </Typography>
 
       {/* Tabs */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
         <Tabs value={tabIndex} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
           <Tab label="Notes" />
           <Tab label="Files" />
@@ -345,94 +403,146 @@ useEffect
       {/* Tab Panels */}
       <Box>
       {tabIndex === 0 && (
-    <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => setOpenNoteModal(true)}
-            startIcon={<AddCircle />}
-            sx={{ fontWeight: 'bold', textTransform: 'none' }}
-          >
-            Add Note
-          </Button>
-        
-        </Box>
+        <Card
+          sx={{
+            mb: 3,
+            backgroundColor: 'background.paper',
+            boxShadow: 2,
+            borderRadius: 2,
+          }}
+        >
+          <CardContent>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+              }}
+            >
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => setOpenNoteModal(true)}
+                startIcon={<AddCircle />}
+                sx={{ fontWeight: 'bold', textTransform: 'none' }}
+              >
+                Add Note
+              </Button>
+            </Box>
 
-        <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-        {allTags.map((tag) => (
-          <Chip
-            key={tag}
-            label={tag}
-            color={tag === selectedTag ? 'primary' : 'default'}
-            onClick={() => handleTagSelection(tag)}
-            clickable
-          />
-        ))}
-      </Box>
-        <List>
-          {filteredNotes.map((note) => (
-            <ListItem key={note.noteid} sx={{ borderBottom: 1, borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <ListItemText
-                  primary={note.title}
-                  secondary={`Created by: ${note.user?.name || 'Unknown'} on ${note.dateCreated}`}
+            <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {allTags.map((tag) => (
+                <Chip
+                  key={tag}
+                  label={tag}
+                  color={tag === selectedTag ? 'primary' : 'default'}
+                  onClick={() => handleTagSelection(tag)}
+                  clickable
                 />
-                <Box>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => handleOpenEditModal(note)}
-                    sx={{ mr: 1 }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => handleDeleteNote(note.noteid)}
-                  >
-                    Delete
-                  </Button>
-                </Box>
-              </Box>
-              
-              {/* Tags display and management */}
-              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <Typography variant="subtitle2" sx={{ mr: 1 }}>Tags:</Typography>
-                {note.tags && note.tags.map((tag) => (
-                  <Chip
-                    key={tag.tagId}
-                    label={tag.tagName}
-                    onDelete={() => handleRemoveTagFromNote(note.noteid, tag.tagId)}
-                    sx={{ mr: 1, mb: 1,width:"fit-content" }}
-                  />
-                ))}
-                <Button 
-                  size="small" 
-                  startIcon={<AddCircle />}
-                  onClick={() => {
-                    const tagName = prompt('Enter tag name:');
-                    if (tagName) {
-                      handleAddTagToNote(note.noteid, tagName);
-                    }
+              ))}
+            </Box>
+
+            <List>
+              {paginatedNotes.map((note) => (
+                <ListItem
+                  key={note.noteid}
+                  sx={{
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
                   }}
                 >
-                  Add Tag
-                </Button>
-              </Box>
-            </ListItem>
-          ))}
-        </List>
-      </CardContent>
-    </Card>
-  )}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <ListItemText
+                      primary={note.title}
+                      secondary={`Created by: ${
+                        note.user?.name || 'Unknown'
+                      } on ${note.dateCreated}`}
+                    />
+                    <Box>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => handleOpenEditModal(note)}
+                        sx={{ mr: 1 }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => handleDeleteNote(note.noteid)}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  </Box>
 
-        {tabIndex === 1 && (
-          <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
-            <CardContent>
-                        <Button
+                  {/* Tags display and management */}
+                  <Box
+                    sx={{
+                      mt: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Typography variant="subtitle2" sx={{ mr: 1 }}>
+                      Tags:
+                    </Typography>
+                    {note.tags &&
+                      note.tags.map((tag) => (
+                        <Chip
+                          key={tag.tagId}
+                          label={tag.tagName}
+                          onDelete={() =>
+                            handleRemoveTagFromNote(note.noteid, tag.tagId)
+                          }
+                          sx={{ mr: 1, mb: 1, width: 'fit-content' }}
+                        />
+                      ))}
+                    <Button
+                size="small"
+                startIcon={<LocalOffer />}
+                onClick={() => handleOpenTagModal(note.noteid)}
+              >
+                Add Tag
+              </Button>
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+
+            {/* Pagination */}
+            <Pagination
+              count={totalPagesNotes}
+              page={currentPage}
+              onChange={handlePageChange}
+              sx={{ mt: 2 }}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+{tabIndex === 1 && (
+        <Card
+          sx={{
+            mb: 3,
+            backgroundColor: 'background.paper',
+            boxShadow: 2,
+            borderRadius: 2,
+          }}
+        >
+          <CardContent>
+            <Button
               variant="contained"
               color="success"
               onClick={() => setOpenFileModal(true)}
@@ -443,49 +553,57 @@ useEffect
             </Button>
 
             {files.length > 0 ? (
-                  <List>
-                  {filteredNotes.map((note) => (
-                    <ListItem
-                      key={note.noteid}
+              <List>
+                {paginatedFiles.map((file) => (
+                  <ListItem
+                    key={file.id}
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                    }}
+                  >
+                    <Box
                       sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        flexDirection: 'column',
-                        alignItems: 'stretch',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <ListItemText
-                          primary={note.title}
-                          secondary={`Created by: ${note.user?.name || 'Unknown'} on ${note.dateCreated}`}
-                        />
-                        <Box>
-                          {note.tags.map((tag) => (
-                            <Chip key={tag.tagId} label={tag.tagName} size="small" sx={{ margin: 0.5 }} />
-                          ))}
-                        </Box>
-                        <IconButton onClick={() => handleOpenEditModal(note)}>
-                          <Edit />
-                        </IconButton>
-                        <IconButton onClick={() => handleDeleteNote(note.noteid)}>
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
-                  No files uploaded yet.
-                </Typography>
-              )}
+                      <ListItemText
+                        primary={file.title}
+                        secondary={`Uploaded by: ${
+                          file.user?.name || 'Unknown'
+                        } on ${file.dateCreated}`}
+                      />
+                      <IconButton onClick={() => handleOpenEditModal(file)}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => handleDeleteFile(file.fileId)}>
+                        <Delete />
+                      </IconButton>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
+                No files uploaded yet.
+              </Typography>
+            )}
 
-            </CardContent>
-          </Card>
-        )}
-
-      </Box>
-
+            {/* Pagination */}
+            <Pagination
+              count={totalPagesFiles}
+              page={currentPage}
+              onChange={handlePageChange}
+              sx={{ mt: 2 }}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </Box>
       <Modal open={openTagModal} onClose={() => setOpenTagModal(false)}>
         <Box sx={modalStyle}>
           <Typography variant="h6" sx={{ mb: 2 }}>Create New Tag</Typography>
@@ -560,6 +678,9 @@ useEffect
       >
         Cancel
       </Button>
+      <Button onClick={handleAddTag} color="primary" variant="contained">
+            Add Tag
+          </Button>
     </Box>
   </Box>
 </Modal>
@@ -629,6 +750,8 @@ useEffect
           </Button>
         </Box>
       </Modal>
+
+       
 
       <Modal open={openEditModal} onClose={() => setOpenEditModal(false)}>
   <Box sx={modalStyle}>

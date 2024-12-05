@@ -27,7 +27,10 @@ import {
   Delete as DeleteIcon, 
   ExitToApp as LeaveIcon,
   Settings as SettingsIcon 
+  
 } from '@mui/icons-material';
+import { Book as BookIcon } from '@mui/icons-material';
+import { useTheme } from './ThemeProvider';
 
 export default function StudyGroupPage() {
   const location = useLocation();
@@ -199,7 +202,9 @@ export default function StudyGroupPage() {
       flexDirection: 'column', 
       padding: 3, 
       backgroundColor: '#f4f6f9', 
-      minHeight: '100vh' 
+      marginRight:10,
+      minHeight: '100vh' ,
+      backgroundColor:(theme)=>theme.palette.background.default
     }}>
       {/* Snackbar for notifications */}
       <Snackbar
@@ -231,7 +236,8 @@ export default function StudyGroupPage() {
             color: '#2c3e50',
             display: 'flex',
             alignItems: 'center',
-            gap: 2
+            gap: 2,
+            color:(theme)=>theme.palette.text.primary
           }}
         >
           <GroupsIcon fontSize="large" /> 
@@ -346,77 +352,117 @@ export default function StudyGroupPage() {
         </Box>
       ) : (
         <Grid container spacing={3}>
-          {studyGroups.map((group) => (
-            <Grid item xs={12} sm={6} md={4} key={group.groupId}>
-              <Card 
-                elevation={3} 
-                sx={{ 
-                  height: '100%', 
+        {studyGroups.map((group) => (
+          <Grid item xs={12} sm={6} md={4} key={group.groupId}>
+            <Card 
+              elevation={3} 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                borderRadius: 3,
+                transition: 'all 0.3s ease',
+                '&:hover': { 
+                  transform: 'translateY(-10px)',
+                  boxShadow: '0 15px 30px rgba(0,0,0,0.1)' 
+                }
+              }}
+            >
+              <CardContent sx={{ 
+                flexGrow: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                p: 3 
+              }}>
+                <BookIcon 
+                  sx={{ 
+                    fontSize: 80, 
+                    color: 'primary.main', 
+                    mb: 2 
+                  }} 
+                />
+                <Box sx={{ 
                   display: 'flex', 
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s',
-                  '&:hover': { 
-                    transform: 'scale(1.03)',
-                    boxShadow: 6 
-                  }
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      {group.groupName}
-                    </Typography>
-                    {group.owner === userId && (
-                      <Chip 
-                        label="Owner" 
-                        size="small" 
-                        color="primary" 
-                        variant="outlined" 
-                      />
-                    )}
-                  </Box>
-                  <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                    {group.description}
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  width: '100%' 
+                }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      color: (theme)=>theme.palette.text.primary, 
+                      textAlign: 'center'
+                      
+                    }}
+                  >
+                    {group.groupName}
                   </Typography>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
-                  <Box>
-                    <Tooltip title="View Notebook Details">
-                      <Button 
-                        size="small" 
-                        color="primary"
-                        onClick={() => handleGroupClick(group.groupId)}
+                  {group.owner === userId && (
+                    <Chip 
+                      label="Owner" 
+                      size="small" 
+                      color="primary" 
+                      variant="contained" 
+                      sx={{ 
+                        ml: 1,
+                        fontWeight: 500,
+                        borderRadius: 2 
+                      }} 
+                    />
+                  )}
+                </Box>
+              </CardContent>
+              <CardActions sx={{ 
+                p: 2, 
+                pt: 0, 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center' 
+              }}>
+                <Button 
+                  variant="outlined" 
+                  color="primary"
+                  size="small"
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 500
+                  }}
+                  onClick={() => handleGroupClick(group.groupId)}
+                >
+                  Open
+                </Button>
+                <Box>
+                  {group.owner === userId ? (
+                    <Tooltip title="Delete Notebook">
+                      <IconButton 
+                        color="error"
+                        size="small"
+                        onClick={() => openDialog(group, 'delete')}
                       >
-                        Open
-                      </Button>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
                     </Tooltip>
-                  </Box>
-                  <Box>
-                    {group.owner === userId ? (
-                      <Tooltip title="Delete Notebook">
-                        <IconButton 
-                          color="error"
-                          onClick={() => openDialog(group, 'delete')}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title="Leave Notebook">
-                        <IconButton 
-                          color="secondary"
-                          onClick={() => openDialog(group, 'leave')}
-                        >
-                          <LeaveIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </Box>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                  ) : (
+                    <Tooltip title="Leave Notebook">
+                      <IconButton 
+                        color="secondary"
+                        size="small"
+                        onClick={() => openDialog(group, 'leave')}
+                      >
+                        <LeaveIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
       )}
 
       {/* Confirmation Dialog */}

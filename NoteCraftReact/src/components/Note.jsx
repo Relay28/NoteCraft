@@ -182,7 +182,7 @@ const filteredNotes = notes.filter(
         alignItems: "center",
         width: "85%",
         height:"80vh",
-        marginTop:10,
+        marginTop:3,
         padding: 2,
         backgroundColor: theme.palette.background.primary,
         borderRadius: "12px",

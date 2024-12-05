@@ -84,6 +84,7 @@ public class UserEntity {
 
 
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<StudyGroupEntity> studyGroups = new HashSet<>();
 
     public Set<StudyGroupEntity>  getStudyGroups() {

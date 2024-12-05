@@ -203,7 +203,7 @@ const isNotificationMenuOpen = Boolean(notificationMenuAnchor);
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: (theme) => theme.palette.background.default,  // Using theme for background color
+        background:(theme)=>theme.palette.background.default,
         color: (theme) => theme.palette.text.primary,  // Using theme for text color
         height: '76px',
         zIndex: 1, 
@@ -212,16 +212,17 @@ const isNotificationMenuOpen = Boolean(notificationMenuAnchor);
         marginLeft: isSidebarOpen ? '260px' : '90px', 
         transition: 'all 0.3s ease',
         boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.1)',
-        borderBottom: '1px solid #e0e0e0',
+        borderBottom: darkMode?'1px solid green':'1px solid #e0e0e0',
         marginRight:0
       }}
     >
-      <Toolbar style={{marginTop:"0.5%"}}>
+      <Toolbar style={{ background:(theme)=>theme.palette.background.default}}>
         <Box sx={{ textAlign: 'left' }}>
           <Typography
             variant="body1"
             sx={{
               fontWeight: 'bold',
+              
               fontSize: '20px',
               fontFamily:(theme)=>theme.typography.fontFamily,
               color: (theme) => theme.palette.text.primary,  // Using theme color for text
@@ -240,16 +241,16 @@ const isNotificationMenuOpen = Boolean(notificationMenuAnchor);
           {darkMode ? <Light /> : <DarkMode />}
         </IconButton>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-          <IconButton
-  size="large"
-  aria-label={`show ${notificationsCount} new notifications`}
-  color="inherit"
-  onClick={(event) => setNotificationMenuAnchor(event.currentTarget)}
->
-  <Badge badgeContent={notificationsCount} color="error">
-    <NotificationsIcon />
-  </Badge>
-</IconButton>
+        <IconButton
+          size="large"
+          aria-label={`show ${notificationsCount} new notifications`}
+          color="inherit"
+          onClick={(event) => setNotificationMenuAnchor(event.currentTarget)}
+        >
+        <Badge badgeContent={notificationsCount} color="error">
+          <NotificationsIcon />
+        </Badge>
+      </IconButton>
           <IconButton
             size="large"
             edge="end"

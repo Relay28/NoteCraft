@@ -50,7 +50,7 @@ export const CustomThemeProvider = ({ children }) => {
           MuiAppBar: {
             styleOverrides: {
               root: {
-                backgroundColor: darkMode ? '#383e4a' : '#4caf50',
+                backgroundColor: darkMode ? '#2b2f3a' : '#f4f7ed',
                 color: darkMode ? '#d8dee9' : '#fff',
               },
             },

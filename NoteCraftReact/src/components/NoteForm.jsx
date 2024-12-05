@@ -60,8 +60,6 @@ export default function NoteForm() {
   };
 
 
-  //Icon Color
-
   
   const handleImageUpload = useCallback(() => {
     const input = document.createElement("input");
@@ -159,8 +157,8 @@ export default function NoteForm() {
   return (
     <Box
       sx={{
-        width: "85%", // Match Note.jsx container width
-        maxWidth: "900px",
+        width: "90%", // Match Note.jsx container width
+        maxWidth: "85vw",
         height: "80vh", // Match Note.jsx height
         margin: "auto",
         padding: "2%",
@@ -168,7 +166,7 @@ export default function NoteForm() {
         borderRadius: "12px",
         boxShadow: theme.shadows[2], // Use theme shadows
         display: "flex",
-        marginTop:9,
+        marginTop:2,
         flexDirection: "column",
       }}
     >

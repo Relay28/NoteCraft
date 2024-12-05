@@ -155,7 +155,7 @@ const Todolist = () => {
 
             {filteredTasks.length === 0 ? (
                 <ListItem>
-                    <ListItemText primary={`No ${filter !== 'All' ? filter : ''} To-Do Lists Available`} />
+                    <ListItemText sx ={{color:(theme)=>theme.palette.text.primary}}primary={`No ${filter !== 'All' ? filter : ''} To-Do Lists Available`} />
                 </ListItem>
             ) : (
                 <>
