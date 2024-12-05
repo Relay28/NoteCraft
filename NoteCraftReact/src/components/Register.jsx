@@ -1,287 +1,273 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState,useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import IconButton from "@mui/material/IconButton";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid2";
 import axios from 'axios';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
 
 export default function SignIn() {
-    const [personalInfo, setPersonalInfo] = useState({
-        firstName: '',
-        lastName: '',
-        birthdate: '',
-        email: '',
-        username: '',
-        password: '',
-    });
-    const [account, setAcc] = useState({
-        id: '',
-        username: '',
-        password: '',
-        email: '',
-        firstName: '',
-        lastName: '',
-        birthdate: '',
-    });
-    const [showPassword, setShowPassword] = useState(false);
-    const navigate = useNavigate();
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: "",
+    lastName: "",
+    birthdate: "",
+    email: "",
+    username: "",
+    password: "",
+  });
+  useEffect(() => {
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+    document.body.style.height = "100vh";
+    document.body.style.width = "100vw";
+    document.body.style.backgroundColor = "#fafafa";
+    document.body.style.overflow = "hidden";
 
-    const [usernameError, setUsernameError] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
+    return () => {
+      // Clean up styles when component unmounts
+      document.body.style.margin = "";
+      document.body.style.padding = "";
+      document.body.style.height = "";
+      document.body.style.width = "";
+      document.body.style.backgroundColor = "";
+      document.body.style.overflow = "";
     };
+  }, []);
+  const [showPassword, setShowPassword] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");  // Error state for password
+  const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setPersonalInfo((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setUsernameError('');
-        setEmailError('');
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setPersonalInfo((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
-        try {
-            const usernameResponse = await axios.get('http://localhost:8081/api/user/checkAvailability', {
-                params: { username: personalInfo.username },
-            });
-            const emailResponse = await axios.get('http://localhost:8081/api/user/checkAvailability', {
-                params: { email: personalInfo.email },
-            });
+  // Password validation regex
+  const passwordValidationRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
 
-            if (!usernameResponse.data.available) {
-                setUsernameError('Username is taken');
-            }
-            if (!emailResponse.data.available) {
-                setEmailError('Email is taken');
-            }
-
-            if (usernameResponse.data.available && emailResponse.data.available) {
-                const response = await axios.post('http://localhost:8081/api/user/insertUserRecord', personalInfo);
-                navigate('/login', { state: { account: response.data } });
-            }
-        } catch (error) {
-            console.error('Error creating user:', error);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUsernameError("");
+    setEmailError("");
+    setPasswordError(""); // Reset password error
+  
+    const { password } = personalInfo;
+  
+    // Password validation regex (at least 8 characters, 1 number, 1 special character)
+    const passwordValidationRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
+  
+    // Check if password meets the criteria
+    if (!passwordValidationRegex.test(password)) {
+      setPasswordError("Password must be at least 8 characters long, contain one number and one special character.");
+      return; // Prevent form submission if password is invalid
+    }
+  
+    try {
+      // Check username availability
+      const usernameResponse = await axios.get(
+        "http://localhost:8081/api/user/checkAvailability",
+        {
+          params: { username: personalInfo.username },
         }
-    };
+      );
+  
+      // Check email availability
+      const emailResponse = await axios.get(
+        "http://localhost:8081/api/user/checkAvailability",
+        {
+          params: { email: personalInfo.email },
+        }
+      );
+  
+      if (!usernameResponse.data.available) {
+        setUsernameError("Username is taken");
+      }
+  
+      if (!emailResponse.data.available) {
+        setEmailError("Email is taken");
+      }
+  
+      // If both username and email are available, create the user
+      if (usernameResponse.data.available && emailResponse.data.available) {
+        const response = await axios.post(
+          "http://localhost:8081/api/user/insertUserRecord",
+          personalInfo
+        );
+        navigate("/login", { state: { account: response.data } });
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
+  };
 
-    return (
-        <div style={{
-            display: 'flex',
-            height: '70vh',
-            width: '150vh',
-            fontFamily: 'Arial, sans-serif',
-            background: '#ffffff',
-            border: "1px solid black",
-            marginLeft:"85px",
-            borderRadius: "20px",
-            overflow: "hidden",
-            justifyContent: "center",
-            alignItems: "center",
-            alignContent: "center",
-            marginTop:"4.5%",
-            marginLeft:"5%"
-            
-        }} className='register-container'>
-            <div style={{
-                flex: '1',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: '#ffffff',
-                marginRight: '10px',
-            }}>
-                <h1 style={{
-                    color: '#579A59',
-                    marginBottom: '20px',
-                    fontSize: '24px',
-                }}>Register</h1>
-
-                <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
-                <input
-                        type="text"
-                        name="firstName"
-                        placeholder="First Name"
-                        value={personalInfo.firstName}
-                        onChange={handleChange}
-                        required
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '5px',
-                            border: '1px solid #ced4da',
-                            outline: 'none',
-                            fontSize: '16px',
-                        }}
-                    />
-                    <input
-                        type="text"
-                        name="lastName"
-                        placeholder="Last Name"
-                        value={personalInfo.lastName}
-                        onChange={handleChange}
-                        required
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '5px',
-                            border: '1px solid #ced4da',
-                            outline: 'none',
-                            fontSize: '16px',
-                        }}
-                    />
-                    <input
-                        type="date"
-                        name="birthdate"
-                        placeholder="Birthdate"
-                        value={personalInfo.birthdate}
-                        onChange={handleChange}
-                        required
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '5px',
-                            border: '1px solid #ced4da',
-                            outline: 'none',
-                            fontSize: '16px',
-                        }}
-                    />
-                    <div style={{ position: 'relative', height: '50px', marginBottom: '30px' }}>
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Email"
-                            value={personalInfo.email}
-                            onChange={handleChange}
-                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                            required
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '5px',
-                                border: '1px solid #ced4da',
-                                outline: 'none',
-                                fontSize: '16px',
-                            }}
-                        />
-                        {emailError && (
-                            <div style={{ color: 'red', textAlign: 'left', fontSize:'15px', marginTop: '5px' }}>
-                                {emailError}
-                            </div>
-                        )}
-                    </div>
-                    
-                    <div style={{ position: 'relative', height: '50px', marginBottom: '30px' }}>
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Username"
-                            value={personalInfo.username}
-                            onChange={handleChange}
-                            required
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '5px',
-                                border: '1px solid #ced4da',
-                                outline: 'none',
-                                fontSize: '16px',
-                            }}
-                        />
-                        {usernameError && (
-                            <div style={{ color: 'red', textAlign: 'left', fontSize:'15px', marginTop: '5px' }}>
-                                {usernameError}
-                            </div>
-                        )}
-                    </div>
-
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '400px', marginBottom: '30px' }}>
-                    <input
-                        type={showPassword ? 'text' : 'password'}
-                        name="password"
-                        placeholder="Password"
-                        value={personalInfo.password}
-                        onChange={handleChange}
-                        required
-                        pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-                        title="Password must be at least 8 characters, include one special character, one uppercase letter, and one number."
-                        style={{
-                            width: '106.5%',
-                            padding: '12px',
-                            borderRadius: '5px',
-                            border: '1px solid #ced4da',
-                            outline: 'none',
-                            fontSize: '16px',
-                            boxSizing: 'border-box',
-                        }}
-                    />
-                    <IconButton 
-                        onClick={togglePasswordVisibility} 
-                        style={{
-                            position: 'absolute', 
-                            top: '10px', 
-                            right: '-13px', 
-                            backgroundColor: 'transparent', 
-                            padding: '0', 
-                            cursor: 'pointer'
-                        }}
-                    >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                </div>
-
-                    <button type="submit" style={{
-                        width: '100%',
-                        padding: '12px',
-                        background: '#579A59',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        marginLeft:"10px",
-                    }}>
-                        Sign Up
-                    </button>
-                    
-                    <div style={{ marginTop: '15px', fontSize: '14px', color: '#579A59' }}>
-                        Already have an account?{' '}
-                        <span
-                            onClick={() => navigate('/login')}
-                            style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
-                        >
-                            Sign in
-                        </span>
-                    </div>
-                </form>
-            </div>
-
-            <div
-                className="transition-section-register"
-                style={{
-                    height: '100%',
-                    width: 'calc(50% - 10px)',
-                    background: "#579A59",
-                    color: '#ffffff',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '20px',
-                    borderRadius: "15px",
-                    boxSizing: "border-box",
-                    animation: "slideInRight 1s ease-out forwards" 
-                }}
-            >
-                <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>
-                    Stay Organized, Stay Creative: NoteCraft Makes It Easy.
-                </h1>
-            </div>
-        </div>
-    );
+  return (
+    <Grid
+      container
+      sx={{
+        height: "100vh", 
+        width: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 2,
+        boxSizing: "border-box",
+        overflow: "hidden", 
+      }}
+    >
+      <Box
+        sx={{
+          width: "360px", // Control form width
+          padding: "20px",
+          backgroundColor: "#ffffff",
+          borderRadius: "16px",
+          boxShadow: "0px 4px 24px rgba(0, 0, 0, 0.1)",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: '30px'
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600, marginBottom: 2, color: "#333", fontSize: "20px" }}
+        >
+          Register
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: "#555", marginBottom: 3, fontSize: "12px" }}
+        >
+          Please fill in the details below to create your account.
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="First Name"
+            name="firstName"
+            value={personalInfo.firstName}
+            onChange={handleChange}
+            fullWidth
+            variant="outlined"
+            required
+            sx={{ marginBottom: 2, fontSize: "12px" }}
+            size="small"
+          />
+          <TextField
+            label="Last Name"
+            name="lastName"
+            value={personalInfo.lastName}
+            onChange={handleChange}
+            fullWidth
+            variant="outlined"
+            required
+            sx={{ marginBottom: 2, fontSize: "12px" }}
+            size="small"
+          />
+          <TextField
+            label="Birthdate"
+            name="birthdate"
+            type="date"
+            value={personalInfo.birthdate}
+            onChange={handleChange}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            required
+            sx={{ marginBottom: 2, fontSize: "12px" }}
+            size="small"
+          />
+          <TextField
+            label="Email"
+            name="email"
+            value={personalInfo.email}
+            onChange={handleChange}
+            fullWidth
+            variant="outlined"
+            type="email"
+            required
+            error={!!emailError}
+            helperText={emailError}
+            sx={{ marginBottom: 2, fontSize: "12px" }}
+            size="small"
+          />
+          <TextField
+            label="Username"
+            name="username"
+            value={personalInfo.username}
+            onChange={handleChange}
+            fullWidth
+            variant="outlined"
+            required
+            error={!!usernameError}
+            helperText={usernameError}
+            sx={{ marginBottom: 2, fontSize: "12px" }}
+            size="small"
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={personalInfo.password}
+            onChange={handleChange}
+            fullWidth
+            variant="outlined"
+            required
+            error={!!passwordError}
+            helperText={passwordError || "Password must be at least 8 characters long, contain one number and one special character."}
+            InputProps={{
+              endAdornment: (
+                <IconButton sx={{ height:"12px", width:"12px" }} onClick={togglePasswordVisibility}>
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              ),
+            }}
+            sx={{ marginBottom: 3 , fontSize: "12px"}}
+            size="small"
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{
+              backgroundColor: "#579A59",
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: "14px",
+              padding: "10px 0",
+              borderRadius: "8px",
+              "&:hover": { backgroundColor: "#1da23d" },
+            }}
+          >
+            Sign Up
+          </Button>
+        </form>
+        <Typography
+          variant="body2"
+          sx={{ marginTop: 2, color: "#888", fontSize: "12px" }}
+        >
+          Already have an account?{" "}
+          <span
+            style={{
+              color: "#579A59",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+            onClick={() => navigate("/login")}
+          >
+            Sign in
+          </span>
+        </Typography>
+      </Box>
+    </Grid>
+  );
 }

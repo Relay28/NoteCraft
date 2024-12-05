@@ -1,18 +1,47 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { PersonalInfoContext } from './PersonalInfoProvider';
+import {
+    Box,
+    Card,
+    CardContent,
+    Typography,
+    TextField,
+    Button,
+    IconButton,
+    InputAdornment,
+} from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
 
 export default function Login() {
-    const [hover, setHover] = useState(false);
     const [credentials, setCredentials] = useState({ username: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
-    const navigate = useNavigate();
-    const { setPersonalInfo } = useContext(PersonalInfoContext); // Use setPersonalInfo from context
     const [errorMessage, setErrorMessage] = useState('');
+    const navigate = useNavigate();
+    const { setPersonalInfo } = useContext(PersonalInfoContext);
+
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
+    useEffect(() => {
+        document.body.style.margin = "0";
+        document.body.style.padding = "0";
+        document.body.style.height = "100vh";
+        document.body.style.width = "100vw";
+        document.body.style.backgroundColor = "#fafafa";
+        document.body.style.overflow = "hidden";
+    
+        return () => {
+          // Clean up styles when component unmounts
+          document.body.style.margin = "";
+          document.body.style.padding = "";
+          document.body.style.height = "";
+          document.body.style.width = "";
+          document.body.style.backgroundColor = "";
+          document.body.style.overflow = "";
+        };
+      }, []);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -34,11 +63,10 @@ export default function Login() {
                 const allUsersResponse = await axios.get('http://localhost:8081/api/user/getAllUsers', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log("TOKEN SAVED")
                 const userData = allUsersResponse.data.find(user => user.username === credentials.username);
 
                 if (userData) {
-                    setPersonalInfo(userData); // Set personal info in context
+                    setPersonalInfo(userData);
                     localStorage.setItem('userId', userData.id);
                     navigate('/home');
                 } else {
@@ -54,142 +82,119 @@ export default function Login() {
     };
 
     return (
-        <div style={{
-            display: 'flex',
-            height: '70vh',
-            width: '150vh',
-            fontFamily: 'Arial, sans-serif',
-            background: '#ffffff',
-            border: "1px solid #579A59",
-            borderRadius: "20px",
-            overflow: "hidden",
-            justifyContent: "center",
-            alignItems: "center",
-            alignContent: "center",
-          
-            
-        }} className='login-container'>
-            <div
-                className="transition-section-login"
-                style={{
-                    height: '100%',
-                    width: 'calc(50% - 10px)',
-                    background: "#579A59",
-                    color: '#ffffff',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '20px',
-                    borderRadius: "15px",
-                    boxSizing: "border-box",
-                    animation: 'slideIn 1s ease-out', // Add animation property here
-                }}
-                >
-                <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>
-                    Stay Organized, Stay Creative: NoteCraft Makes It Easy.
-                </h1>
-                </div>
-            <div style={{
-                flex: '1',
+        <Box
+            sx={{
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#ffffff',
-                padding: '40px',
-            }}>
-                <h1 style={{
-                    color: '#579A59',
-                    marginBottom: '20px',
-                    fontSize: '24px',
-                }}>Login</h1>
-                <form onSubmit={handleLogin} style={{ width: '100%', maxWidth: '400px' }}>
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        value={credentials.username}
-                        onChange={handleChange}
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            marginBottom: '15px',
-                            borderRadius: '5px',
-                            border: '1px solid #ced4da',
-                            outline: 'none',
-                            fontSize: '16px',
-                        }}
-                    />
-                    <div style={{ position: "relative", marginBottom: "15px" }}>
-                    <IconButton 
-                        onClick={togglePasswordVisibility} 
-                        style={{
-                            position: 'absolute', 
-                            top: '10px', 
-                            right: '-13px', 
-                            backgroundColor: 'transparent', 
-                            padding: '0', 
-                            cursor: 'pointer'
+                alignItems: 'center',
+                height: '100vh',
+                
+            }}
+        >
+            <Card sx={{ width: 400, boxShadow: "0px 4px 24px rgba(0, 0, 0, 0.1)", borderRadius: 2, padding: '10px' }}>
+                <CardContent>
+                    {/* Logo Placeholder */}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            mb: 2,
                         }}
                     >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            name="password"
-                            placeholder="Password"
-                            value={credentials.password}
-                            onChange={handleChange}
+                        <img
+                            src="https://via.placeholder.com/100"
+                            alt="Application Logo"
                             style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '5px',
-                                border: '1px solid #ced4da',
-                                outline: 'none',
-                                fontSize: '16px',
+                                width: '100px',
+                                height: '100px',
+                                borderRadius: '50%',
                             }}
                         />
-                    </div>
+                    </Box>
 
-                    <div style={{
-                        height: '20px', // Fixed height to prevent shifting
-                        color: 'red',
-                        fontSize: '14px',
-                        marginBottom: '10px',
-                    }}>
-                        {errorMessage}
-                    </div>
+                    {/* Application Name */}
+                    <Typography variant="h5" component="h1" sx={{ textAlign: 'center', color: '#579A59', mb: 2 }}>
+                        NoteCraft
+                    </Typography>
 
-                    <div style={{ marginBottom: '15px' }}>
-                        <h4
-                            style={{
+                    <Typography variant="subtitle1" sx={{ textAlign: 'center', color: '#555', mb: 3 }}>
+                        Login to your account
+                    </Typography>
+
+                    <form onSubmit={handleLogin}>
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            label="Username"
+                            name="username"
+                            value={credentials.username}
+                            onChange={handleChange}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            label="Password"
+                            name="password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={credentials.password}
+                            onChange={handleChange}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={togglePasswordVisibility} edge="end">
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                            sx={{ mb: 2 }}
+                        />
+                        {errorMessage && (
+                            <Typography
+                                variant="body2"
+                                color="error"
+                                sx={{ mb: 2, textAlign: 'center' }}
+                            >
+                                {errorMessage}
+                            </Typography>
+                        )}
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            fullWidth
+                            sx={{
+                                backgroundColor: "#579A59",
+                                color: "#fff",
+                                fontWeight: "bold",
+                                fontSize: "14px",
+                                padding: "10px 0",
+                                borderRadius: "8px",
+                                "&:hover": { backgroundColor: "#1da23d" },
+                              }}
+                        >
+                            Login
+                        </Button>
+                    </form>
+
+                    <Typography variant="body2" sx={{ textAlign: 'center', marginTop: 2, color: "#888", fontSize: "12px" }}>
+                        Don't have an account?{' '}
+                        <Typography
+                            component="span"
+                            sx={{
                                 color: '#579A59',
-                                cursor: "pointer",
-                                fontSize: '14px',
+                                cursor: 'pointer',
                                 textDecoration: 'underline',
-                                marginLeft:"10px"
+                                fontSize: "12px"
                             }}
                             onClick={() => navigate('/register')}
                         >
-                            No Account Yet? Register here!
-                        </h4>
-                    </div>
-                    <button type="submit" style={{
-                        width: '100%',
-                        padding: '12px',
-                        background: '#579A59',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        marginLeft: "10px",
-                    }}>
-                        Login
-                    </button>
-                </form>
-            </div>
-        </div>
+                            Register
+                        </Typography>
+                    </Typography>
+                </CardContent>
+            </Card>
+        </Box>
     );
 }
