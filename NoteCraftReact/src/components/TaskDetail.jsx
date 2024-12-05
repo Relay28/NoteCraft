@@ -48,6 +48,9 @@ const TaskDetail = () => {
     
         if (date.toDateString() === todayDate.toDateString()) {
             if (date.toDateString() === deadlineDate.toDateString()) return 'today-deadline';
+            if (date.toDateString() === taskStartedDate.toDateString() && date.toDateString() === taskEndedDate.toDateString()) {
+                return 'today-started-ended';
+            }
             if (date.toDateString() === taskStartedDate.toDateString()) return 'today-started';
             if (taskData.taskEnded && date.toDateString() === taskEndedDate.toDateString()) return 'today-ended';
             return 'today';
@@ -127,7 +130,7 @@ const TaskDetail = () => {
     
         // Prepare the data to send to the backend
         const taskEndedDetails = {
-            taskEnded: new Date().toISOString().split('T')[0], // Current date in 'yyyy-mm-dd' format
+            taskEnded: new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().split('T')[0], // Current date in 'yyyy-mm-dd' format
             isCompleted: true
         };
     
@@ -377,7 +380,7 @@ const TaskDetail = () => {
                     }
                     .today-started {
                         background-color: rgba(255, 255, 153, 0.5) !important;
-                        box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(144, 238, 144, 0.5);
+                        box-shadow: 0 0 0 4px rgba(144, 238, 144, 0.5);
                         color: gray !important;
                     }
                     .today-ended {
@@ -387,7 +390,7 @@ const TaskDetail = () => {
                     }
                     .today-started-ended {
                         background-color: rgba(255, 255, 153, 0.5) !important;
-                        box-shadow: 0 0 0 2px yellow, 0 0 0 4px rgba(144, 238, 144, 0.5),
+                        box-shadow: 0 0 0 4px rgba(144, 238, 144, 0.5),
                                     0 0 0 6px rgba(173, 216, 230, 0.5); /* Extra layer for ended styling */
                         color: gray !important;
                     }

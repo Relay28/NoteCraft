@@ -21,7 +21,7 @@ const AddTask = () => {
         taskName: '',
         description: '',
         deadline: '',
-        taskStarted: new Date().toISOString().split('T')[0],
+        taskStarted: new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().split('T')[0],
         taskEnded: '',
         isCompleted: false,
         category: '',
