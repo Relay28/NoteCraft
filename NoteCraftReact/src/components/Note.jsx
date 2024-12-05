@@ -221,7 +221,7 @@ const filteredNotes = notes.filter(
             <Chip
               key={tag}
               label={tag}
-              icon={<TagOutlined />}
+              icon={<LocalOffer />}
               color={selectedTags.includes(tag) ? "primary" : "default"}
               onClick={() =>
                 setSelectedTags((prev) =>
@@ -271,8 +271,8 @@ const filteredNotes = notes.filter(
 
       {/* Notes Grid */}
      <Grid container spacing={2}>
-  {displayedNotes.map((note) => (
-    <Grid item xs={12} sm={6} md={4} key={note.noteid}>
+        {displayedNotes.map((note) => (
+            <Grid item xs={12} sm={6} md={4} key={note.noteid}>
         
       <Paper
         elevation={2}
@@ -311,7 +311,7 @@ const filteredNotes = notes.filter(
                   label={tag.tagName}
                   size="small"
                   color="secondary"
-                  icon={<TagOutlined />}
+                  icon={<LocalOffer />}
                   onDelete={() =>
                     handleRemoveTagFromNote(note.noteid, tag.tagId)
                   }
@@ -378,40 +378,40 @@ const filteredNotes = notes.filter(
             }}
           >
             <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteNoteId(note.noteid);
-            }}
-            color="error"
-            size="small"
-            sx={{
-              backgroundColor: "transparent",
-              "&:hover": {
-                backgroundColor: "#f7dcdc",
-              },
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        </Box>
+     </IconButton>
+            <IconButton
+                onClick={(e) => {
+                e.stopPropagation();
+                setDeleteNoteId(note.noteid);
+                }}
+                color="error"
+                size="small"
+                sx={{
+                backgroundColor: "transparent",
+                "&:hover": {
+                    backgroundColor: "#f7dcdc",
+                },
+                }}
+            >
+                <DeleteIcon fontSize="small" />
+            </IconButton>
+            </Box>
 
-        {/* Tags Section */}
-     
-      </Paper>
-      
+        
+        
+        </Paper>
+        
+        </Grid>
+    ))}
+    
     </Grid>
-  ))}
-  
-</Grid>
 
-<Pagination
-  count={totalPages}
-  page={currentPage}
-  onChange={(event, value) => setCurrentPage(value)}
-  sx={{ marginTop: 1}}
-/>
+            <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(event, value) => setCurrentPage(value)}
+            sx={{ marginTop: 1}}
+            />
 
             {/* Dialogs */}
             <Dialog 
