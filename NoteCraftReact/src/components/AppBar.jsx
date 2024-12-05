@@ -226,7 +226,7 @@ const isNotificationMenuOpen = Boolean(notificationMenuAnchor);
               fontFamily:(theme)=>theme.typography.fontFamily,
               color: (theme) => theme.palette.text.primary,  // Using theme color for text
             }}
-          > Hello, {personalInfo?.name || 'Guest'} 
+          > Hello, {personalInfo?.firstName || 'Guest'} 
           </Typography>
         </Box>
 

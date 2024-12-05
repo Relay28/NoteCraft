@@ -270,7 +270,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                 variant="body1"
                 sx={{ fontWeight: 'bold', fontSize: '15px', color:darkMode?"#fff": '#333' }}
               >
-                {personalInfo?.name || 'Guest'} 
+                {personalInfo?.firstName+" "+personalInfo.lastName|| 'Guest'} 
               </Typography>
               <Typography variant="body2" sx={{ fontSize: '13px', color:darkMode?"#fff": '#333'  }}>
                 {personalInfo?.email || 'guest@email.com'} 
