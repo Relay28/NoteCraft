@@ -35,7 +35,7 @@ export default function Profile({ token }) {
   const { personalInfo, setPersonalInfo } = useContext(PersonalInfoContext);
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [openDeactivateModal, setOpenDeactivateModal] = useState(false);
+ 
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [isUpdated, setIsUpdated] = useState(false);
 
@@ -56,24 +56,6 @@ export default function Profile({ token }) {
       setIsUpdated(true); // Mark as updated when personalInfo is received
     }
   }, [location.state]);
-
-  const handleDeactivate = async () => {
-    try {
-      await axios.put(
-        `http://localhost:8081/api/user/deactivate?id=${personalInfo.id}`,
-        null,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setOpenDeactivateModal(false);
-      navigate('/logout');
-    } catch (error) {
-      console.error('Error deactivating account:', error);
-    }
-  };
 
   const handleDelete = async () => {
     try {
@@ -234,22 +216,15 @@ export default function Profile({ token }) {
             border: '1px solid #D3D3D3',
           }}
         >
-          <Typography variant="h6" fontWeight="bold" fontSize={22} sx={{marginBottom: "-23px"}}>
+          <Typography variant="h6" fontWeight="bold" fontSize={22} sx={{marginBottom: "-38px"}}>
             Account Removal
           </Typography>
           <Divider />
           <Typography variant="body2" color="text.secondary" marginTop={0}>
-            Disabling your account means you can recover it at any time after taking this action.
+          Deleting your account means it cannot be recovered. Once deleted, all your data will be permanently removed.
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => setOpenDeactivateModal(true)}
-              sx={{ textTransform: 'none' }}
-            >
-              Deactivate Account
-            </Button>
+            
             <Button
               variant="outlined"
               color="error"
@@ -263,20 +238,6 @@ export default function Profile({ token }) {
             </Button>
           </Box>
         </Paper>
-
-        {/* Deactivate Account Modal */}
-        <Dialog open={openDeactivateModal} onClose={() => setOpenDeactivateModal(false)}>
-          <DialogTitle>Deactivate Account</DialogTitle>
-          <DialogContent>
-            Are you sure you want to deactivate your account? This action can be undone.
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDeactivateModal(false)}>Cancel</Button>
-            <Button onClick={handleDeactivate} color="error">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
 
         {/* Delete Account Modal */}
         <Dialog open={openDeleteModal} onClose={() => setOpenDeleteModal(false)}>
