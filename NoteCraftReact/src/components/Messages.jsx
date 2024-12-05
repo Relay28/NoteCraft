@@ -54,7 +54,7 @@
     }, [personalInfo.id]);// Dependency on `personalInfo.id` instead of `personalInfo.username`
 
      const handleReceiverConfirm = async () => {
-      const username = selectedConversation?.receiver?.trim();
+      const username = selectedConversation?.receiver?.username || selectedConversation?.receiver?.trim();
       if (!username) {
         alert("Please enter a receiver's name.");
         return;
@@ -69,7 +69,8 @@
           // Update selectedConversation.receiver with the full user data
           setSelectedConversation((prev) => ({
             ...prev,
-            receiver: user // Store the entire user object
+            receiver: user, // Store the entire user object
+            sender:{id: personalInfo.id, username:personalInfo.username}
           }));
     
           // Set finalized state and enable the message box
@@ -86,80 +87,50 @@
     
     
     const handleSendMessage = async () => {
+      // Validate message and receiver
       if (newMessage.trim() && selectedConversation?.receiver?.id) {
         const messageData = {
-          sender: { id: personalInfo.id, username: personalInfo.username },
-          recipient: { id: selectedConversation.receiver.id, username: selectedConversation.receiver.username },
+          sender: { 
+            id: personalInfo.id, 
+            username: personalInfo.username 
+          },
+          recipient: { 
+            id: selectedConversation.receiver.id, 
+            username: selectedConversation.receiver.username 
+          },
           messageContent: newMessage.trim(),
-          date: new Date().toISOString().split('T')[0], // Format the date (YYYY-MM-DD)
+          date: new Date().toISOString().split('T')[0],
         };
     
         try {
-          if (editMessageId) {
-            // If we are editing an existing message, make an API call to update it
-            await axios.put(`http://localhost:8081/api/message/putMessageDetails?messageId=${editMessageId}`, messageData);
+          // If no chatId exists, create a new chat
+          if (!selectedConversation?.chatId) {
+            const chatData = {
+              sender: messageData.sender,
+              receiver: messageData.recipient,
+              messages: [messageData]
+            };
+    
+            const response = await axios.post(`${API_BASE_URL}/addChat`, chatData);
+            const createdChat = response.data;
+    
+            // Update chats and selected conversation
+            setChats(prevChats => [...prevChats, createdChat]);
+            setSelectedConversation(createdChat);
+          } else {
+            // Add message to existing chat
+            await axios.post(`${API_BASE_URL}/addMessageToChat/${selectedConversation.chatId}`, messageData);
             const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${selectedConversation.chatId}`);
             setSelectedConversation(updatedChat.data);
-            setChats((prevChats) =>
-              prevChats.map((chat) =>
-                chat.chatId === selectedConversation.chatId ? { ...chat, messages: updatedChat.data.messages } : chat
-              )
-            );
-            setEditMessageId(null); // Reset edit mode
-          } else {
-            // If no chatId exists, create a new chat using the /addChat API
-            if (!selectedConversation?.chatId) {
-              const chatData = {
-                sender: { id: personalInfo.id, username: personalInfo.username },
-                receiver: { id: selectedConversation.receiver.id, username: selectedConversation.receiver.username },
-                messages: [
-                  {
-                    sender: { id: personalInfo.id, username: personalInfo.username },
-                    recipient: { id: selectedConversation.receiver.id, username: selectedConversation.receiver.username },
-                    messageContent: newMessage.trim(),
-                    date: new Date().toISOString().split('T')[0], // Date in YYYY-MM-DD format
-                  },
-                ],
-              };
-    
-              // Optimistically update the state to show the new chat immediately
-              const newChat = {
-                ...chatData,
-                chatId: Date.now(), // Temporary chatId until API response
-              };
-              setChats((prevChats) => [...prevChats, newChat]);
-              setSelectedConversation(newChat);
-
-              // Call the /addChat API to create the new chat
-              const response = await axios.post(`${API_BASE_URL}/addChat`, chatData);
-              const createdChat = response.data;
-
-              // Update the state with the real chat data after successful creation
-              setChats((prevChats) =>
-                prevChats.map((chat) =>
-                  chat.chatId === newChat.chatId ? { ...chat, chatId: createdChat.chatId } : chat
-                )
-              );
-              setSelectedConversation(createdChat);
-            } else {
-              // If there is an existing chat, just add the new message to it
-              await axios.post(`${API_BASE_URL}/addMessageToChat/${selectedConversation.chatId}`, messageData);
-              const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${selectedConversation.chatId}`);
-              setSelectedConversation(updatedChat.data);
-              setChats((prevChats) =>
-                prevChats.map((chat) =>
-                  chat.chatId === selectedConversation.chatId ? { ...chat, messages: updatedChat.data.messages } : chat
-                )
-              );
-            }
           }
     
-          setNewMessage(""); // Clear the message input after sending
+          setNewMessage(""); // Clear message input
+          setIsAddingChat(false); // Exit adding chat mode
         } catch (error) {
-          console.error("Error sending or editing message:", error);
+          console.error("Error sending message:", error);
         }
       } else {
-        alert("Please enter a message.");
+        alert("Please enter a message and confirm a receiver.");
       }
     };
     
@@ -377,15 +348,19 @@
                       variant="outlined"
                       fullWidth
                       placeholder="Enter receiver's name"
-                      value={selectedConversation?.receiver || ''}
-                      onChange={(e) => {
-                        const input = e.target.value;
-                        setSelectedConversation((prev) => ({ ...prev, receiver: input }));
-                        const suggestions = usernames.filter((username) =>
-                          username.toLowerCase().startsWith(input.toLowerCase())
-                        );
-                        setFilteredUsernames(suggestions);
-                      }}
+                      value={typeof selectedConversation?.receiver === 'object' 
+                        ? selectedConversation.receiver.username || '' 
+                        : selectedConversation.receiver || ''}
+                        onChange={(e) => {
+                          const input = e.target.value;
+                          setSelectedConversation((prev) => ({ ...prev, receiver: input }));
+                          const suggestions = usernames
+                            .filter((username) => 
+                              username.toLowerCase().includes(input.toLowerCase()) && 
+                              username !== personalInfo.username
+                            );
+                          setFilteredUsernames(suggestions);
+                        }}
                       disabled={isReceiverFinalized}
                       sx={{
                         '& .MuiOutlinedInput-root': {
@@ -433,9 +408,9 @@
                   </>
                 ) : (
                   <Typography variant="h6">
-                    {selectedConversation?.sender?.username === personalInfo?.username
-                      ? selectedConversation?.receiver?.username
-                      : selectedConversation?.sender?.username}
+                    {selectedConversation?.receiver?.username || 
+                      selectedConversation?.sender?.username || 
+                      'Select a Chat'}
                   </Typography>
                 )}
               </Box>
