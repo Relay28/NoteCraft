@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, Button, TextField, Typography, IconButton } from '@mui/material';
+import { Box, Button, TextField, Typography, IconButton, Grid, Pagination } from '@mui/material';
 import { PersonalInfoContext } from './PersonalInfoProvider';
+import { useTheme } from './ThemeProvider';
 
 import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const MAX_DESCRIPTION_LENGTH = 200;
+const MAX_SUBTASKS_PER_PAGE = 3;
 
 const AddTask = () => {
     const token = localStorage.getItem('token');
@@ -14,6 +16,7 @@ const AddTask = () => {
     const { personalInfo } = useContext(PersonalInfoContext);
     const isEditing = !!location.state?.task;
     const navigate = useNavigate();
+    const [subtaskPage, setSubtaskPage] = useState(1);
     const [taskData, setTaskData] = useState(location.state?.task || {
         taskName: '',
         description: '',
@@ -24,6 +27,7 @@ const AddTask = () => {
         category: '',
         subTasks: [{ SubTaskName: '' }]
     });
+    const { theme } = useTheme();
 
     const user = personalInfo;
 
@@ -184,197 +188,204 @@ const AddTask = () => {
             });
     };
 
+    const handleSubtaskPageChange = (event, value) => {
+        setSubtaskPage(value);
+    };
+
+    const renderSubtasks = () => {
+        const startIndex = (subtaskPage - 1) * MAX_SUBTASKS_PER_PAGE;
+        const endIndex = startIndex + MAX_SUBTASKS_PER_PAGE;
+        const currentSubtasks = taskData.subTasks.slice(startIndex, endIndex);
+
+        return (
+            <Box sx={{ }}>
+                {currentSubtasks.map((subtask, index) => (
+                    <Box key={startIndex + index} display="flex" alignItems="center">
+                        <TextField 
+                            label={`Subtask ${startIndex + index + 1}`}
+                            value={subtask.SubTaskName}
+                            onChange={(e) => handleSubtaskChange(startIndex + index, e.target.value)}
+                            fullWidth
+                            margin="normal"
+                            error={errors.subTasks && subtask.SubTaskName.trim() === ''}
+                            helperText={errors.subTasks && subtask.SubTaskName.trim() === '' ? "Subtask is required." : ""}
+                            sx={{
+                                marginRight: "10px",
+                                transition: 'transform 0.3s ease, background-color 0.3s ease',
+                                '&:hover': {
+                                    transform: 'scale(1.01)',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                                }
+                            }}
+                            InputLabelProps={{
+                                style: { color: theme.palette.text.primary }, // Use theme palette text color
+                            }}
+                        />
+                        {taskData.subTasks.length > 1 && (
+                            <IconButton 
+                                color="error" 
+                                onClick={() => handleDeleteSubtask(startIndex + index)}
+                                sx={{
+                                    transition: 'transform 0.3s ease, color 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'scale(1.2)',
+                                        color: 'darkred'
+                                    }
+                                }}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        )}
+                    </Box>
+                ))}
+                {taskData.subTasks.length > MAX_SUBTASKS_PER_PAGE && (
+                    <Box display="flex" justifyContent="center" marginTop="20px">
+                        <Pagination 
+                            count={Math.ceil(taskData.subTasks.length / MAX_SUBTASKS_PER_PAGE)}
+                            page={subtaskPage}
+                            onChange={handleSubtaskPageChange}
+                            color="primary"
+                        />
+                    </Box>
+                )}
+                <Button
+                    variant="contained"
+                    color="success"
+                    onClick={addSubtaskField}
+                    sx={{
+                        marginTop: "10px",
+                        transition: 'transform 0.3s ease, border-color 0.3s ease, color 0.3s ease',
+                        '&:hover': {
+                            transform: 'scale(1.1)',
+                            backgroundColor: 'darkgreen',
+                            borderColor: 'darkgreen',
+                        }
+                    }}
+                >
+                    Add Subtask
+                </Button>
+            </Box>
+        );
+    };
+
     return (
-        <Box sx={{padding: '10px',width:"90%",overflow:"auto"  }}>
-            <Typography variant="h4" component="h2" marginBottom="20px" sx={{ color: "black" }}>
+        <Box sx={{padding: '10px', width:"90%", overflow:"hidden"}}>
+            <Typography variant="h4" component="h2" marginBottom="20px">
                 {isEditing ? "Edit Task" : "Add New Task"}
             </Typography>
             
-            <Box sx={{ backgroundColor: "#fff", borderRadius: "25px", padding: "30px" }}>
-                <TextField 
-                    label="Task Name" 
-                    name="taskName" 
-                    value={taskData.taskName} 
-                    onChange={handleInputChange} 
-                    fullWidth 
-                    margin="normal" 
-                    error={errors.taskName}
-                    helperText={errors.taskName ? "Task Name is required." : ""}
-                    sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',
-                        '&:hover': {
-                            transform: 'scale(1.01)',
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                            '& input': {
-                                color: 'gray',
-                            }
-                        }
-                    }}
-                />
-                <TextField 
-                    label="Description" 
-                    name="description" 
-                    value={taskData.description} 
-                    onChange={handleInputChange} 
-                    fullWidth 
-                    margin="normal"
-                    multiline
-                    rows={4}
-                    error={errors.description}
-                    helperText={errors.description ? `Description is too long (max ${MAX_DESCRIPTION_LENGTH} characters).` : ""}
-                    sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',
-                        '&:hover': {
-                            transform: 'scale(1.01)',
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                            '& input': {
-                                color: 'gray',
-                            }
-                        }
-                    }}
-                />
-                <TextField 
-                    label="Deadline" 
-                    name="deadline" 
-                    type="date" 
-                    value={taskData.deadline} 
-                    onChange={handleInputChange} 
-                    fullWidth 
-                    margin="normal" 
-                    InputLabelProps={{ shrink: true }}
-                    error={errors.deadline}
-                    helperText={errors.deadline ? "Deadline is required." : ""}
-                    sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',
-                        '&:hover': {
-                            transform: 'scale(1.01)',
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                            '& input': {
-                                color: 'gray',
-                            }
-                        }
-                    }}
-                />
-                <TextField 
-                    label="Category" 
-                    name="category" 
-                    value={taskData.category} 
-                    onChange={handleInputChange} 
-                    fullWidth 
-                    margin="normal"
-                    sx={{
-                        transition: 'transform 0.3s ease, background-color 0.3s ease',
-                        '&:hover': {
-                            transform: 'scale(1.01)',
-                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                            '& input': {
-                                color: 'gray',
-                            }
-                        }
-                    }}
-                />
+            <Grid container spacing={3}>
+                {/* Left Column */}
+                <Grid item xs={12} md={6}>
+                    <Box sx={{ borderRadius: "25px", padding: "30px", height: "100%" }}>
+                        <TextField 
+                            label="Task Name" 
+                            name="taskName" 
+                            value={taskData.taskName} 
+                            onChange={handleInputChange} 
+                            fullWidth 
+                            margin="normal" 
+                            error={errors.taskName}
+                            helperText={errors.taskName ? "Task Name is required." : ""}
+                            InputLabelProps={{
+                                style: { color: theme.palette.text.primary }, // Use theme palette text color
+                            }}
+                        />
+                        <TextField 
+                            label="Description" 
+                            name="description" 
+                            value={taskData.description} 
+                            onChange={handleInputChange} 
+                            fullWidth 
+                            margin="normal"
+                            multiline
+                            rows={4}
+                            error={errors.description}
+                            helperText={errors.description ? `Description is too long (max ${MAX_DESCRIPTION_LENGTH} characters).` : ""}
+                            InputLabelProps={{
+                                style: { color: theme.palette.text.primary }, // Use theme palette text color
+                            }}
+                        />
+                        <TextField 
+                            label="Deadline" 
+                            name="deadline" 
+                            type="date" 
+                            value={taskData.deadline} 
+                            onChange={handleInputChange} 
+                            fullWidth 
+                            margin="normal" 
+                            error={errors.deadline}
+                            helperText={errors.deadline ? "Deadline is required." : ""}
+                            InputLabelProps={{
+                                shrink: true,
+                                style: { color: theme.palette.text.primary }, // Combine shrink and color
+                            }}
+                        />
+                    </Box>
+                </Grid>
 
-                <Box marginTop="20px">
-                    <Typography variant="h6" marginBottom="10px">
-                        Subtasks
-                    </Typography>
+                {/* Right Column - Subtasks */}
+                <Grid item xs={12} md={6}>
+                    <Box sx={{ borderRadius: "25px", padding: "30px", height: "100%" }}>
+                        <Typography variant="h6" marginBottom="10px">
+                            Subtasks
+                        </Typography>
 
-                    <Typography variant="body2" color="error" style={{ marginTop: '-10px', marginBottom: '10px' }}>
-                        {errors.subTasks && "At least one subtask is required and delete empty subtasks."}
-                    </Typography>
-                    
-                    {taskData.subTasks.map((subtask, index) => (
-                        <Box key={index} display="flex" alignItems="center">
-                            <TextField 
-                                label={`Subtask ${index + 1}`}
-                                value={subtask.SubTaskName}
-                                onChange={(e) => handleSubtaskChange(index, e.target.value)}
-                                fullWidth
-                                margin="normal"
-                                error={errors.subTasks && subtask.SubTaskName.trim() === ''}
-                                helperText={errors.subTasks && subtask.SubTaskName.trim() === '' ? "Subtask is required." : ""}
-                                sx={{
-                                    marginRight: "10px",
-                                    transition: 'transform 0.3s ease, background-color 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'scale(1.01)',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                                    }
-                                }}
-                            />
-                            {taskData.subTasks.length > 1 && (
-                                <IconButton 
-                                    color="error" 
-                                    onClick={() => handleDeleteSubtask(index)}
-                                    sx={{
-                                        transition: 'transform 0.3s ease, color 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'scale(1.2)',
-                                            color: 'darkred'
-                                        }
-                                    }}
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                            )}
-                        </Box>
-                    ))}
-                    <Button
-                        variant="contained"
-                        color="success"
-                        onClick={addSubtaskField}
-                        sx={{
-                            marginRight: "10px",
-                            transition: 'transform 0.3s ease, border-color 0.3s ease, color 0.3s ease',  // Smooth transition for scaling, border and color
-                            '&:hover': {
-                                transform: 'scale(1.1)',  // Enlarges the button
-                                backgroundColor: 'darkgreen',  // Darker shade on hover
-                                borderColor: 'darkgreen',  // Optional: Makes the border match the background color
-                            }
-                        }}
-                    >
-                        Add Subtask
-                    </Button>
-                </Box>
-                
-                <Box display="flex" justifyContent="space-between" marginTop="20px">
-                    <Button
-                        variant="contained"
-                        color="success"
-                        onClick={() => {
-                            if (validateForm()) handleSaveTask();
-                        }}
-                        sx={{
-                            marginRight: "10px",
-                            transition: 'transform 0.3s ease, border-color 0.3s ease, color 0.3s ease',  // Smooth transition for scaling, border and color
-                            '&:hover': {
-                                transform: 'scale(1.1)',  // Enlarges the button
-                                backgroundColor: 'darkgreen',  // Darker shade on hover
-                                borderColor: 'darkgreen',  // Optional: Makes the border match the background color
-                            }
-                        }}
-                    >
-                        Save Task
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="error"
-                        onClick={handleBack}
-                        sx={{
-                            marginRight: "10px",
-                            borderColor: "#e28e8e",
-                            transition: 'transform 0.3s ease, background-color 0.3s ease',  // Smooth transition for scaling and color change
-                            '&:hover': {
-                                transform: 'scale(1.1)',  // Enlarges the button
-                                backgroundColor: 'darkred',  // Darker shade on hover
-                                borderColor: 'darkred',  // Optional: Makes the border match the background color
-                            }
-                        }}
-                    >
-                        Back
-                    </Button>
-                </Box>
-            </Box>
+                        <Typography variant="body2" color="error" style={{ marginTop: '-10px', marginBottom: '10px' }}>
+                            {errors.subTasks && "At least one subtask is required and delete empty subtasks."}
+                        </Typography>
+                        
+                        {renderSubtasks()}
+                    </Box>
+                </Grid>
+
+                {/* Buttons Box */}
+                <Grid item xs={12}>
+                    <Box sx={{  
+                        display: "flex", 
+                        justifyContent: "space-between",
+                        marginLeft: "30px",
+                        marginRight: "35px",
+                        marginTop: "-30px",
+                    }}>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={() => {
+                                if (validateForm()) handleSaveTask();
+                            }}
+                            sx={{
+                                marginRight: "10px",
+                                transition: 'transform 0.3s ease, border-color 0.3s ease, color 0.3s ease',
+                                '&:hover': {
+                                    transform: 'scale(1.1)',
+                                    backgroundColor: 'darkgreen',
+                                    borderColor: 'darkgreen',
+                                }
+                            }}
+                        >
+                            Save Task
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            onClick={handleBack}
+                            sx={{
+                                marginLeft: "10px",
+                                borderColor: "#e28e8e",
+                                transition: 'transform 0.3s ease, background-color 0.3s ease',
+                                '&:hover': {
+                                    transform: 'scale(1.1)',
+                                    backgroundColor: 'darkred',
+                                    borderColor: 'darkred',
+                                }
+                            }}
+                        >
+                            Back
+                        </Button>
+                    </Box>
+                </Grid>
+            </Grid>
         </Box>
     );
 };

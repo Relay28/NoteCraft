@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Button, Typography, List, ListItem, ListItemText, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Select, MenuItem, Grid } from '@mui/material';
+import { Box, Button, Typography, List, ListItem, ListItemText, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Select, MenuItem, Grid, Pagination } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -11,12 +11,14 @@ const Todolist = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [filteredTasks, setFilteredTasks] = useState([]);
     const [filter, setFilter] = useState('All');
+    const [currentPage, setCurrentPage] = useState(1);
     const { darkMode, toggleTheme, theme } = useTheme(); 
     const navigate = useNavigate();
     const location = useLocation();
 
+    const ITEMS_PER_PAGE = 8;
+
     const personalInfo = location.state?.user || { id: '', username: '' };
-    console.log(personalInfo.id);
 
     useEffect(() => {
         if (!personalInfo.id) {
@@ -28,7 +30,6 @@ const Todolist = () => {
             params: { userId: personalInfo.id },
         })
             .then(response => {
-                console.log('Fetched Tasks:', response.data);
                 if (Array.isArray(response.data)) {
                     setTasks(response.data);
                 } else {
@@ -52,10 +53,19 @@ const Todolist = () => {
             default:
                 setFilteredTasks(tasks);
         }
+        setCurrentPage(1); // Reset to first page when filter changes
     }, [filter, tasks]);
 
+    // Pagination logic
+    const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+    const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+    const currentTasks = filteredTasks.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handlePageChange = (event, value) => {
+        setCurrentPage(value);
+    };
+
     const handleEdit = (task) => {
-        console.log('Editing task:', task);
         const taskCopy = JSON.parse(JSON.stringify(task));
         navigate('/add-task', { state: { task: taskCopy, user: personalInfo } });
     };
@@ -106,7 +116,7 @@ const Todolist = () => {
                 width: "100%",
                 marginBottom: "20px"
             }}>
-                <Typography variant="h4" component="h2" sx={{ color: "black", textAlign: 'left' }}>
+                <Typography variant="h4" component="h2" sx={{ textAlign: 'left' }}>
                     To-Do List
                 </Typography>
 
@@ -142,114 +152,125 @@ const Todolist = () => {
                 </Button>
             </Box>
 
-            <Grid container spacing={3}>
-                {filteredTasks.length === 0 ? (
-                    <Grid item xs={12}>
-                        <ListItem>
-                            <ListItemText primary={`No ${filter !== 'All' ? filter : ''} To-Do Lists Available`} />
-                        </ListItem>
-                    </Grid>
-                ) : (
-                    filteredTasks.map((task, index) => (
-                        index % 4 === 0 ? (
-                            <Grid container item xs={12} spacing={3} key={`row-${index}`}>
-                                {filteredTasks.slice(index, index + 4).map((task, innerIndex) => (
-                                    <Grid item xs={3} key={`task-${index}-${innerIndex}`}>
-                                        <Card
-                                            sx={{
-                                                height: '100%',
-                                                borderRadius: "10px",
-                                                cursor: "pointer",
-                                                backgroundColor: darkMode
-                                                    ? task.isCompleted 
-                                                        ? '#b2d8b2'
-                                                        : '#f4b2b2'
-                                                    : task.isCompleted 
-                                                        ? '#b2d8b2'
-                                                        : '#f4b2b2',
-                                            }}
-                                            onClick={() => handleTaskClick(task)}
-                                        >
-                                            <CardContent
-                                                sx={{
-                                                    position: 'relative',
-                                                    transition: 'transform 0.3s ease, background-color 0.3s ease',
-                                                    '&:hover': {
-                                                        transform: 'scale(1.01)',
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                                                    }
-                                                }}
-                                            >
-                                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                    <Box sx={{ 
-                                                        position: 'absolute', 
-                                                        top: 0, 
-                                                        right: 0, 
-                                                        display: 'flex', 
-                                                        gap: 1 
-                                                    }}>
-                                                        {!task.taskEnded && (
-                                                            <Button
-                                                                variant="text"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleEdit(task);
-                                                                }}
-                                                                sx={{
-                                                                    minWidth: 'auto',
-                                                                    padding: '4px',
-                                                                    color: 'green',
-                                                                    marginTop: "15px",
-                                                                    marginRight: "10px"
-                                                                }}
-                                                            >
-                                                                <EditIcon />
-                                                            </Button>
-                                                        )}
-                                                        <Button
-                                                            variant="text"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleOpenDeleteDialog(task, index);
-                                                            }}
-                                                            sx={{
-                                                                minWidth: 'auto',
-                                                                padding: '4px',
-                                                                color: 'red',
-                                                                marginTop: "15px",
-                                                                marginRight: "10px"
-                                                            }}
-                                                        >
-                                                            <DeleteIcon />
-                                                        </Button>
-                                                    </Box>
-                                                    <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: "10px", textAlign: 'left' }}>
-                                                        {task.taskName}
+            {filteredTasks.length === 0 ? (
+                <ListItem>
+                    <ListItemText primary={`No ${filter !== 'All' ? filter : ''} To-Do Lists Available`} />
+                </ListItem>
+            ) : (
+                <>
+                    <Grid container spacing={3}>
+                        {currentTasks.map((task, index) => (
+                            <Grid item xs={3} key={`task-${index}`}>
+                                <Card
+                                    sx={{
+                                        height: '100%',
+                                        borderRadius: "10px",
+                                        cursor: "pointer",
+                                        backgroundColor: darkMode
+                                            ? task.isCompleted 
+                                                ? '#b2d8b2'
+                                                : '#f4b2b2'
+                                            : task.isCompleted 
+                                                ? '#b2d8b2'
+                                                : '#f4b2b2',
+                                    }}
+                                    onClick={() => handleTaskClick(task)}
+                                >
+                                    <CardContent
+                                        sx={{
+                                            position: 'relative',
+                                            transition: 'transform 0.3s ease, background-color 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'scale(1.01)',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                            <Box sx={{ 
+                                                position: 'absolute', 
+                                                top: 0, 
+                                                right: 0, 
+                                                display: 'flex', 
+                                                gap: 1 
+                                            }}>
+                                                {!task.taskEnded && (
+                                                    <Button
+                                                        variant="text"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEdit(task);
+                                                        }}
+                                                        sx={{
+                                                            minWidth: 'auto',
+                                                            padding: '4px',
+                                                            color: 'green',
+                                                            marginTop: "15px",
+                                                            marginRight: "10px"
+                                                        }}
+                                                    >
+                                                        <EditIcon />
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="text"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenDeleteDialog(task, index);
+                                                    }}
+                                                    sx={{
+                                                        minWidth: 'auto',
+                                                        padding: '4px',
+                                                        color: 'red',
+                                                        marginTop: "15px",
+                                                        marginRight: "10px"
+                                                    }}
+                                                >
+                                                    <DeleteIcon />
+                                                </Button>
+                                            </Box>
+                                            <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: "10px", textAlign: 'left', color: "black" }}>
+                                                {task.taskName}
+                                            </Typography>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
+                                                    <strong>Date Started:</strong> {task.taskStarted}
+                                                </Typography>
+                                                {task.isCompleted && (
+                                                    <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
+                                                        <strong>Date Ended:</strong> {task.taskEnded}
                                                     </Typography>
-                                                    <Box sx={{ flex: 1 }}>
-                                                        <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
-                                                            <strong>Date Started:</strong> {task.taskStarted}
-                                                        </Typography>
-                                                        {task.isCompleted && (
-                                                            <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
-                                                                <strong>Date Ended:</strong> {task.taskEnded}
-                                                            </Typography>
-                                                        )}
-                                                        <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
-                                                            <strong>Deadline:</strong> {task.deadline}
-                                                        </Typography>
-                                                    </Box>
-                                                </Box>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                ))}
+                                                )}
+                                                <Typography variant="body1" sx={{ marginBottom: "5px", textAlign: 'left' }}>
+                                                    <strong>Deadline:</strong> {task.deadline}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
                             </Grid>
-                        ) : null
-                    ))
-                )}
-            </Grid>
+                        ))}
+                    </Grid>
 
+                    {/* Pagination */}
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        marginTop: 3, 
+                        width: '100%' 
+                    }}>
+                        <Pagination 
+                            count={Math.ceil(filteredTasks.length / ITEMS_PER_PAGE)}
+                            page={currentPage}
+                            onChange={handlePageChange}
+                            color="primary"
+                            size="large"
+                        />
+                    </Box>
+                </>
+            )}
+
+            {/* Delete Confirmation Dialog remains the same */}
             <Dialog
                 open={openDialog}
                 onClose={handleCloseDialog}
