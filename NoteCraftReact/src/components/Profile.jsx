@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import profile from '/src/assets/profile.jpg'; // Ensure the correct path
@@ -13,31 +13,33 @@ import {
   Button,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
+import { PersonalInfoContext } from './PersonalInfoProvider';
 
-export default function Profile({ personalInfo, token }) {
+export default function Profile({ token }) {
   const formatDate = (date) => {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-indexed, so add 1
-    const day = d.getDate().toString().padStart(2, '0'); // Ensure day is 2 digits
-    return `${year}-${month}-${day}`; // Return in yyyy-MM-dd format
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
   };
+  
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [userInfo, setUserInfo] = useState(personalInfo || location.state?.account || {});
+  const { personalInfo, setPersonalInfo } = useContext(PersonalInfoContext); 
 
   console.log("Personal Info in Profile:", personalInfo);
 
   useEffect(() => {
     if (location.state?.personalInfo) {
-      setUserInfo(location.state.personalInfo); // Update state if new data is passed
+      setPersonalInfo(location.state.personalInfo); // Update state if new data is passed
     }
   }, [location.state]);
 
   const handleDelete = async () => {
-    if (!userInfo.id) {
+    if (!personalInfo?.id) {
       alert('Unable to delete. User ID is not found.');
       return;
     }
@@ -48,7 +50,7 @@ export default function Profile({ personalInfo, token }) {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:8081/api/user/deleteUserDetails/${userInfo.id}`, {
+      await axios.delete(`http://localhost:8081/api/user/deleteUserDetails/${personalInfo.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -69,7 +71,7 @@ export default function Profile({ personalInfo, token }) {
 
     try {
       await axios.put(
-        `http://localhost:8081/api/user/deactivate?id=${userInfo.id}`,
+        `http://localhost:8081/api/user/deactivate?id=${personalInfo.id}`,
         null,
         {
           headers: {
@@ -125,8 +127,8 @@ export default function Profile({ personalInfo, token }) {
       >
         <Avatar
           src={
-            userInfo.profileImg
-              ? `http://localhost:8081/profileImages/${userInfo.profileImg}`
+            personalInfo?.profileImg
+              ? `http://localhost:8081/profileImages/${personalInfo.profileImg}`
               : profile
           }
           alt="Profile"
@@ -134,13 +136,13 @@ export default function Profile({ personalInfo, token }) {
         />
         <Box sx={{ flex: 1, textAlign: 'left' }}>
           <Typography variant="h6" fontWeight="bold">
-            {`${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() || 'Full Name'}
+            {`${personalInfo?.firstName || ''} ${personalInfo?.lastName || ''}`.trim() || 'Full Name'}
           </Typography>
         </Box>
         <Box>
           <IconButton
             color="primary"
-            onClick={() => navigate('/myprofile/edit', { state: { personalInfo: userInfo } })} 
+            onClick={() => navigate('/myprofile/edit', { state: { personalInfo } })} 
           >
             <Edit />
           </IconButton>
@@ -164,14 +166,14 @@ export default function Profile({ personalInfo, token }) {
         <Divider />
         <Grid container spacing={2} sx={{ marginTop: 2 }}>
           {[
-            { label: 'First Name', value: userInfo.firstName },
-            { label: 'Last Name', value: userInfo.lastName },
-            { label: 'Username', value: userInfo.username },
-            { label: 'Birthday', value: userInfo.birthdate ? formatDate(userInfo.birthdate) : 'N/A' },
-            { label: 'Email', value: userInfo.email },
+            { label: 'First Name', value: personalInfo?.firstName },
+            { label: 'Last Name', value: personalInfo?.lastName },
+            { label: 'Username', value: personalInfo?.username },
+            { label: 'Birthday', value: personalInfo?.birthdate ? formatDate(personalInfo.birthdate) : 'N/A' },
+            { label: 'Email', value: personalInfo?.email },
             {
               label: 'Age',
-              value: userInfo.birthdate ? calculateAge(userInfo.birthdate) : 'N/A',
+              value: personalInfo?.birthdate ? calculateAge(personalInfo.birthdate) : 'N/A',
             },
           ].map(({ label, value }, index) => (
             <Grid item xs={6} key={index}>
