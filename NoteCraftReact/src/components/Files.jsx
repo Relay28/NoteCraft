@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { List, ListItem, ListItemText, Button, Box, Typography, IconButton, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { List, ListItem, ListItemText, Button, Box, Typography, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Pagination } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -12,6 +12,12 @@ export default function File() {
     const [userId, setUserId] = useState(null);
     const [openModal, setOpenModal] = useState(false);
     const [imageUrl, setImageUrl] = useState("");
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false); // State for delete modal
+    const [fileToDelete, setFileToDelete] = useState(null); // State for the file to delete
+    const [currentPage, setCurrentPage] = useState(1); // State for current page
+    const filesPerPage = 4; // Number of files per page
+
+    const { darkMode, toggleTheme } = useTheme(); // Use theme hook for dark mode toggle
 
     // Fetch userId from localStorage and files for that user
     useEffect(() => {
@@ -59,14 +65,25 @@ export default function File() {
         }
     };
 
-    // Delete file
-    const handleDeleteFile = async (fileId) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this?");
-        if (!confirmDelete) return;
+    // Open delete confirmation modal
+    const handleOpenDeleteModal = (fileId) => {
+        setFileToDelete(fileId);
+        setDeleteModalOpen(true);
+    };
 
+    // Close delete confirmation modal
+    const handleCloseDeleteModal = () => {
+        setDeleteModalOpen(false);
+        setFileToDelete(null);
+    };
+
+    // Confirm delete file
+    const confirmDeleteFile = async () => {
+        if (!fileToDelete) return;
         try {
-            await axios.delete(`http://localhost:8081/api/files/delete/${fileId}`);
-            setFiles(files.filter(file => file.fileId !== fileId));
+            await axios.delete(`http://localhost:8081/api/files/delete/${fileToDelete}`);
+            setFiles(files.filter(file => file.fileId !== fileToDelete));
+            handleCloseDeleteModal();
         } catch (error) {
             console.error("There was an error deleting the file!", error);
         }
@@ -74,9 +91,6 @@ export default function File() {
 
     // Edit file (Update file name)
     const handleUpdateFile = async (fileId) => {
-        const confirmEdit = window.confirm("Are you sure you want to edit this?");
-        if (!confirmEdit) return;
-
         const newFileName = prompt("Enter new file name:");
         if (!newFileName) return;
 
@@ -110,28 +124,33 @@ export default function File() {
         }
     };
 
+    // Pagination logic
+    const indexOfLastFile = currentPage * filesPerPage;
+    const indexOfFirstFile = indexOfLastFile - filesPerPage;
+    const currentFiles = files.slice(indexOfFirstFile, indexOfLastFile);
+
+    const handlePageChange = (event, value) => {
+        setCurrentPage(value);
+    };
+
     if (!userId) {
         return <Typography variant="h6">Please log in to view your files.</Typography>;
     }
-
-    const { darkMode, toggleTheme } = useTheme(); // Use theme hook for dark mode toggle
 
     return (
         <Box
             sx={{
                 width: "80%",
                 padding: "20px",
-                backgroundColor: darkMode ? "#2b2f3a" : "#C8E6C9", // Adjust background color for dark mode
                 borderRadius: "20px",
-                boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.2)",
             }}
         >
             <Typography
-                variant="h5"
+                variant="h4"
                 sx={{
                     textAlign: "center",
                     marginBottom: "20px",
-                    color: darkMode ? "#d8dee9" : "#2E7D32", // Adjust text color for dark mode
+                    color: darkMode ? "#d8dee9" : "#2b2f3a",
                 }}
             >
                 Files Dashboard
@@ -146,99 +165,134 @@ export default function File() {
             </Button>
 
             <Box sx={{ display: "flex", gap: "20px", justifyContent: "center" }}>
-                {/* Your Files Section */}
                 <Box
                     sx={{
                         height: "500px",
                         flex: 2,
-                        backgroundColor: darkMode ? "#383e4a" : "#E8F5E9", // Background color adjustment
                         borderRadius: "15px",
                         padding: "20px",
                         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
                     }}
                 >
-                    <Typography variant="h6" sx={{ marginBottom: "20px", color: darkMode ? "#d8dee9" : "#2E7D32" }}>
-                        Your Files
-                    </Typography>
-                    <List>
-                        {files.map((file) => (
-                            <ListItem
-                                key={file.fileId}
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    marginBottom: "10px",
-                                    padding: "10px",
-                                    borderRadius: "10px",
-                                    backgroundColor: darkMode ? "#383e4a" : "#FBFBFB",
-                                }}
-                            >
-                                <ListItemText
-                                    primary={
-                                        <Button
-                                            sx={{
-                                                textTransform: "none",
-                                                fontWeight: "bold",
-                                                color: file.fileType === "image/png" || file.fileType === "image/jpeg" ? "#1976d2" : "inherit",
-                                                display: "block",
-                                                textAlign: "left",
-                                                whiteSpace: "nowrap",
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                                maxWidth: "400px",
-                                            }}
-                                            onClick={() => handlePreviewImage(file)}
-                                        >
-                                            {file.fileName}
-                                        </Button>
-                                    }
-                                    secondary={`Size: ${file.size} bytes`}
-                                />
-                                <Box>
-                                    {/* Display download button */}
-                                    <IconButton onClick={() => handleDownloadFile(file)}><DownloadIcon /></IconButton>
-                                    <IconButton onClick={() => handleUpdateFile(file.fileId)}><EditIcon /></IconButton>
-                                    <IconButton onClick={() => handleDeleteFile(file.fileId)}><DeleteIcon /></IconButton>
-                                </Box>
-                            </ListItem>
-                        ))}
-                    </List>
+                    <Box>
+                        <Typography variant="h6" sx={{ marginBottom: "20px", color: darkMode ? "#d8dee9" : "#2b2f3a" }}>
+                            Your Files
+                        </Typography>
+                        <List>
+                            {currentFiles.map((file) => (
+                                <ListItem
+                                    key={file.fileId}
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        marginBottom: "10px",
+                                        padding: "10px",
+                                        borderRadius: "10px",
+                                        backgroundColor: darkMode ? "#383e4a" : "#FBFBFB",
+                                    }}
+                                >
+                                    <ListItemText
+                                        primary={
+                                            <Button
+                                                sx={{
+                                                    textTransform: "none",
+                                                    fontWeight: "bold",
+                                                    color: darkMode ? "#d8dee9" : "#2b2f3a",
+                                                    display: "block",
+                                                    textAlign: "left",
+                                                    whiteSpace: "nowrap",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                    maxWidth: "400px",
+                                                }}
+                                                onClick={() => handlePreviewImage(file)}
+                                            >
+                                                {file.fileName}
+                                            </Button>
+                                        }
+                                        secondary={`Size: ${file.size} bytes`}
+                                    />
+                                    <Box>
+                                        <IconButton onClick={() => handleDownloadFile(file)}><DownloadIcon /></IconButton>
+                                        <IconButton onClick={() => handleUpdateFile(file.fileId)}><EditIcon /></IconButton>
+                                        <IconButton onClick={() => handleOpenDeleteModal(file.fileId)}><DeleteIcon /></IconButton>
+                                    </Box>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Box>
+                    <Pagination
+                        count={Math.ceil(files.length / filesPerPage)}
+                        page={currentPage}
+                        onChange={handlePageChange}
+                        color="primary"
+                        sx={{ marginTop: "20px", alignSelf: "center" }}
+                    />
                 </Box>
 
-                {/* Upload a File Section */}
+                {/* Upload Section */}
                 <Box
                     sx={{
                         height: "200px",
                         flex: 1,
-                        backgroundColor: darkMode ? "#383e4a" : "#E8F5E9", // Background color adjustment
                         borderRadius: "15px",
                         padding: "20px",
                         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
                     }}
                 >
-                    <Typography variant="h6" sx={{ marginBottom: "20px", color: darkMode ? "#d8dee9" : "#2E7D32" }}>
+                    <Typography
+                        variant="h6"
+                        sx={{ marginBottom: "20px", color: darkMode ? "#d8dee9" : "#2b2f3a" }}
+                    >
                         Upload a File
                     </Typography>
-                    <input type="file" onChange={handleFileChange} style={{ marginBottom: "10px", width: "100%" }} />
+                    <input
+                        type="file"
+                        onChange={handleFileChange}
+                        style={{
+                            marginBottom: "10px",
+                            width: "100%",
+                            color: darkMode ? "#d8dee9" : "#2b2f3a",
+                            backgroundColor: "transparent",
+                        }}
+                    />
                     <Button
                         variant="contained"
-                        color="success"
+                        color="primary"
                         onClick={handleUploadFile}
-                        sx={{ width: "100%" }}
+                        fullWidth
                     >
                         Upload
                     </Button>
                 </Box>
             </Box>
 
-            {/* Image Preview Modal */}
-            <Dialog open={openModal} onClose={() => setOpenModal(false)} maxWidth="md" fullWidth>
-                <DialogTitle>Image Preview</DialogTitle>
+            {/* Delete Confirmation Modal */}
+            <Dialog open={deleteModalOpen} onClose={handleCloseDeleteModal}>
+                <DialogTitle>Confirm Deletion</DialogTitle>
                 <DialogContent>
-                    <img src={imageUrl} alt="file preview" style={{ width: "100%", height: "auto" }} />
+                    <Typography>Are you sure you want to delete this file? This action cannot be undone.</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpenModal(false)} color="primary">
+                    <Button onClick={handleCloseDeleteModal} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={confirmDeleteFile} color="primary">
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Image Preview Modal */}
+            <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+                <DialogContent>
+                    <img src={imageUrl} alt="Preview" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenModal(false)} color="secondary">
                         Close
                     </Button>
                 </DialogActions>
