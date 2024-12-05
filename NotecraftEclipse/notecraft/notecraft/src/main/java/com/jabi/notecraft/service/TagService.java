@@ -20,6 +20,12 @@ public class TagService {
     @Autowired
     private NoteRepository noteRepository;
 
+
+    public TagEntity getTagById(int tagId) {
+        return tagRepository.findById(tagId)
+            .orElseThrow(() -> new NoSuchElementException("Tag not found with ID: " + tagId));
+    }
+
     @Transactional
     public TagEntity createOrFindTag(String tagName) {
         return tagRepository.findByTagName(tagName)

@@ -165,5 +165,34 @@ public class StudyGroupService {
         // Proceed with deletion if the user is the owner
         studyGroupRepository.deleteById(groupId);
     }
+    
+    @Transactional
+    public void leaveStudyGroup(UserEntity user, StudyGroupEntity studyGroup) {
+        // Check if user is the owner
+        if (studyGroup.getOwner().equals(user)) {
+            Set<UserEntity> groupUsers = studyGroup.getUsers();
+            
+            // If no other members, delete the group
+            if (groupUsers.size() <= 1) {
+                studyGroupRepository.delete(studyGroup);
+                return;
+            }
+
+            // Transfer ownership to another member
+            UserEntity newOwner = groupUsers.stream()
+                .filter(u -> !u.equals(user))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No available users to transfer ownership"));
+
+            studyGroup.setOwner(newOwner);
+            studyGroup.getUsers().remove(user);
+
+            studyGroupRepository.save(studyGroup);
+        } else {
+            // If not owner, simply remove the user
+            studyGroup.getUsers().remove(user);
+            studyGroupRepository.save(studyGroup);
+        }
+    }
 
 }

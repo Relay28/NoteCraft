@@ -255,5 +255,17 @@ public class StudyGroupController {
         StudyGroupEntity updatedGroup = studyGroupService.removeUsersFromGroup(groupId, userIds, ownerId);
         return ResponseEntity.ok(updatedGroup);
     }
+    
+    @PostMapping("/leave")
+    public ResponseEntity<?> leaveStudyGroup(
+        @RequestParam int userId, 
+        @RequestParam int studyGroupId
+    ) {
+        UserEntity user = userService.findById2(userId);
+        StudyGroupEntity studyGroup = userService.findStudyGroupById(studyGroupId);
+        
+        studyGroupService.leaveStudyGroup(user, studyGroup);
+        return ResponseEntity.ok().build();
+    }
 
 }

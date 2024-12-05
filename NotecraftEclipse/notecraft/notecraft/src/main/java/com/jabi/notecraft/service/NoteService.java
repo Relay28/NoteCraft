@@ -2,6 +2,7 @@ package com.jabi.notecraft.service;
 
 import com.jabi.notecraft.entity.NoteEntity;
 import com.jabi.notecraft.entity.StudyGroupEntity;
+import com.jabi.notecraft.entity.TagEntity;
 import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.repository.NoteRepository;
 import com.jabi.notecraft.repository.StudyGroupRepository;
@@ -9,6 +10,7 @@ import com.jabi.notecraft.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -25,12 +27,42 @@ public class NoteService {
     private StudyGroupRepository studyGroupRepository;
 
     // Insert a personal note
+
+    @Autowired
+    private TagService tagService;
+
     public NoteEntity insertNote(NoteEntity note, int userId) {
         UserEntity user = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
 
         note.setUser(user);
         note.setGroupNote(false); // Ensure it's marked as a personal note
+
+        // Process tags
+        if (note.getTags() != null && !note.getTags().isEmpty()) {
+            List<TagEntity> processedTags = new ArrayList<>();
+            
+            for (TagEntity tag : note.getTags()) {
+                // If tag already exists (has tagId), find it
+                if (tag.getTagId() > 0) {
+                    TagEntity existingTag = tagService.getTagById(tag.getTagId());
+                    processedTags.add(existingTag);
+                } 
+                // If tag doesn't have an ID but has a name, create or find it
+                else if (tag.getTagName() != null && !tag.getTagName().isEmpty()) {
+                    TagEntity existingOrNewTag = tagService.createOrFindTag(tag.getTagName());
+                    processedTags.add(existingOrNewTag);
+                }
+            }
+            
+            // Clear and reset tags to ensure we're using managed entities
+            note.getTags().clear();
+            note.getTags().addAll(processedTags);
+        }
+
+        // Remove noteid to ensure a new note is created
+        note.setNoteid(0);
+
         return noteRepository.save(note);
     }
 

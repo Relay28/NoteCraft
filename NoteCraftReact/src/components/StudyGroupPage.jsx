@@ -2,31 +2,32 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-  Modal,
   Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Tooltip,
+  IconButton,
+  Chip,
   TextField,
-  CircularProgress,
-  Divider,
   Snackbar,
-  Alert,
+  Alert
 } from "@mui/material";
-
-const modalStyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  p: 4,
-  borderRadius: 2,
-};
+import { 
+  Add as AddIcon, 
+  Groups as GroupsIcon, 
+  Delete as DeleteIcon, 
+  ExitToApp as LeaveIcon,
+  Settings as SettingsIcon 
+} from '@mui/icons-material';
 
 export default function StudyGroupPage() {
   const location = useLocation();
@@ -34,15 +35,24 @@ export default function StudyGroupPage() {
   const userId = personalInfo.id;
 
   const [studyGroups, setStudyGroups] = useState([]);
-  const [responseMessage, setResponseMessage] = useState("");
-  const [responseType, setResponseType] = useState("info");
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [openJoinModal, setOpenJoinModal] = useState(false);
-  const [groupName, setGroupName] = useState("");
-  const [description, setDescription] = useState("");
-  const [groupIdToJoin, setGroupIdToJoin] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  // New state for create/join group modals
+  const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
+  const [joinGroupModalOpen, setJoinGroupModalOpen] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [groupDescription, setGroupDescription] = useState("");
+  const [groupCode, setGroupCode] = useState("");
+
+  // Snackbar state for notifications
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   const apiBaseUrl = "http://localhost:8081/api/study-groups";
   const navigate = useNavigate();
@@ -53,13 +63,9 @@ export default function StudyGroupPage() {
         `${apiBaseUrl}/getGroupsForUser/${userId}`
       );
       setStudyGroups(response.data || []);
-      console.log("Updated studyGroups:", studyGroups);
-      console.log(response)
     } catch (error) {
       console.error("Error fetching study groups:", error);
-      setResponseMessage("Error fetching study groups.");
-      setResponseType("error");
-      setSnackbarOpen(true);
+      handleSnackbarOpen('Error fetching notebooks', 'error');
     }
   };
 
@@ -69,214 +75,383 @@ export default function StudyGroupPage() {
     }
   }, [userId]);
 
+  // Snackbar handler
+  const handleSnackbarOpen = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleGroupClick = (groupId) => {
     navigate(`/group-details/${groupId}`);
   };
 
+  // Create Group Handler
   const handleCreateGroup = async () => {
-    if (!groupName || !description) {
-      setResponseMessage("Group name and description are required.");
-      setResponseType("warning");
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setLoading(true);
     try {
-      const newGroup = {
-        groupName: groupName,
-        description: description,
-        owner: { id: userId },
+      setLoading(true);
+      const groupData = {
+        groupName:groupName,
+        description: groupDescription,
+        owner:{id:userId}
       };
 
-      const response = await axios.post(`${apiBaseUrl}/createStudyGroup`, newGroup);
-      if (response.data) {
-        setStudyGroups((prev) => [...(prev || []), response.data]);
-        setResponseMessage("Group created successfully!");
-        setResponseType("success");
-        setOpenCreateModal(false);
-        setGroupName("");
-        setDescription("");
-      }
+      const response = await axios.post(`${apiBaseUrl}/createStudyGroup`, groupData);
+      
+      // Add the new group to the list
+      setStudyGroups(prev => [...prev, response.data]);
+      
+      // Reset form and close modal
+      setGroupName("");
+      setGroupDescription("");
+      setCreateGroupModalOpen(false);
+      
+      handleSnackbarOpen('Notebook created successfully');
     } catch (error) {
       console.error("Error creating group:", error);
-      setResponseMessage("Failed to create group. Try again.");
-      setResponseType("error");
+      handleSnackbarOpen('Failed to create notebook', 'error');
     } finally {
       setLoading(false);
-      setSnackbarOpen(true);
     }
   };
 
+  // Join Group Handler
   const handleJoinGroup = async () => {
-    if (!groupIdToJoin) {
-      setResponseMessage("Group ID is required to join a group.");
-      setResponseType("warning");
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setLoading(true);
     try {
-      const response = await axios.post(
-        `${apiBaseUrl}/${groupIdToJoin}/add-users`,
-        [userId]
-      );
-      if (response.data) {
-        setStudyGroups((prev) => [...(prev || []), response.data]);
-        setResponseMessage("Joined group successfully!");
-        setResponseType("success");
-        setOpenJoinModal(false);
-        setGroupIdToJoin("");
-      }
+      setLoading(true);
+      // Assuming there's an endpoint to join a group 
+      const response = await axios.post(`${apiBaseUrl}/${groupCode}/add-users`, [parseInt(userId)]);
+      
+      // Fetch updated groups after joining
+      await fetchUserGroups();
+      
+      // Reset and close modal
+      setGroupCode("");
+      setJoinGroupModalOpen(false);
+      
+      handleSnackbarOpen('Successfully joined notebook');
     } catch (error) {
       console.error("Error joining group:", error);
-      setResponseMessage("Failed to join group. Check the Group ID.");
-      setResponseType("error");
+      handleSnackbarOpen('Failed to join notebook', 'error');
     } finally {
       setLoading(false);
-      setSnackbarOpen(true);
     }
   };
 
-  const closeSnackbar = () => {
-    setSnackbarOpen(false);
+  const handleLeaveGroup = async () => {
+    if (!selectedGroup) return;
+
+    try {
+      setLoading(true);
+      console.log(selectedGroup.groupId)
+      await axios.post(`${apiBaseUrl}/leave?userId=${userId}&studyGroupId=${selectedGroup.groupId}`);
+
+
+      // Remove the group from the list
+      setStudyGroups(prev => prev.filter(group => group.groupId !== selectedGroup.groupId));
+      setDialogOpen(false);
+      
+      handleSnackbarOpen('Successfully left notebook');
+    } catch (error) {
+      console.error("Error leaving group:", error);
+      handleSnackbarOpen('Failed to leave notebook', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!selectedGroup) return;
+
+    try {
+      setLoading(true);
+      await axios.delete(`${apiBaseUrl}/deleteStudyGroup/${selectedGroup.groupId}`, {
+        params: { userId }
+      });
+
+      // Remove the group from the list
+      setStudyGroups(prev => prev.filter(group => group.groupId !== selectedGroup.groupId));
+      setDialogOpen(false);
+      
+      handleSnackbarOpen('Notebook deleted successfully');
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      handleSnackbarOpen('Failed to delete notebook', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openDialog = (group, type) => {
+    setSelectedGroup(group);
+    setDialogType(type);
+    setDialogOpen(true);
   };
 
   return (
-    <Box sx={{ display: "flex", left: "0", margin: "0", width: "75%", height: "100vh", }}>
-      <Box sx={{ flexGrow: 1, p: 3 }}>
-        <Typography variant="h4" sx={{ mb: 2, color: "#487d4b" }}>
-          Group Manager
-        </Typography>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      padding: 3, 
+      backgroundColor: '#f4f6f9', 
+      minHeight: '100vh' 
+    }}>
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
-        {/* Buttons at the top */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <Box>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => setOpenCreateModal(true)}
-              sx={{ mr: 2 }}
+      {/* Header */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: 3 
+      }}>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            fontWeight: 'bold', 
+            color: '#2c3e50',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
+          }}
+        >
+          <GroupsIcon fontSize="large" /> 
+          My Notebooks
+        </Typography>
+        
+        <Box sx={{marginRight:5}}> 
+          <Tooltip title="Create Notebook">
+            <Button 
+              variant="contained" 
+              color="primary" 
+              startIcon={<AddIcon />}
+              onClick={() => setCreateGroupModalOpen(true)}
+              sx={{ marginRight: 2 }}
             >
-              Create New Group
+              New Notebook
             </Button>
-            <Button
-              variant="outlined"
-              color="success"
-              onClick={() => setOpenJoinModal(true)}
-            >
-              Join Group
-            </Button>
-          </Box>
+          </Tooltip>
+        
         </Box>
-
-        <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
-          Your Groups
-        </Typography>
-
-        {studyGroups.length > 0 ? (
-          <List sx={{ maxHeight: "70vh", overflow: "auto", padding: 0 }}>
-            {studyGroups.map((group) => (
-              <React.Fragment key={group.groupId}>
-                <ListItem button onClick={() => handleGroupClick(group.groupId)}>
-                  <ListItemText
-                    primary={group.groupName}
-                    secondary={`Description: ${group.description}`}
-                  />
-                </ListItem>
-                <Divider />
-              </React.Fragment>
-            ))}
-          </List>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            No groups found. Create or join a group to get started!
-          </Typography>
-        )}
-
-        {/* Create Group Modal */}
-        <Modal 
-          open={openCreateModal} 
-          onClose={() => setOpenCreateModal(false)}
-          // Add these props to prevent undefined error
-          aria-labelledby="create-group-modal-title"
-          aria-describedby="create-group-modal-description"
-        >
-          <Box sx={modalStyle}>
-            <Typography id="create-group-modal-title" variant="h6" sx={{ mb: 2 }}>
-              Create a New Study Group
-            </Typography>
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Group Name"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <Button
-              fullWidth
-              variant="contained"
-              color="success"
-              onClick={handleCreateGroup}
-              disabled={loading}
-              sx={{ mt: 2 }}
-            >
-              {loading ? <CircularProgress size={24} /> : "Create Group"}
-            </Button>
-          </Box>
-        </Modal>
-
-        {/* Join Group Modal */}
-        <Modal 
-          open={openJoinModal} 
-          onClose={() => setOpenJoinModal(false)}
-          // Add these props to prevent undefined error
-          aria-labelledby="join-group-modal-title"
-          aria-describedby="join-group-modal-description"
-        >
-          <Box sx={modalStyle}>
-            <Typography id="join-group-modal-title" variant="h6" sx={{ mb: 2 }}>
-              Join a Study Group
-            </Typography>
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Group ID"
-              value={groupIdToJoin}
-              onChange={(e) => setGroupIdToJoin(e.target.value)}
-            />
-            <Button
-              fullWidth
-              variant="contained"
-              color="success"
-              onClick={handleJoinGroup}
-              disabled={loading}
-              sx={{ mt: 2 }}
-            >
-              {loading ? <CircularProgress size={24} /> : "Join Group"}
-            </Button>
-          </Box>
-        </Modal>
-
-        {/* Snackbar */}
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={3000}
-          onClose={closeSnackbar}
-        >
-          <Alert onClose={closeSnackbar} severity={responseType}>
-            {responseMessage}
-          </Alert>
-        </Snackbar>
       </Box>
+
+      {/* Create Group Modal */}
+      <Dialog
+        open={createGroupModalOpen}
+        onClose={() => setCreateGroupModalOpen(false)}
+        aria-labelledby="create-group-dialog-title"
+      >
+        <DialogTitle id="create-group-dialog-title">Create New Notebook</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Notebook Name"
+            fullWidth
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            label="Description"
+            fullWidth
+            multiline
+            rows={4}
+            value={groupDescription}
+            onChange={(e) => setGroupDescription(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateGroupModalOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleCreateGroup} 
+            color="primary"
+            disabled={!groupName || loading}
+          >
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Join Group Modal */}
+      <Dialog
+        open={joinGroupModalOpen}
+        onClose={() => setJoinGroupModalOpen(false)}
+        aria-labelledby="join-group-dialog-title"
+      >
+        <DialogTitle id="join-group-dialog-title">Join Notebook</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Notebook Code"
+            fullWidth
+            value={groupCode}
+            onChange={(e) => setGroupCode(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setJoinGroupModalOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleJoinGroup} 
+            color="primary"
+            disabled={!groupCode || loading}
+          >
+            Join
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Group List */}
+      {studyGroups.length === 0 ? (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '60vh',
+            textAlign: 'center'
+          }}
+        >
+          <Typography variant="h5" color="textSecondary">
+            You haven't created any notebooks yet
+          </Typography>
+          <Typography variant="body1" color="textSecondary" sx={{ mt: 2 }}>
+            Start by creating a new notebook or joining an existing one
+          </Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          {studyGroups.map((group) => (
+            <Grid item xs={12} sm={6} md={4} key={group.groupId}>
+              <Card 
+                elevation={3} 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  transition: 'transform 0.2s',
+                  '&:hover': { 
+                    transform: 'scale(1.03)',
+                    boxShadow: 6 
+                  }
+                }}
+              >
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      {group.groupName}
+                    </Typography>
+                    {group.owner === userId && (
+                      <Chip 
+                        label="Owner" 
+                        size="small" 
+                        color="primary" 
+                        variant="outlined" 
+                      />
+                    )}
+                  </Box>
+                  <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                    {group.description}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
+                  <Box>
+                    <Tooltip title="View Notebook Details">
+                      <Button 
+                        size="small" 
+                        color="primary"
+                        onClick={() => handleGroupClick(group.groupId)}
+                      >
+                        Open
+                      </Button>
+                    </Tooltip>
+                  </Box>
+                  <Box>
+                    {group.owner === userId ? (
+                      <Tooltip title="Delete Notebook">
+                        <IconButton 
+                          color="error"
+                          onClick={() => openDialog(group, 'delete')}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title="Leave Notebook">
+                        <IconButton 
+                          color="secondary"
+                          onClick={() => openDialog(group, 'leave')}
+                        >
+                          <LeaveIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {dialogType === 'leave' 
+            ? 'Leave Notebook' 
+            : 'Delete Notebook'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {dialogType === 'leave'
+              ? `Are you sure you want to leave the notebook "${selectedGroup?.groupName}"?`
+              : `Are you sure you want to permanently delete the notebook "${selectedGroup?.groupName}"? This action cannot be undone.`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={dialogType === 'leave' ? handleLeaveGroup : handleDeleteGroup} 
+            color="error" 
+            autoFocus
+            disabled={loading}
+          >
+            {dialogType === 'leave' ? 'Leave' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

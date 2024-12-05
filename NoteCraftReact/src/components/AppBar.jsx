@@ -232,12 +232,7 @@ const isNotificationMenuOpen = Boolean(notificationMenuAnchor);
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <Search>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase placeholder="Search…" inputProps={{ 'aria-label': 'search' }} />
-        </Search>
+      
         <IconButton
           onClick={toggleTheme}
           sx={{ ml: 1, color: darkMode ? '#ffeb3b' : '#333' }}
@@ -245,11 +240,6 @@ const isNotificationMenuOpen = Boolean(notificationMenuAnchor);
           {darkMode ? <Light /> : <DarkMode />}
         </IconButton>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-          <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-            <Badge badgeContent={3} color="error">
-              <MailIcon sx={{ color: '#487d4b' }} />
-            </Badge>
-          </IconButton>
           <IconButton
   size="large"
   aria-label={`show ${notificationsCount} new notifications`}

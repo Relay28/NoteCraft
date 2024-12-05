@@ -27,7 +27,19 @@ public class StudyGroupEntity {
 
     private String description;
     
-    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StudyGroupEntity that = (StudyGroupEntity) o;
+        return groupId == that.groupId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(groupId);
+    }
+
     @ManyToMany
     @JoinTable(
         name = "study_group_users",

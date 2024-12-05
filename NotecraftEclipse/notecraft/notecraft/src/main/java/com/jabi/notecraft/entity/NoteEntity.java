@@ -1,5 +1,6 @@
 package com.jabi.notecraft.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -58,7 +59,7 @@ public class NoteEntity {
         joinColumns = @JoinColumn(name = "note_id"),
         inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<TagEntity> tags;
+    private List<TagEntity> tags=new ArrayList<>();
     public List<TagEntity> getTags() {
 		return tags;
 	}

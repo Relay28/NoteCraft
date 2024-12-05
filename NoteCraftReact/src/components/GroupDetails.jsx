@@ -17,8 +17,9 @@ import {
   Divider,
   Tabs,
   Tab,
+  Chip,
 } from '@mui/material';
-import { PersonAdd, People, AddCircle, Delete, Edit, Download } from '@mui/icons-material';
+import { PersonAdd, People, AddCircle, Delete, Edit, Download, Label } from '@mui/icons-material';
 import axios from 'axios';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 
@@ -60,35 +61,45 @@ export default function GroupDetailsPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [openNoteModal, setOpenNoteModal] = useState(false);
   const [openFileModal, setOpenFileModal] = useState(false);
-  const [openTodoModal, setOpenTodoModal] = useState(false);
+ 
   const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   const [openMemberDrawer, setOpenMemberDrawer] = useState(false);
-  const [todo, setTodo] = useState({
-    taskName: '',
-    description: '',
-    deadline: '',
-    taskStarted: new Date().toISOString().split('T')[0],
-    taskEnded: '',
-    isCompleted: false,
-    category: '',
-    subTasks: [{ SubTaskName: '' }]
-  });
-  const [newNote, setNewNote] = useState('');
-  const [todos, setTodos] = useState([]);
-const [newTodoTitle, setNewTodoTitle] = useState('');
-const [selectedTodo, setSelectedTodo] = useState(null);
-const [openEditTodoModal, setOpenEditTodoModal] = useState(false);
+  const [newTodoTitle, setNewTodoTitle] = useState('');
+  const [newTagName, setNewTagName] = useState('');
+  const [openTagModal, setOpenTagModal] = useState(false);
+
   const [newFile, setNewFile] = useState(null);
   const [newMemberId, setNewMemberId] = useState('');
   const [openEditModal, setOpenEditModal] = useState(false);
   const [noteToEdit, setNoteToEdit] = useState(null);
   const [fileToEdit, setFileToEdit] = useState(null);
-const [openEditFileModal, setOpenEditFileModal] = useState(false);
+  const [openEditFileModal, setOpenEditFileModal] = useState(false);
 
   const [tabIndex, setTabIndex] = useState(0);
 
   const apiBaseUrl = 'http://localhost:8081/api/study-groups';
-  //console.log(groupDetails.groupId)
+  
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const [note, setNote] = useState({
+    noteId:'',
+    title: '',
+    description: '',
+    content: '',
+    dateCreated: new Date().toISOString(),
+    userId: user ? user.id : null,
+    tags:[]
+  });
+  //console.log(notes)
+
+  const [selectedTag, setSelectedTag] = useState(null);
+
+// Get a unique list of tags from notes
+  const allTags = [...new Set(notes.flatMap((note) => note.tags.map((tag) => tag.tagName)))];
+
+//console.log(groupDetails.groupId)
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
@@ -106,141 +117,57 @@ const [openEditFileModal, setOpenEditFileModal] = useState(false);
     fetchGroupData();
   }, [groupId]);
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-};
-const fetchToDos = async () => {
-  try {
-    const response = await axios.get(`${apiBaseUrl}/group/${groupId}/user/${user.id}`);
-    setTodos(response.data);
-  } catch (error) {
-    console.error('Failed to fetch To-Dos', error);
-  }
-};
 
-const handleAddToDo = async () => {
-  try {
-    // Prepare the todo data for submission
-    const todoWithDates = {
-      ...todo,
-      dateCreated: new Date().toISOString().split('T')[0],
-      subTasks: todo.subTasks
-        .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '')
-        .map(subtask => ({
-          subTaskName: subtask.SubTaskName.trim()
-        }))
-    };
+// Handle tag selection
+  const handleTagSelection = (tagName) => {
+    setSelectedTag(tagName === selectedTag ? null : tagName); // Toggle tag selection
+  };
 
-    const response = await axios.post(
-      `${apiBaseUrl}/${groupId}/add-todo`, 
-      todoWithDates, 
-      { params: { userId: user.id } }
-    );
-
-    // Update the todos state with the new todo
-    setTodos((prev) => [...prev, response.data]);
+  const filteredNotes = selectedTag
+    ? notes.filter((note) => note.tags.some((tag) => tag.tagName === selectedTag))
+    : notes;
     
-    // Reset the todo state
-    setTodo({
-      taskName: '',
-      description: '',
-      deadline: '',
-      taskStarted: new Date().toISOString().split('T')[0],
-      taskEnded: '',
-      isCompleted: false,
-      category: '',
-      subTasks: [{ SubTaskName: '' }]
-    });
+  const handleAddTagToNote = async (noteId, tagName) => {
+    console.log(tagName)
+    console.log(noteId)
+    try {
+      const response = await axios.post('http://localhost:8081/api/tags/addToNote', {
+        noteId: noteId,
+        tagName: tagName
+      });
+      console.log(response.data)
+      // Update the notes list with the updated note that includes the new tag
+      setNotes(prev => 
+        prev.map(n => n.noteid === noteId ? response.data : n)
+      );
+      
+      setResponseMessage('Tag added successfully!');
+    } catch (error) {
+      setResponseMessage('Failed to add tag to note.');
+      console.error(error);
+    }
+  };
 
-    setOpenTodoModal(false);
-  } catch (error) {
-    console.error('Failed to add To-Do', error);
-    alert(`Failed to save task: ${error.response?.data?.message || "Please try again."}`);
-  }
-};
-
-
-// Edit To-Do
-const handleEditToDo = async () => {
-  try {
-    // Store the original subtask IDs if they exist
-    const originalSubtaskIds = selectedTodo.subTasks 
-      ? selectedTodo.subTasks.map(subtask => subtask.subTaskID)
-      : [];
-
-    const updatedTodo = {
-      ...selectedTodo,
-      subTasks: selectedTodo.subTasks
-        .filter(subtask => subtask.SubTaskName && subtask.SubTaskName.trim() !== '')
-        .map((subtask, index) => ({
-          ...(originalSubtaskIds[index] ? { subTaskID: originalSubtaskIds[index] } : {}),
-          subTaskName: subtask.SubTaskName.trim() || ''
-        }))
+    const handleRemoveTagFromNote = async (noteId, tagId) => {
+      try {
+        const response = await axios.delete(`http://localhost:8081/api/tags/removeFromNote`, {
+          params: { 
+            noteId: noteId, 
+            tagId: tagId 
+          }
+        });
+        
+        // Update the notes list with the updated note that has the tag removed
+        setNotes(prev => 
+          prev.map(n => n.noteid === noteId ? response.data : n)
+        );
+        
+        setResponseMessage('Tag removed successfully!');
+      } catch (error) {
+        setResponseMessage('Failed to remove tag from note.');
+        console.error(error);
+      }
     };
-
-    const response = await axios.put(
-      `${apiBaseUrl}/${updatedTodo.id}/group/${groupId}/user/${user.id}`,
-      updatedTodo
-    );
-
-    // Update the todos state
-    setTodos((prev) => 
-      prev.map((todo) => (todo.id === updatedTodo.id ? response.data : todo))
-    );
-
-    setOpenEditTodoModal(false);
-    setSelectedTodo(null);
-  } catch (error) {
-    console.error('Failed to edit To-Do', error);
-    alert(`Failed to edit task: ${error.response?.data?.message || "Please try again."}`);
-  }
-};
-
-// Delete To-Do
-const handleDeleteToDo = async (todoId) => {
-  try {
-    await axios.delete(`${apiBaseUrl}/${todoId}/group/${groupId}/user/${user.id}`);
-    setTodos((prev) => prev.filter((todo) => todo.id !== todoId));
-  } catch (error) {
-    console.error('Failed to delete To-Do', error);
-  }
-};
-
-const handleSubtaskChange = (index, value) => {
-  setSelectedTodo((prevTodo) => {
-    const newSubtasks = [...(prevTodo.subTasks || [])];
-    newSubtasks[index] = { SubTaskName: value };
-    return {
-      ...prevTodo,
-      subTasks: newSubtasks
-    };
-  });
-};
-
-const addSubtaskField = () => {
-  setSelectedTodo((prevTodo) => ({
-    ...prevTodo,
-    subTasks: [...(prevTodo.subTasks || []), { SubTaskName: '' }]
-  }));
-};
-
-const handleDeleteSubtask = (indexToRemove) => {
-  setSelectedTodo((prevTodo) => ({
-    ...prevTodo,
-    subTasks: prevTodo.subTasks.filter((_, index) => index !== indexToRemove)
-  }));
-};
-  
-
-  const [note, setNote] = useState({
-    noteId:'',
-    title: '',
-    description: '',
-    content: '',
-    dateCreated: new Date().toISOString(),
-    userId: user ? user.id : null,
-  });
-  //console.log(notes)
 
   const handleDeleteNote = async (noteId) => {
     try {
@@ -400,7 +327,7 @@ useEffect
         <Tabs value={tabIndex} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
           <Tab label="Notes" />
           <Tab label="Files" />
-          <Tab label="To-Dos" />
+
         </Tabs>
         <Box>
           <IconButton color="success" onClick={() => setOpenMemberDrawer(true)} sx={{ mr: 2 }}>
@@ -413,52 +340,94 @@ useEffect
         </Box>
       </Box>
 
+  {/* Tag Filter */}
+
       {/* Tab Panels */}
       <Box>
-        {tabIndex === 0 && (
-          <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
-            <CardContent>
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() => setOpenNoteModal(true)}
-                startIcon={<AddCircle />}
-                sx={{ mb: 2, fontWeight: 'bold', textTransform: 'none' }}
-              >
-                Add Note
-              </Button>
-              <List>
-  {notes.map((note) => (
-    <ListItem key={note.noteid} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-      <ListItemText
-        primary={note.title}
-        secondary={`Created by: ${note.user?.name || 'Unknown'} on ${note.dateCreated}`}
+      {tabIndex === 0 && (
+    <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => setOpenNoteModal(true)}
+            startIcon={<AddCircle />}
+            sx={{ fontWeight: 'bold', textTransform: 'none' }}
+          >
+            Add Note
+          </Button>
         
-      />
-      <Box>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={() => handleOpenEditModal(note)}
-          sx={{ mr: 1 }}
-        >
-          Edit
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => handleDeleteNote(note.noteid)}
-        >
-          Delete
-        </Button>
-      </Box>
-    </ListItem>
-  ))}
-</List>
+        </Box>
 
-            </CardContent>
-          </Card>
-        )}
+        <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        {allTags.map((tag) => (
+          <Chip
+            key={tag}
+            label={tag}
+            color={tag === selectedTag ? 'primary' : 'default'}
+            onClick={() => handleTagSelection(tag)}
+            clickable
+          />
+        ))}
+      </Box>
+        <List>
+          {filteredNotes.map((note) => (
+            <ListItem key={note.noteid} sx={{ borderBottom: 1, borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <ListItemText
+                  primary={note.title}
+                  secondary={`Created by: ${note.user?.name || 'Unknown'} on ${note.dateCreated}`}
+                />
+                <Box>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => handleOpenEditModal(note)}
+                    sx={{ mr: 1 }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleDeleteNote(note.noteid)}
+                  >
+                    Delete
+                  </Button>
+                </Box>
+              </Box>
+              
+              {/* Tags display and management */}
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <Typography variant="subtitle2" sx={{ mr: 1 }}>Tags:</Typography>
+                {note.tags && note.tags.map((tag) => (
+                  <Chip
+                    key={tag.tagId}
+                    label={tag.tagName}
+                    onDelete={() => handleRemoveTagFromNote(note.noteid, tag.tagId)}
+                    sx={{ mr: 1, mb: 1,width:"fit-content" }}
+                  />
+                ))}
+                <Button 
+                  size="small" 
+                  startIcon={<AddCircle />}
+                  onClick={() => {
+                    const tagName = prompt('Enter tag name:');
+                    if (tagName) {
+                      handleAddTagToNote(note.noteid, tagName);
+                    }
+                  }}
+                >
+                  Add Tag
+                </Button>
+              </Box>
+            </ListItem>
+          ))}
+        </List>
+      </CardContent>
+    </Card>
+  )}
 
         {tabIndex === 1 && (
           <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
@@ -474,41 +443,37 @@ useEffect
             </Button>
 
             {files.length > 0 ? (
-                <List>
-                {files.map((file) => (
-                  <ListItem key={file.fileId} sx={{ display: 'flex', alignItems: 'center' }}>
-                    <ListItemText
-                      primary={file.fileName || 'Unnamed File'}
-                      secondary={`Uploaded by: ${file.uploader?.name || 'Unknown'}`}
-                    />
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      href={file.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{ mr: 2 }}
-                    >
-                     <Download/>
-                    </Button>
-                    <IconButton
-                      color="secondary"
-                      onClick={() => {
-                        setFileToEdit(file);
-                        setOpenEditFileModal(true);
+                  <List>
+                  {filteredNotes.map((note) => (
+                    <ListItem
+                      key={note.noteid}
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
                       }}
                     >
-                      {/* <Edit /> */}
-                      <Edit/>
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDeleteFile(file.fileId)}>
-                      {/* <Delete /> */}
-                      < Delete/>
-                    </IconButton>
-                  </ListItem>
-                ))}
-              </List>
-        
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <ListItemText
+                          primary={note.title}
+                          secondary={`Created by: ${note.user?.name || 'Unknown'} on ${note.dateCreated}`}
+                        />
+                        <Box>
+                          {note.tags.map((tag) => (
+                            <Chip key={tag.tagId} label={tag.tagName} size="small" sx={{ margin: 0.5 }} />
+                          ))}
+                        </Box>
+                        <IconButton onClick={() => handleOpenEditModal(note)}>
+                          <Edit />
+                        </IconButton>
+                        <IconButton onClick={() => handleDeleteNote(note.noteid)}>
+                          <Delete />
+                        </IconButton>
+                      </Box>
+                    </ListItem>
+                  ))}
+                </List>
               ) : (
                 <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
                   No files uploaded yet.
@@ -519,60 +484,34 @@ useEffect
           </Card>
         )}
 
-{tabIndex === 2 && (
-  <Card sx={{ mb: 3, backgroundColor: 'background.paper', boxShadow: 2, borderRadius: 2 }}>
-    <CardContent>
-      <Button
-        variant="contained"
-        color="success"
-        onClick={() => setOpenTodoModal(true)}
-        startIcon={<AddCircle />}
-        sx={{ mb: 2, fontWeight: 'bold', textTransform: 'none' }}
-      >
-        Add To-Do
-      </Button>
-      {todos.length > 0 ? (
-        <List>
-          {todos.map((todo) => (
-            <ListItem key={todo.id} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <ListItemText
-                primary={todo.title}
-                secondary={`Created on: ${new Date(todo.dateCreated).toLocaleDateString()}`}
-              />
-              <Box>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => {
-                    setSelectedTodo(todo);
-                    setOpenEditTodoModal(true);
-                  }}
-                  sx={{ mr: 1 }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => handleDeleteToDo(todo.id)}
-                >
-                  Delete
-                </Button>
-              </Box>
-            </ListItem>
-          ))}
-        </List>
-      ) : (
-        <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
-          No To-Dos yet. Start by adding one!
-        </Typography>
-      )}
-    </CardContent>
-  </Card>
-)}
-
       </Box>
 
+      <Modal open={openTagModal} onClose={() => setOpenTagModal(false)}>
+        <Box sx={modalStyle}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Create New Tag</Typography>
+          <TextField 
+            label="Tag Name" 
+            fullWidth 
+            value={newTagName} 
+            onChange={(e) => setNewTagName(e.target.value)} 
+            sx={{ mb: 2 }} 
+          />
+        
+        </Box>
+      </Modal>
+
+      <Modal open={openTagModal} onClose={() => setOpenTagModal(false)}>
+    <Box sx={modalStyle}>
+      <TextField 
+        label="Tag Name" 
+        fullWidth 
+        value={newTagName} 
+        onChange={(e) => setNewTagName(e.target.value)} 
+        sx={{ mb: 2 }} 
+      />
+ 
+    </Box>
+  </Modal>
       {/* Member Drawer */}
       <Drawer anchor="right" open={openMemberDrawer} onClose={() => setOpenMemberDrawer(false)} sx={{ width: 300 }}>
   <Box sx={{ width: 300, padding: 2 }}>
@@ -584,179 +523,46 @@ useEffect
       {members.filter(member => member.isOwner).map(owner => (
         <ListItem key={owner.id} sx={{ backgroundColor: '#f0f0f0' }}>
           <Avatar sx={{ mr: 2 }} alt={owner.name} src={owner.profileImg || '/default-avatar.png'} />
-          <ListItemText primary={`${owner.name} (Owner)`} />
+          <ListItemText primary={`${owner.firstName} (Owner)`} />
         </ListItem>
       ))}
       
       {/* Render the rest of the members */}
       {members.filter(member => !member.isOwner).map(member => (
         <ListItem key={member.id}>
-          <Avatar sx={{ mr: 2 }} alt={member.name} src={member.profileImg || '/default-avatar.png'} />
-          <ListItemText primary={member.name} />
+          <Avatar sx={{ mr: 2 }} alt={member.firstName} src={member.profileImg || '/default-avatar.png'} />
+          <ListItemText primary={member.firstName} />
         </ListItem>
       ))}
     </List>
   </Box>
 </Drawer>
 
-{/* Add To-Do Modal */}
-<Modal open={openTodoModal} onClose={() => setOpenTodoModal(false)}>
+<Modal open={openTagModal} onClose={() => setOpenTagModal(false)}>
   <Box sx={modalStyle}>
+    <Typography variant="h6" gutterBottom>
+      Add Tag
+    </Typography>
     <TextField
-      label="Task Name"
       fullWidth
-      value={todo.taskName}
-      onChange={(e) => setTodo({ ...todo, taskName: e.target.value })}
+      label="Tag Name"
+      value={newTagName}
+      onChange={(e) => setNewTagName(e.target.value)}
       sx={{ mb: 2 }}
     />
-    <TextField
-      label="Description"
-      fullWidth
-      multiline
-      rows={3}
-      value={todo.description}
-      onChange={(e) => setTodo({ ...todo, description: e.target.value })}
-      sx={{ mb: 2 }}
-    />
-    <TextField
-      label="Deadline"
-      type="date"
-      fullWidth
-      value={todo.deadline}
-      onChange={(e) => setTodo({ ...todo, deadline: e.target.value })}
-      sx={{ mb: 2 }}
-    />
-    <TextField
-      label="Category"
-      type="text"
-      fullWidth
-      value={todo.category}
-      onChange={(e) => setTodo({ ...todo, category: e.target.value })}
-      sx={{ mb: 2 }}
-    />
-    
-    {/* Subtasks Section */}
-    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Subtasks</Typography>
-    {todo.subTasks.map((subtask, index) => (
-      <Box key={index} display="flex" alignItems="center" sx={{ mb: 1 }}>
-        <TextField
-          label={`Subtask ${index + 1}`}
-          fullWidth
-          value={subtask.SubTaskName}
-          onChange={(e) => {
-            const newSubtasks = [...todo.subTasks];
-            newSubtasks[index] = { SubTaskName: e.target.value };
-            setTodo({ ...todo, subTasks: newSubtasks });
-          }}
-          sx={{ mr: 1 }}
-        />
-        {todo.subTasks.length > 1 && (
-          <IconButton 
-            color="error" 
-            onClick={() => {
-              setTodo({
-                ...todo,
-                subTasks: todo.subTasks.filter((_, i) => i !== index)
-              });
-            }}
-          >
-            <Delete />
-          </IconButton>
-        )}
-      </Box>
-    ))}
-    <Button
-      variant="outlined"
-      color="primary"
-      onClick={() => {
-        setTodo({
-          ...todo,
-          subTasks: [...todo.subTasks, { SubTaskName: '' }]
-        });
-      }}
-      sx={{ mb: 2 }}
-    >
-      Add Subtask
-    </Button>
-
-    <Button variant="contained" color="success" onClick={handleAddToDo}>
-      Add To-Do
-    </Button>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+   
+      <Button
+        variant="outlined"
+        color="error"
+        onClick={() => setOpenTagModal(false)}
+        sx={{ fontWeight: 'bold', textTransform: 'none' }}
+      >
+        Cancel
+      </Button>
+    </Box>
   </Box>
 </Modal>
-
-{/* Edit To-Do Modal */}
-<Modal open={openEditTodoModal} onClose={() => setOpenEditTodoModal(false)}>
-  <Box sx={modalStyle}>
-    <TextField
-      label="Task Name"
-      fullWidth
-      value={selectedTodo?.taskName || ''}
-      onChange={(e) => setSelectedTodo({ ...selectedTodo, taskName: e.target.value })}
-      sx={{ mb: 2 }}
-    />
-    <TextField
-      label="Description"
-      fullWidth
-      multiline
-      rows={3}
-      value={selectedTodo?.description || ''}
-      onChange={(e) => setSelectedTodo({ ...selectedTodo, description: e.target.value })}
-      sx={{ mb: 2 }}
-    />
-    <TextField
-      label="Deadline"
-      type="date"
-      fullWidth
-      value={selectedTodo?.deadline || ''}
-      onChange={(e) => setSelectedTodo({ ...selectedTodo, deadline: e.target.value })}
-      sx={{ mb: 2 }}
-    />
-    <TextField
-      label="Category"
-      type="text"
-      fullWidth
-      value={selectedTodo?.category || ''}
-      onChange={(e) => setSelectedTodo({ ...selectedTodo, category: e.target.value })}
-      sx={{ mb: 2 }}
-    />
-    
-    {/* Subtasks Section */}
-    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Subtasks</Typography>
-    {(selectedTodo?.subTasks || []).map((subtask, index) => (
-      <Box key={index} display="flex" alignItems="center" sx={{ mb: 1 }}>
-        <TextField
-          label={`Subtask ${index + 1}`}
-          fullWidth
-          value={subtask.SubTaskName}
-          onChange={(e) => handleSubtaskChange(index, e.target.value)}
-          sx={{ mr: 1 }}
-        />
-        {(selectedTodo?.subTasks || []).length > 1 && (
-          <IconButton 
-            color="error" 
-            onClick={() => handleDeleteSubtask(index)}
-          >
-            <Delete />
-          </IconButton>
-        )}
-      </Box>
-    ))}
-    <Button
-      variant="outlined"
-      color="primary"
-      onClick={addSubtaskField}
-      sx={{ mb: 2 }}
-    >
-      Add Subtask
-    </Button>
-
-    <Button variant="contained" color="primary" onClick={handleEditToDo}>
-      Save Changes
-    </Button>
-  </Box>
-</Modal>
-
 
       {/* Modals for Notes, Files, To-Dos, and Adding Members */}
       <Modal open={openNoteModal} onClose={() => setOpenNoteModal(false)}>

@@ -12,14 +12,20 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.jabi.notecraft.entity.StudyGroupEntity;
 import com.jabi.notecraft.entity.UserEntity;
+import com.jabi.notecraft.repository.StudyGroupRepository;
 import com.jabi.notecraft.repository.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserService {
     @Autowired
     private UserRepository urepo;
 
+    @Autowired
+    private StudyGroupRepository studyGroupRepository;
     // Constructor
     public UserService() {
         super();
@@ -147,5 +153,20 @@ public class UserService {
     }
     public UserEntity getUserByUsername(String username) {
     	return urepo.findByUsername(username);    
+    }
+    
+    
+    public UserEntity findById2(int userId) {
+        Optional<UserEntity> userOptional = urepo.findById(userId);
+        return userOptional.orElseThrow(() -> 
+            new EntityNotFoundException("User not found with id: " + userId)
+        );
+    }
+
+    public StudyGroupEntity findStudyGroupById(int studyGroupId) {
+        Optional<StudyGroupEntity> studyGroupOptional = studyGroupRepository.findById(studyGroupId);
+        return studyGroupOptional.orElseThrow(() -> 
+            new EntityNotFoundException("Study group not found with id: " + studyGroupId)
+        );
     }
 }
