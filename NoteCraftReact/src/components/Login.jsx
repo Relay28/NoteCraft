@@ -13,6 +13,7 @@ import {
     InputAdornment,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import logo from '/src/assets/logo.png';
 
 export default function Login() {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -103,12 +104,11 @@ export default function Login() {
                         }}
                     >
                         <img
-                            src="https://via.placeholder.com/100"
+                            src={logo}  // Use the imported logo here
                             alt="Application Logo"
                             style={{
-                                width: '100px',
-                                height: '100px',
-                                borderRadius: '50%',
+                            width: '100px',
+                            height: '100px',
                             }}
                         />
                     </Box>

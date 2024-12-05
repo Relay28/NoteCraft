@@ -17,6 +17,7 @@ import Box from '@mui/material/Box';
 import profile from '/src/assets/profile.jpg';
 import { Group } from '@mui/icons-material';
 import { useTheme } from './ThemeProvider';
+import logo from '/src/assets/Logo.png';
 
 export default function NestedList({  open, toggleNestedList, setSidebarHovered}) {
   const navigate = useNavigate();
@@ -138,29 +139,27 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
               style={{
                 width: '36px',
                 height: '36px',
-                backgroundColor: '#d9d9d9',
-                borderRadius: '50%',
+                backgroundImage: `url(${logo})`, // Replace with your logo's URL
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 
               }}
-                onClick={handleHomeClick}
-              
+              onClick={handleHomeClick}
             />
             {isSidebarOpen && (
               <Typography
                 variant="h6"
                 noWrap
-              
-                
                 sx={{
                   fontWeight: 'bold',
-                  cursor:"pointer",
+                  cursor: 'pointer',
                   color: '#487d4b',
                   fontFamily: 'Minecraftia, sans-serif',
                   fontSize: '16px',
-                  
                   opacity: isSidebarOpen ? 1 : 0,
-                  transition: 'opacity 1s ease', 
+                  transition: 'opacity 1s ease',
                 }}
+                onClick={handleHomeClick} // Add the same onClick event handler
               >
                 NoteCraft
               </Typography>
