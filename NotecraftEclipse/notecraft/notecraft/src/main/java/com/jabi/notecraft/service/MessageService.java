@@ -3,8 +3,6 @@ package com.jabi.notecraft.service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import javax.naming.NameNotFoundException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,20 +27,13 @@ public class MessageService {{
 		return mrepo.findAll();
 	}
 	//UPDATE
-	@SuppressWarnings("finally")
 	public MessageEntity putMessageDetails(int messageId, MessageEntity newMessageDetails) {
-		MessageEntity msg=new MessageEntity();
-		try {
-			msg=mrepo.findById(messageId).get();
-			msg.setSender(newMessageDetails.getSender());
-			msg.setRecipient(newMessageDetails.getRecipient());
-			msg.setMessageContent(newMessageDetails.getMessageContent());
-			msg.setDate(newMessageDetails.getDate());
-		} catch(NoSuchElementException nex) {
-			throw new NameNotFoundException("Message "+ messageId +"not found.");
-		} finally {
-			return mrepo.save(msg);
-		}
+		MessageEntity existingMessage = mrepo.findById(messageId)
+	            .orElseThrow(() -> new NoSuchElementException("Message not found with id: " + messageId));
+
+	    existingMessage.setMessageContent(newMessageDetails.getMessageContent());
+	    existingMessage.setDate(newMessageDetails.getDate());
+	    return mrepo.save(existingMessage);
 	}
 	//DELETE
 	public String deleteMessage(int messageId) {

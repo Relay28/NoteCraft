@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,19 +20,21 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "chatId")
 public class ChatEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int chatId;
 
     @ManyToOne
-    @JsonBackReference("user-sent-chats")
-    @JoinColumn(name = "sender_id")
+    @JoinColumn(name = "sender_id", nullable=false)
     private UserEntity sender;
 
-    private String receiver;
+    @ManyToOne
+    @JoinColumn(name="receiver_id") // Define a second back reference for receiver
+    private UserEntity receiver;
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER,mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("chat-messages")
     private List<MessageEntity> messages;
 
@@ -52,7 +58,7 @@ public class ChatEntity {
     }
 
     	
-    public ChatEntity(int chatId, UserEntity sender, String receiver, List<MessageEntity> messages) {
+    public ChatEntity(int chatId, UserEntity sender, UserEntity receiver, List<MessageEntity> messages) {
     	super();
         this.chatId = chatId;
         this.sender = sender;
@@ -77,11 +83,11 @@ public class ChatEntity {
         this.sender = sender;
     }
 
-    public String getReceiver() {
+    public UserEntity getReceiver() {
         return receiver;
     }
 
-    public void setReceiver(String receiver) {
+    public void setReceiver(UserEntity receiver) {
         this.receiver = receiver;
     }
 

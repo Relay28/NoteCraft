@@ -1,6 +1,8 @@
 package com.jabi.notecraft.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,13 +12,20 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "messageId")
 public class MessageEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int messageId;
 
-	private String sender;
-	private String recipient;
+	@ManyToOne
+	@JoinColumn(name="sender_id", nullable=false)
+	private UserEntity sender;
+	
+	@ManyToOne
+    @JoinColumn(name = "recipient_id", nullable = false)
+    private UserEntity recipient; // Receiver is a user
+	
 	private String messageContent;
 	private String date;
 	
@@ -28,7 +37,7 @@ public class MessageEntity {
 	public MessageEntity() {
 		super();
 	}
-	public MessageEntity(int messageId, String sender, String recipient, String messageContent, String date, ChatEntity chat) {
+	public MessageEntity(int messageId, UserEntity sender, UserEntity recipient, String messageContent, String date, ChatEntity chat) {
 		super();
 		this.messageId=messageId;
 		this.sender=sender;
@@ -51,16 +60,16 @@ public class MessageEntity {
 	public int getMessageId() {
 		return messageId;
 	}
-	public String getSender() {
+	public UserEntity getSender() {
 		return sender;
 	}
-	public void setSender(String sender) {
+	public void setSender(UserEntity sender) {
 		this.sender=sender;
 	}
-	public String getRecipient() {
+	public UserEntity getRecipient() {
 		return recipient;
 	}
-	public void setRecipient(String recipient) {
+	public void setRecipient(UserEntity recipient) {
 		this.recipient=recipient;
 	}
 	public String getMessageContent() {

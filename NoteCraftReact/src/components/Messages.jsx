@@ -10,7 +10,12 @@
 
   export default function Messages() {
     const [chats, setChats] = React.useState([]);
-    const [selectedConversation, setSelectedConversation] = React.useState(null);
+    const [selectedConversation, setSelectedConversation] = React.useState({
+      receiver: '',
+      receiverId: null,
+      messages: [],
+    });
+
     const [newMessage, setNewMessage] = React.useState("");
     const [isAddingChat, setIsAddingChat] = React.useState(false);
     const [editMessageId, setEditMessageId] = React.useState(null);
@@ -26,129 +31,148 @@
     const [usernames, setUsernames] = React.useState([]); // To store fetched usernames
     const [filteredUsernames, setFilteredUsernames] = React.useState([]); // To store filtered suggestions
 
-   
-
     React.useEffect(() => {
       const loadChats = async () => {
         try {
-          if (!personalInfo.id) {
-            console.error("User information is not available.");
-            return;
-          }
+          if (!personalInfo?.id) return;
+          const response = await axios.get(`${API_BASE_URL}/getUserChats/${personalInfo.id}`);
     
-          // Fetch chats where the user is either the sender or the receiver
-          const response = await axios.get(`${API_BASE_URL}/getChatsByUser`, {
-            params: { userId: personalInfo.id }  // Pass the user id as a request parameter
+          // No need to fetch receiver's username separately if it's part of the response
+          const updatedChats = response.data.map((chat) => {
+            chat.receiver = chat.receiver.username;  // Use the receiver's username directly
+            return chat;
           });
     
-          setChats(response.data);
+          setChats(updatedChats);  // Update chats with receiver's usernames
         } catch (error) {
-          console.error("Error loading chats for user:", error);
+          console.error("Error loading chats:", error);
         }
       };
     
       loadChats();
-    }, [personalInfo.id]); // Dependency on `personalInfo.id` instead of `personalInfo.username`
+    }, [personalInfo.id]);
+     // Dependency on `personalInfo.id` instead of `personalInfo.username`
 
-    const handleReceiverConfirm = async () => {
+     const handleReceiverConfirm = async () => {
       const username = selectedConversation?.receiver?.trim();
       if (!username) {
         alert("Please enter a receiver's name.");
         return;
       }
     
-      const userExists = await checkUserExists(username);
-      if (userExists) {
-        setIsReceiverFinalized(true);
-      } else {
-        alert("User not found. Please choose a valid recipient.");
+      try {
+        // Use the API to fetch the user details by username
+        const response = await axios.get(`http://localhost:8081/api/user/getUserByUsername/${username}`);
+        const user = response.data; // This will give you the full user data
+    
+        if (user) {
+          // Update selectedConversation.receiver with the full user data
+          setSelectedConversation((prev) => ({
+            ...prev,
+            receiver: user // Store the entire user object
+          }));
+    
+          // Set finalized state and enable the message box
+          setIsReceiverFinalized(true);
+          setIsMessageBoxDisabled(false);
+        } else {
+          alert("User not found. Please choose a valid recipient.");
+        }
+      } catch (error) {
+        console.error("Error confirming receiver:", error);
+        alert("An error occurred while confirming the receiver.");
       }
     };
     
+    
     const handleSendMessage = async () => {
-      if (newMessage.trim() && selectedConversation?.receiver) {
-        if (editMessageId) {
-          // Edit existing message
-          try {
-            const updatedMessages = selectedConversation.messages.map((msg) =>
-              msg.messageId === editMessageId ? { ...msg, messageContent: newMessage.trim() } : msg
-            );
+      if (newMessage.trim() && selectedConversation?.receiver?.id) {
+        const messageData = {
+          sender: { id: personalInfo.id, username: personalInfo.username },
+          recipient: { id: selectedConversation.receiver.id, username: selectedConversation.receiver.username },
+          messageContent: newMessage.trim(),
+          date: new Date().toISOString().split('T')[0], // Format the date (YYYY-MM-DD)
+        };
     
-            const updatedChat = { ...selectedConversation, messages: updatedMessages };
-    
-            // Update backend
-            await axios.put(`${API_BASE_URL}/updateChat/${selectedConversation.chatId}`, updatedChat);
-    
-            // Update local state
-            setSelectedConversation(updatedChat);
+        try {
+          if (editMessageId) {
+            // If we are editing an existing message, make an API call to update it
+            await axios.put(`http://localhost:8081/api/message/putMessageDetails?messageId=${editMessageId}`, messageData);
+            const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${selectedConversation.chatId}`);
+            setSelectedConversation(updatedChat.data);
             setChats((prevChats) =>
               prevChats.map((chat) =>
-                chat.chatId === selectedConversation.chatId ? updatedChat : chat
+                chat.chatId === selectedConversation.chatId ? { ...chat, messages: updatedChat.data.messages } : chat
               )
             );
+            setEditMessageId(null); // Reset edit mode
+          } else {
+            // If no chatId exists, create a new chat using the /addChat API
+            if (!selectedConversation?.chatId) {
+              const chatData = {
+                sender: { id: personalInfo.id, username: personalInfo.username },
+                receiver: { id: selectedConversation.receiver.id, username: selectedConversation.receiver.username },
+                messages: [
+                  {
+                    sender: { id: personalInfo.id, username: personalInfo.username },
+                    recipient: { id: selectedConversation.receiver.id, username: selectedConversation.receiver.username },
+                    messageContent: newMessage.trim(),
+                    date: new Date().toISOString().split('T')[0], // Date in YYYY-MM-DD format
+                  },
+                ],
+              };
     
-            // Clear edit state
-            setEditMessageId(null);
-            setNewMessage("");
-          } catch (error) {
-            console.error("Error updating message:", error);
-          }
-        } else {
-          // Add new message logic
-          const newMessageData = {
-            sender: personalInfo.username,
-            recipient: selectedConversation.receiver,
-            messageContent: newMessage.trim(),
-            date: new Date().toISOString().split('T')[0],
-          };
-    
-          try {
-            if (selectedConversation?.chatId) {
-              await axios.post(`${API_BASE_URL}/addMessageToChat/${selectedConversation.chatId}`, newMessageData);
+              // Optimistically update the state to show the new chat immediately
+              const newChat = {
+                ...chatData,
+                chatId: Date.now(), // Temporary chatId until API response
+              };
+              setChats((prevChats) => [...prevChats, newChat]);
+              setSelectedConversation(newChat);
+
+              // Call the /addChat API to create the new chat
+              const response = await axios.post(`${API_BASE_URL}/addChat`, chatData);
+              const createdChat = response.data;
+
+              // Update the state with the real chat data after successful creation
+              setChats((prevChats) =>
+                prevChats.map((chat) =>
+                  chat.chatId === newChat.chatId ? { ...chat, chatId: createdChat.chatId } : chat
+                )
+              );
+              setSelectedConversation(createdChat);
+            } else {
+              // If there is an existing chat, just add the new message to it
+              await axios.post(`${API_BASE_URL}/addMessageToChat/${selectedConversation.chatId}`, messageData);
               const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${selectedConversation.chatId}`);
               setSelectedConversation(updatedChat.data);
-    
               setChats((prevChats) =>
                 prevChats.map((chat) =>
                   chat.chatId === selectedConversation.chatId ? { ...chat, messages: updatedChat.data.messages } : chat
                 )
               );
-            } else {
-              const newChatData = {
-                receiver: selectedConversation.receiver,
-                sender: {
-                  id: personalInfo.id,
-                  username: personalInfo.username,
-                },
-                messages: [newMessageData],
-              };
-    
-              const response = await axios.post(`${API_BASE_URL}/addChat`, newChatData);
-              const createdChat = response.data;
-              setChats((prevChats) => [...prevChats, createdChat]);
-              setSelectedConversation(createdChat);
             }
-            setNewMessage("");
-          } catch (error) {
-            console.error("Error sending message:", error);
           }
+    
+          setNewMessage(""); // Clear the message input after sending
+        } catch (error) {
+          console.error("Error sending or editing message:", error);
         }
       } else {
         alert("Please enter a message.");
       }
-    };    
+    };
     
     const handleAddChatClick = async () => {
       setIsAddingChat(true);
-      setSelectedConversation({ receiver: '', messages: [] }); // Initialize a new conversation with an empty receiver
-      setNewMessage(""); // Clear any previous message input
-      setIsReceiverFinalized(false); // Ensure receiver is not yet finalized
-      setIsMessageBoxDisabled(true); // Disable message box until the receiver is confirmed
-
-      // Fetch usernames
+      setSelectedConversation({ receiver: '', receiverId: null, messages: [] });
+      setNewMessage("");
+      setIsReceiverFinalized(false);
+      setIsMessageBoxDisabled(true);
+    
       try {
         const response = await axios.get('http://localhost:8081/api/user/usernames');
-        setUsernames(response.data); // Assuming API returns a list of usernames
+        setUsernames(response.data);
       } catch (error) {
         console.error("Error fetching usernames:", error);
       }
@@ -166,14 +190,27 @@
 
     const handleChatClick = async (conversation) => {
       try {
-        // Fetch the chat details from the server (if necessary)
         const response = await axios.get(`${API_BASE_URL}/getChatById/${conversation.chatId}`);
-        setSelectedConversation(response.data); // Set the selected chat data
+        const resolvedChat = response.data;
+        
+        // Check the response structure
+        console.log('Resolved Chat:', resolvedChat);
+    
+        // Ensure receiver's username is present
+        if (!resolvedChat.receiver) {
+          const userResponse = await axios.get(
+            `http://localhost:8081/api/user/getUsernameById/${resolvedChat.receiverId}`
+          );
+          resolvedChat.receiver = userResponse.data;
+        }
+        
+        // Set the conversation data
+        setSelectedConversation(resolvedChat);
       } catch (error) {
         console.error("Error fetching chat details:", error);
       }
-    };
-    
+    }; 
+    console.log(selectedConversation);
 
     const closeConfirmationDialog = () => {
       setOpenDialog(false);
@@ -181,28 +218,28 @@
     };
 
     const handleDeleteClick = async () => {
-      const {chatId, messageId} = deleteTarget;
+      const { chatId, messageId } = deleteTarget;
       try {
         if (messageId) {
-          // Check if the message exists in the selected conversation
-          const messageExists = selectedConversation?.messages?.some((msg) => msg.messageId === messageId);
-          if (messageExists) {
-            // Delete specific message
-            await axios.delete(`${API_BASE_URL}/${chatId}/deleteMessage/${messageId}`);
+          // Delete the specific message
+          await axios.delete(`${API_BASE_URL}/${chatId}/deleteMessage/${messageId}`);
     
-            // Reload the updated chat from the backend to ensure consistency
-            const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${chatId}`);
-            setSelectedConversation(updatedChat.data);
+          // Update local state by filtering out the deleted message
+          setSelectedConversation((prev) => ({
+            ...prev,
+            messages: prev.messages.filter((msg) => msg.messageId !== messageId),
+          }));
     
-            // Update the chat list to reflect the change
-            setChats((prevChats) =>
-              prevChats.map((chat) =>
-                chat.chatId === chatId ? updatedChat.data : chat
-              )
-            );
-          }
+          // Update the chat list to reflect the change
+          setChats((prevChats) =>
+            prevChats.map((chat) =>
+              chat.chatId === chatId
+                ? { ...chat, messages: chat.messages.filter((msg) => msg.messageId !== messageId) }
+                : chat
+            )
+          );
         } else {
-          // Delete the entire chat if no messageId is provided
+          // Delete the entire chat
           await axios.delete(`${API_BASE_URL}/deleteChat/${chatId}`);
     
           // Remove the deleted chat from the chat list
@@ -210,7 +247,7 @@
     
           // Clear the selected conversation if it was the deleted chat
           if (selectedConversation?.chatId === chatId) {
-            setSelectedConversation(null);
+            setSelectedConversation({ receiver: '', receiverId: null, messages: [] });
           }
         }
         closeConfirmationDialog();
@@ -238,7 +275,7 @@
       };
 
     return (
-      <Paper sx={{ height: '80vh', display: 'flex', flexDirection: 'column', paddingLeft:'10px', width:'165vh'}}>
+      <Paper sx={{ height: '98%', display: 'flex', flexDirection: 'column', width:'95%'}}>
         {/* Dialog for Delete Confirmation */}
         <Dialog open={openDialog} onClose={closeConfirmationDialog}>
           <DialogTitle>Confirm Delete</DialogTitle>
@@ -252,13 +289,30 @@
         <Grid container sx={{ flex: 1, overflow:'auto' }}>
           {/* Left column - Conversations List */}
           <Grid item xs={4} sx={{ borderRight: '1px solid #ccc', padding: '10px', overflow:'auto', height:'100%' }}>
-            <List>
-              {chats.map((conversation) => (
+          <List>
+            {chats.map((conversation) => {
+              if (!conversation.receiver || !conversation.sender) return null; // Ensure the conversation is valid
+
+              // Extract usernames based on whether they are strings or objects
+              const senderUsername = typeof conversation.sender === 'string' 
+                ? conversation.sender 
+                : conversation.sender.username;
+
+              const receiverUsername = typeof conversation.receiver === 'string' 
+                ? conversation.receiver 
+                : conversation.receiver.username;
+
+              // Check if the logged-in user is the sender or receiver and display the other person's username
+              const displayName = personalInfo?.username === senderUsername 
+                ? receiverUsername 
+                : senderUsername;
+
+              return (
                 <ListItem key={conversation.chatId} button onClick={() => handleChatClick(conversation)}>
                   <ListItemAvatar>
-                    <Avatar alt={conversation.receiver} />
+                    <Avatar alt={displayName} />
                   </ListItemAvatar>
-                  <ListItemText primary={conversation.receiver} secondary={conversation.lastMessage} />
+                  <ListItemText primary={displayName} secondary={conversation.lastMessage} />
                   <IconButton color="secondary" onClick={(e) => {
                     e.stopPropagation(); // Prevent the click from triggering the ListItem onClick
                     openConfirmationDialog(conversation.chatId);
@@ -266,8 +320,9 @@
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </ListItem>
-              ))}
-            </List>
+              );
+            })}
+          </List>
             <Box sx={{ mt: 2, textAlign: 'center'}}>
                 <button variant="contained" onClick={handleAddChatClick}>Add Chat</button>
             </Box>
@@ -317,56 +372,71 @@
                   </Box>
                 </>
               ) : (
-                <Typography variant="h6">{selectedConversation?.receiver}</Typography>
+                <Typography variant="h6">
+                  {selectedConversation?.sender?.username === personalInfo?.username
+                    ? selectedConversation?.receiver?.username
+                    : selectedConversation?.sender?.username}
+                </Typography>
               )}
             </Box>
 
             {/* Scrollable container for Messages List */}
-            <div style={{ padding: '20px', overflowY: 'auto', flexGrow: 1, backgroundColor: '#E8F5E9'}}>
+            <div style={{ padding: '20px', overflowY: 'auto', flexGrow: 1, backgroundColor: '#E8F5E9' }}>
               <Box sx={{ mt: 2 }}>
-              {selectedConversation?.messages?.map((msg) => (
-                  <Box key={msg.messageId} sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: msg.sender === personalInfo.username ? 'flex-end' : 'flex-start',
-                    marginBottom: '10px',
-                    maxWidth: '100%',
-                    borderRadius: '10px',
-                    marginRight: msg.sender === personalInfo.username ? '0px' : 'auto',
-                    marginLeft: msg.sender === personalInfo.username ? 'auto' : '0px',
-                  }}>
-                    <Typography variant="caption" sx={{ color: 'gray', marginTop: '5px' }}>
-                      {msg.sender === personalInfo.username ? 'You' : msg.sender}
-                    </Typography>
-                    <Typography sx={{
-                      padding: '10px',
-                      backgroundColor: msg.sender === personalInfo.username ? '#C8E6C9' : '#E1F5FE',
-                      borderRadius: '10px',
-                      maxWidth: '70%',
-                      wordWrap: 'break-word',
-                    }}>
-                      {msg.messageContent}
-                    </Typography>
-                    {msg.sender === personalInfo.username && ( // Only show edit and delete options for messages sent by the user
-                      <Box sx={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: 'gray', cursor: 'pointer' }}
-                          onClick={() => handleEditClick(msg.messageId, msg.messageContent)}
-                        >
-                          Edit
+                {Array.isArray(selectedConversation?.messages) && selectedConversation.messages.length > 0 ? (
+                  selectedConversation.messages.map((msg) => {
+                    const senderName = msg.sender?.username || 'Unknown';  // Access sender's username (with fallback)
+                    const recipientName = msg.recipient?.username || 'Unknown';  // Access recipient's username (with fallback)
+                    
+                    return (
+                      <Box key={msg.messageId} sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: senderName === personalInfo.username ? 'flex-end' : 'flex-start',
+                        marginBottom: '10px',
+                        maxWidth: '100%',
+                        borderRadius: '10px',
+                        marginRight: senderName === personalInfo.username ? '0px' : 'auto',
+                        marginLeft: senderName === personalInfo.username ? 'auto' : '0px',
+                      }}>
+                        <Typography variant="caption" sx={{ color: 'gray', marginTop: '5px' }}>
+                          {senderName === personalInfo.username ? 'You' : senderName}
                         </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: 'gray', cursor: 'pointer' }}
-                          onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}
-                        >
-                          Delete
+                        <Typography sx={{
+                          padding: '10px',
+                          backgroundColor: senderName === personalInfo.username ? '#C8E6C9' : '#E1F5FE',
+                          borderRadius: '10px',
+                          maxWidth: '70%',
+                          wordWrap: 'break-word',
+                        }}>
+                          {msg.messageContent}
                         </Typography>
+                        {senderName === personalInfo.username && ( // Only show edit and delete options for messages sent by the user
+                          <Box sx={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'gray', cursor: 'pointer' }}
+                              onClick={() => handleEditClick(msg.messageId, msg.messageContent)}
+                            >
+                              Edit
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'gray', cursor: 'pointer' }}
+                              onClick={() => openConfirmationDialog(selectedConversation.chatId, msg.messageId)}
+                            >
+                              Delete
+                            </Typography>
+                          </Box>
+                        )}
                       </Box>
-                    )}
-                  </Box>
-                ))}
+                    );
+                  })
+                ) : (
+                  <Typography variant="body2" sx={{ color: 'gray' }}>
+                    No messages yet. Start the conversation!
+                  </Typography>
+                )}
               </Box>
             </div>
 

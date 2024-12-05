@@ -1,13 +1,17 @@
 package com.jabi.notecraft.controller;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
-
 import com.jabi.notecraft.entity.ChatEntity;
 import com.jabi.notecraft.entity.MessageEntity;
+import com.jabi.notecraft.entity.UserEntity;
+import com.jabi.notecraft.repository.UserRepository;
 import com.jabi.notecraft.service.ChatService;
 
 @RestController
@@ -16,6 +20,9 @@ import com.jabi.notecraft.service.ChatService;
 public class ChatController {
     @Autowired
     ChatService chatService;
+    
+    @Autowired
+    UserRepository userRepo;
     
     @GetMapping("/print")
 	public String print() {
@@ -27,10 +34,12 @@ public class ChatController {
     public ChatEntity addChat(@RequestBody ChatEntity chat) {
     	return chatService.createChatWithMessages(chat);
     }
- // Fetch chats specific to the logged-in user (sender or receiver)
-    @GetMapping("/getChatsByUser")
-    public List<ChatEntity> getChatsByUser(@RequestParam int userId) {
-        return chatService.getChatsByUser(userId);
+    // Fetch chats specific to the logged-in user (sender or receiver)
+    @GetMapping("/getUserChats/{userId}")
+    public List<ChatEntity> getUserChats(@PathVariable int userId) {
+        UserEntity user = userRepo.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found."));
+        return chatService.getChatsByUser(user);
     }
 
 
@@ -59,8 +68,15 @@ public class ChatController {
 
     // ADD MESSAGE TO CHAT
     @PostMapping("/addMessageToChat/{chatId}")
-    public ChatEntity addMessageToChat(@PathVariable int chatId, @RequestBody MessageEntity message) {
-        return chatService.addMessageToChat(chatId, message);
+    public ResponseEntity<ChatEntity> addMessageToChat(
+            @PathVariable int chatId,
+            @RequestBody MessageEntity message) {
+        try {
+            ChatEntity updatedChat = chatService.addMessageToChat(chatId, message);
+            return ResponseEntity.ok(updatedChat);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
     
     // DELETE: Delete a message from a chat

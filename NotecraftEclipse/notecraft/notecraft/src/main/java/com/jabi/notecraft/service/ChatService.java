@@ -11,6 +11,7 @@ import com.jabi.notecraft.entity.ChatEntity;
 import com.jabi.notecraft.entity.MessageEntity;
 import com.jabi.notecraft.entity.UserEntity;
 import com.jabi.notecraft.repository.ChatRepository;
+import com.jabi.notecraft.repository.MessageRepository;
 import com.jabi.notecraft.repository.UserRepository;
 
 @Service
@@ -19,75 +20,35 @@ public class ChatService {
     ChatRepository chatRepo;
     
     @Autowired
+    MessageRepository mrepo;
+    
+    @Autowired
     private UserRepository userRepo;
     
     
  // Fetch chats created by the user (sender) or where the user is the receiver
-    public List<ChatEntity> getChatsByUser(int userId) {
-        // Fetch the user by ID
-        UserEntity user = userRepo.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
-
-        // Fetch chats where the user is the sender or receiver
-        return chatRepo.findAllBySenderOrReceiver(user, user.getUsername());
+    public List<ChatEntity> getChatsByUser(UserEntity user) {
+        return chatRepo.findBySenderOrReceiver(user);
     }
 
 
     public ChatEntity createChatWithMessages(ChatEntity chat) {
-        // Validate if sender and receiver are provided
-        if (chat.getSender() == null || chat.getReceiver() == null || chat.getReceiver().isEmpty()) {
-            throw new IllegalArgumentException("Sender or receiver cannot be null or empty");
+        if (chat.getSender() == null || chat.getReceiver() == null) {
+            throw new IllegalArgumentException("Sender or receiver cannot be null.");
         }
-
-        // Fetch sender and receiver user entities from the database
         UserEntity sender = userRepo.findById(chat.getSender().getId())
-                .orElseThrow(() -> new NoSuchElementException("Sender not found."));
-        
-        // Fetch the receiver by username
-        UserEntity receiverEntity = userRepo.findByUsername(chat.getReceiver())
-                .orElseThrow(() -> new NoSuchElementException("Receiver not found."));
+            .orElseThrow(() -> new NoSuchElementException("Sender not found."));
+        UserEntity receiver = userRepo.findById(chat.getReceiver().getId())
+            .orElseThrow(() -> new NoSuchElementException("Receiver not found."));
 
-        chat.setSender(sender);  // Set sender
-        chat.setReceiver(receiverEntity.getUsername());  // Set receiver as username
+        chat.setSender(sender);
+        chat.setReceiver(receiver);
 
-        // Ensure the messages list is initialized
-        if (chat.getMessages() == null) {
-            chat.setMessages(new ArrayList<>());
+        if (chat.getMessages() != null) {
+            chat.getMessages().forEach(message -> message.setChat(chat));
         }
-
-        // Set the chat reference for each message
-        for (MessageEntity message : chat.getMessages()) {
-            message.setChat(chat);
-        }
-
-        // Save the chat (along with messages)
         return chatRepo.save(chat);
     }
-
-    
-//    //CREATE
-//    public ChatEntity addMessageToChat(int chatId, MessageEntity newMessage) {
-//        // Retrieve the chat by ID
-//        Optional<ChatEntity> chatOptional = chatRepo.findById(chatId);
-//
-//        if (chatOptional.isPresent()) {
-//            ChatEntity chat = chatOptional.get();
-//            
-//            // Set the chat reference in the new message
-//            newMessage.setChat(chat);
-//            
-//            // Add the new message to the chat's list of messages
-//            chat.getMessages().add(newMessage);
-//            
-//            // Save the new message
-//            messageRepo.save(newMessage);
-//            
-//            // Save the updated chat (optional since the message is already saved)
-//            return chatRepo.save(chat);
-//        } else {
-//            throw new RuntimeException("Chat with id " + chatId + " not found.");
-//        }
-//    }
 
     // READ
     public List<ChatEntity> getAllChats() {
@@ -121,17 +82,23 @@ public class ChatService {
 
     // Add a message to a chat
     public ChatEntity addMessageToChat(int chatId, MessageEntity message) {
-        ChatEntity chat = getChatById(chatId); // Get the chat by ID
-        message.setChat(chat); // Set the chat reference in the message
-        chat.addMessage(message); // Link the message to the chat
-        return chatRepo.save(chat); // Save the chat, which cascades the save to the message
+    	ChatEntity chat = chatRepo.findById(chatId)
+                .orElseThrow(() -> new NoSuchElementException("Chat not found with id: " + chatId));
+
+        message.setChat(chat); // Associate the message with the chat
+        mrepo.save(message);   // Save the message first
+
+        chat.getMessages().add(message); // Add the message to the chat
+        return chatRepo.save(chat);      // Save the chat with the new message
     }
 
     // Delete a message inside a chat
     public String deleteMessageFromChat(int chatId, int messageId) {
-        ChatEntity chat = getChatById(chatId);
-        chat.removeMessageById(messageId); // Use existing method
+        ChatEntity chat = chatRepo.findById(chatId)
+            .orElseThrow(() -> new NoSuchElementException("Chat not found."));
+        chat.getMessages().removeIf(msg -> msg.getMessageId() == messageId);
         chatRepo.save(chat);
-        return "Message with ID " + messageId + " removed from Chat with ID " + chatId;
+        return "Message with ID " + messageId + " removed from chat.";
     }
+
 }

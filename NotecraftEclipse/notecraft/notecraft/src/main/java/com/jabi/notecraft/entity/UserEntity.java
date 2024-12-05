@@ -49,8 +49,20 @@ public class UserEntity {
     private List<NoteEntity> notes = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    @JsonManagedReference("user-sent-chats") // Matches the name in ChatEntity
+    @JsonIgnore // Matches the name in ChatEntity
     private List<ChatEntity> sentChats = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    @JsonIgnore // Matches the name in ChatEntity
+    private List<ChatEntity> receivedChats = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<MessageEntity> sentMessages;
+
+    @OneToMany(mappedBy = "recipient", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<MessageEntity> receivedMessages;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("user-files") // Unique name for files
@@ -84,6 +96,15 @@ public class UserEntity {
     public void setSentChats(List<ChatEntity> sentChats) {
         this.sentChats = sentChats;
     }
+    
+    public List<ChatEntity> getReceivedChats() {
+        return receivedChats;
+    }
+
+    public void setReceivedChats(List<ChatEntity> receivedChats) {
+        this.receivedChats = receivedChats;
+    }
+
     
     public List<FileEntity> getFiles() {
         return files;
@@ -148,8 +169,6 @@ public class UserEntity {
 		this.birthdate = birthdate;
 	}
 
-   
- 
     public UserEntity() {
         super();
     }

@@ -169,4 +169,8 @@ public class UserController {
         List<String> usernames = userv.getAllUsernames();
         return ResponseEntity.ok(usernames);
     }
+    @GetMapping("/getUserByUsername/{username}")
+    public UserEntity getUserByUsername(@PathVariable String username) {
+    	return userv.getUserByUsername(username);
+    }
 }

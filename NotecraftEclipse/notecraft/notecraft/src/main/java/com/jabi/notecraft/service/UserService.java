@@ -145,4 +145,7 @@ public class UserService {
     public List<String> getAllUsernames() {
         return urepo.findAllUsernames(); // No need for stream and mapping
     }
+    public UserEntity getUserByUsername(String username) {
+    	return urepo.findByUsername(username);    
+    }
 }

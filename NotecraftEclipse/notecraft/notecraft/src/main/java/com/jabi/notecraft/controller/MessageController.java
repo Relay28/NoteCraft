@@ -1,7 +1,10 @@
 package com.jabi.notecraft.controller;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jabi.notecraft.entity.ChatEntity;
 import com.jabi.notecraft.entity.MessageEntity;
+import com.jabi.notecraft.repository.ChatRepository;
 import com.jabi.notecraft.service.MessageService;
 
 @RestController
@@ -21,6 +26,10 @@ import com.jabi.notecraft.service.MessageService;
 public class MessageController {
 	@Autowired
 	MessageService mserv;
+	
+	@Autowired
+	private ChatRepository chatRepo;
+	
 	@GetMapping("/print")
 	public String print() {
 		return "Hello, First";
@@ -53,8 +62,13 @@ public class MessageController {
     }
 	//UPDATE
 	@PutMapping("/putMessageDetails")
-	public MessageEntity putMessageDetails(@RequestParam int messageId, @RequestBody MessageEntity newMessageDetails) {
-		return mserv.putMessageDetails(messageId,newMessageDetails);
+	public ResponseEntity<MessageEntity> putMessageDetails(@RequestParam int messageId, @RequestBody MessageEntity newMessageDetails) {
+	    try {
+	        MessageEntity updatedMessage = mserv.putMessageDetails(messageId, newMessageDetails);
+	        return ResponseEntity.ok(updatedMessage);
+	    } catch (NoSuchElementException e) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	    }
 	}
 	
 	//DELETE
@@ -62,4 +76,13 @@ public class MessageController {
 	public String deleteMessage(@PathVariable int messageId) {
 		return mserv.deleteMessage(messageId);
 	}
+	
+	@GetMapping("/getAllMessagesOfChat/{chatId}")
+    public List<MessageEntity> getChatMessages(@PathVariable int chatId) {
+        ChatEntity chat = chatRepo.findById(chatId)
+            .orElseThrow(() -> new NoSuchElementException("Chat not found."));
+        return mserv.getAllMessages().stream()
+            .filter(msg -> msg.getChat().equals(chat))
+            .toList();
+    }
 }
