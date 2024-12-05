@@ -108,6 +108,7 @@ const Todolist = () => {
             flexDirection: "column",
             alignItems: "center",
             width: "95%",
+            marginTop:10,
         }}>
             <Box sx={{
                 display: "flex",

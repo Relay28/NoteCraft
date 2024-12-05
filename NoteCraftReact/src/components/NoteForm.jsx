@@ -6,8 +6,11 @@ import axios from "axios";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { createQuillModules } from "./quillModules";
-
+import { useTheme } from "./ThemeProvider";
 export default function NoteForm() {
+  const [openImagePreview, setOpenImagePreview] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState("");
+  const BASE_URL = "http://localhost:8081";
   const navigate = useNavigate();
   const { noteId } = useParams();
   const location = useLocation();
@@ -15,8 +18,9 @@ export default function NoteForm() {
   const { personalInfo } = useContext(PersonalInfoContext);
  
   const user = personalInfo;
-
+  const { theme } = useTheme();
   const [note, setNote] = useState(
+    
     location.state?.noteData || {
       title: "",
       description: "",
@@ -33,9 +37,7 @@ export default function NoteForm() {
     }
   }, [user]);
 
-  const [openImagePreview, setOpenImagePreview] = useState(false);
-  const [previewImageUrl, setPreviewImageUrl] = useState("");
-  const BASE_URL = "http://localhost:8081";
+ 
 
   useEffect(() => {
     if (noteId && !location.state?.noteData) {
@@ -57,6 +59,10 @@ export default function NoteForm() {
     setNote((prevNote) => ({ ...prevNote, content }));
   };
 
+
+  //Icon Color
+
+  
   const handleImageUpload = useCallback(() => {
     const input = document.createElement("input");
     input.setAttribute("type", "file");
@@ -153,15 +159,16 @@ export default function NoteForm() {
   return (
     <Box
       sx={{
-        width: "90%",
+        width: "85%", // Match Note.jsx container width
         maxWidth: "900px",
-        height: "100vh", // Occupy full viewport height
+        height: "80vh", // Match Note.jsx height
         margin: "auto",
         padding: "2%",
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.palette.background.paper, // Use theme from ThemeProvider
         borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+        boxShadow: theme.shadows[2], // Use theme shadows
         display: "flex",
+        marginTop:9,
         flexDirection: "column",
       }}
     >
@@ -184,14 +191,21 @@ export default function NoteForm() {
       >
         {/* Title Field */}
         <TextField
-          label="Title"
-          name="title"
-          value={note.title}
-          onChange={handleInputChange}
-          fullWidth
-          margin="normal"
-          sx={{ marginBottom: "10px" }}
-        />
+  label="Title"
+  name="title"
+  value={note.title}
+  onChange={handleInputChange}
+  fullWidth
+  margin="normal"
+  sx={{ marginBottom: "10px" }}
+  InputProps={{
+    style: { color: theme.palette.text.primary }, // For the input text
+  }}
+  InputLabelProps={{
+    style: { color: theme.palette.text.primary }, // For the label text
+  }}
+/>
+
         
         {/* Description Field */}
         <TextField
@@ -202,6 +216,12 @@ export default function NoteForm() {
           fullWidth
           margin="normal"
           sx={{ marginBottom: "10px" }}
+          InputProps={{
+            style: { color: theme.palette.text.primary }, // For the input text
+          }}
+          InputLabelProps={{
+            style: { color: theme.palette.text.primary }, // For the label text
+          }}
         />
   
         {/* ReactQuill Editor */}
@@ -218,8 +238,11 @@ export default function NoteForm() {
             flex: 1, // Adjust height dynamically to fit available space
             marginBottom: "10px",
             borderRadius: "8px",
+            color: theme.palette.text.primary,
+            overflow:"auto",
             border: "1px solid #ddd",
           }}
+          
         />
       </Box>
   

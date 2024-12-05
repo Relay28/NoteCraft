@@ -155,7 +155,7 @@ export default function Note() {
 const filteredNotes = notes.filter(
     (note) =>
       selectedTags.length === 0 ||
-      selectedTags.every((tag) =>
+      selectedTags.some((tag) =>
         note.tags?.some((noteTag) => noteTag.tagName === tag)
       )
   );
@@ -181,8 +181,10 @@ const filteredNotes = notes.filter(
         flexDirection: "column",
         alignItems: "center",
         width: "85%",
+        height:"80vh",
+        marginTop:10,
         padding: 2,
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.background.primary,
         borderRadius: "12px",
       }}
     >
@@ -201,7 +203,7 @@ const filteredNotes = notes.filter(
         <Typography
           variant="h6"
           component="div"
-          sx={{ mb: 1, color: theme.palette.text.primary }}
+          sx={{ mb: 0, color: theme.palette.text.primary }}
         >
           Filter by Tags:
         </Typography>
@@ -247,10 +249,10 @@ const filteredNotes = notes.filter(
           justifyContent: "space-between",
           alignItems: "center",
           width: "100%",
-          marginBottom: "20px",
+          marginBottom: "8px",
         }}
       >
-        <Typography variant="h4" component="h2" sx={{ color: theme.palette.text.primary ,marginTop:5}}>
+        <Typography variant="h4" component="h2" sx={{ color: theme.palette.text.primary ,marginTop:3}}>
           Notes
         </Typography>
         <IconButton
@@ -345,9 +347,9 @@ const filteredNotes = notes.filter(
           </Typography>
           <Typography
             variant="body1"
-            dangerouslySetInnerHTML={{
-              __html: styleNoteContent(note.content).split("\n")[0],
-            }}
+            // dangerouslySetInnerHTML={{
+            //   __html: styleNoteContent(note.content).split("\n")[0],
+            // }}
           />
         </Box>
 
@@ -408,7 +410,7 @@ const filteredNotes = notes.filter(
   count={totalPages}
   page={currentPage}
   onChange={(event, value) => setCurrentPage(value)}
-  sx={{ marginTop: 3 }}
+  sx={{ marginTop: 1}}
 />
 
             {/* Dialogs */}
