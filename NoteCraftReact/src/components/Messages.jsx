@@ -4,6 +4,7 @@
   import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
   import axios from 'axios';
   import { useLocation } from 'react-router';
+  import { useTheme } from './ThemeProvider';
 
 
   const API_BASE_URL = 'http://localhost:8081/api/chat';
@@ -23,13 +24,13 @@
     
     const [openDialog, setOpenDialog] = React.useState(false);
     const [deleteTarget, setDeleteTarget] = React.useState({chatId:null, messageId:null});
-    const [userExists, setUserExists] = useState(true);
     const [isMessageBoxDisabled, setIsMessageBoxDisabled] = useState(false);
     const location = useLocation();
     const personalInfo = location.state?.user || { id: '', username: '' };
 
     const [usernames, setUsernames] = React.useState([]); // To store fetched usernames
     const [filteredUsernames, setFilteredUsernames] = React.useState([]); // To store filtered suggestions
+    const { darkMode, toggleTheme, theme } = useTheme();
 
     React.useEffect(() => {
       const loadChats = async () => {
@@ -50,8 +51,7 @@
       };
     
       loadChats();
-    }, [personalInfo.id]);
-     // Dependency on `personalInfo.id` instead of `personalInfo.username`
+    }, [personalInfo.id]);// Dependency on `personalInfo.id` instead of `personalInfo.username`
 
      const handleReceiverConfirm = async () => {
       const username = selectedConversation?.receiver?.trim();
@@ -256,26 +256,8 @@
       }
     };
 
-    const checkUserExists = async (username) => {
-        try {
-          const response = await axios.get(`http://localhost:8081/api/user/checkUser/${username}`);
-          console.log(response.data);
-          const userExists = response.data;
-          setUserExists(userExists);
-          setIsMessageBoxDisabled(!userExists);
-          if (!userExists) alert("User not found. You cannot send a message.");
-          return userExists;
-        } catch (error) {
-          console.error("Error checking user existence:", error);
-          alert("An error occurred while checking the user.");
-          setUserExists(false);
-          setIsMessageBoxDisabled(true);
-          return false;
-        }
-      };
-
     return (
-      <Paper sx={{ height: '98%', display: 'flex', flexDirection: 'column', width:'95%'}}>
+      <Paper sx={{ height: '89%', display: 'flex', flexDirection: 'column', width:'98%'}}>
         {/* Dialog for Delete Confirmation */}
         <Dialog open={openDialog} onClose={closeConfirmationDialog}>
           <DialogTitle>Confirm Delete</DialogTitle>
@@ -386,7 +368,6 @@
                 {Array.isArray(selectedConversation?.messages) && selectedConversation.messages.length > 0 ? (
                   selectedConversation.messages.map((msg) => {
                     const senderName = msg.sender?.username || 'Unknown';  // Access sender's username (with fallback)
-                    const recipientName = msg.recipient?.username || 'Unknown';  // Access recipient's username (with fallback)
                     
                     return (
                       <Box key={msg.messageId} sx={{
