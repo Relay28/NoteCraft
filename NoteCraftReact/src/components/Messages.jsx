@@ -103,8 +103,23 @@
         };
     
         try {
-          // If no chatId exists, create a new chat
-          if (!selectedConversation?.chatId) {
+          // Handle message editing
+          if (editMessageId) {
+            await axios.put(`http://localhost:8081/api/message/putMessageDetails?messageId=${editMessageId}`, messageData);
+            const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${selectedConversation.chatId}`);
+            
+            setSelectedConversation(updatedChat.data);
+            setChats((prevChats) =>
+              prevChats.map((chat) =>
+                chat.chatId === selectedConversation.chatId 
+                  ? { ...chat, messages: updatedChat.data.messages } 
+                  : chat
+              )
+            );
+            setEditMessageId(null); // Reset edit mode
+          } 
+          // Handle new chat creation
+          else if (!selectedConversation?.chatId) {
             const chatData = {
               sender: messageData.sender,
               receiver: messageData.recipient,
@@ -117,8 +132,9 @@
             // Update chats and selected conversation
             setChats(prevChats => [...prevChats, createdChat]);
             setSelectedConversation(createdChat);
-          } else {
-            // Add message to existing chat
+          } 
+          // Add message to existing chat
+          else {
             await axios.post(`${API_BASE_URL}/addMessageToChat/${selectedConversation.chatId}`, messageData);
             const updatedChat = await axios.get(`${API_BASE_URL}/getChatById/${selectedConversation.chatId}`);
             setSelectedConversation(updatedChat.data);
@@ -127,7 +143,8 @@
           setNewMessage(""); // Clear message input
           setIsAddingChat(false); // Exit adding chat mode
         } catch (error) {
-          console.error("Error sending message:", error);
+          console.error("Error sending or editing message:", error);
+          alert("Failed to send or edit message. Please try again.");
         }
       } else {
         alert("Please enter a message and confirm a receiver.");
