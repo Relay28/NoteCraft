@@ -199,7 +199,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  color: '#fff',
+                  color: '#579A59',
                   minWidth: '48px', // Ensures consistent spacing between icons and text
                   width: '48px',
                   
