@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {Typography,Button,Box,TextField,List,ListItem,ListItemText,Modal,Drawer,IconButton,Pagination,Card,CardContent,Avatar,Divider,Tabs,Tab,Chip,
 } from '@mui/material';
-import { People, AddCircle, Delete, Edit, ArrowBack, LocalOffer } from '@mui/icons-material';
+import { People, AddCircle, Delete, Edit, ArrowBack, LocalOffer, Download } from '@mui/icons-material';
 import axios from 'axios';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 import { useTheme } from "./ThemeProvider";
@@ -65,7 +65,7 @@ export default function GroupDetailsPage() {
   const [openEditFileModal, setOpenEditFileModal] = useState(false);
   const [currentNoteId, setCurrentNoteId] = useState(null);
   const [tabIndex, setTabIndex] = useState(0);
-
+  const [isLoading, setIsLoading] = useState(false);
   const apiBaseUrl = 'http://localhost:8081/api/study-groups';
   
   const handleFileChange = (e) => {
@@ -106,21 +106,28 @@ export default function GroupDetailsPage() {
 
 
   //Member Search
-
   useEffect(() => {
-    if (searchQuery.trim() !== '') {
-      const fetchSuggestions = async () => {
-        try {
-          const response = await axios.get(`/users/search?username=${searchQuery}`);
-          setSuggestions(response.data);
-        } catch (error) {
-          console.error('Error fetching user suggestions:', error);
-        }
-      };
-      fetchSuggestions();
-    } else {
-      setSuggestions([]);
-    }
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim() !== '') {
+        const fetchSuggestions = async () => {
+          setIsLoading(true);
+          console.log(searchQuery)
+          try {
+            const response = await axios.get(`http://localhost:8081/api/user/search?username=${searchQuery}`);
+            console.log( response.data); 
+            setSuggestions(response.data);
+          } catch (error) {
+            console.error('Error fetching user suggestions:', error);
+          }
+          setIsLoading(false);
+        };
+        fetchSuggestions();
+      } else {
+        setSuggestions([]);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timeoutId); // Cleanup the timeout on unmount or when searchQuery changes
   }, [searchQuery]);
 
   
@@ -299,10 +306,17 @@ export default function GroupDetailsPage() {
               setResponseMessage("Failed to upload file.");
           }
       };
+      const handleDownloadFile = (file) => {
+        const fileUrl = `http://localhost:8081/api/files/download/${file.fileId}`;
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.download = file.fileName;
+        link.click();
+    };
     
       const handleAddMember = async () => {
         try {
-          const response = await axios.post(`${apiBaseUrl}/${groupId}/add-users`, [newMemberId]);
+          const response = await axios.post(`${apiBaseUrl}/${groupId}/add-users`, [selectedUsername]);
           setGroupDetails((prev) => ({
             ...prev,
             users: response.data.users,
@@ -310,6 +324,7 @@ export default function GroupDetailsPage() {
           setMembers( response.data.users);
           setNewMemberId('');
           setOpenAddMemberModal(false);
+          setSearchQuery([]);
           setResponseMessage('Member added successfully!');
         } catch {
           setResponseMessage('Failed to add member.');
@@ -561,6 +576,7 @@ export default function GroupDetailsPage() {
                           file.user?.name || 'Unknown'
                         } on ${file.dateCreated}`}
                       />
+                   <IconButton onClick={() => handleDownloadFile(file)}><Download /></IconButton>
                       <IconButton onClick={() => handleOpenEditModal(file)}>
                         <Edit />
                       </IconButton>
@@ -671,6 +687,7 @@ export default function GroupDetailsPage() {
             </Box>
           </Modal>
 
+
       {/* Modals for Notes */}
       <Modal open={openNoteModal} onClose={() => setOpenNoteModal(false)}>
         <Box sx={modalStyle}>
@@ -685,12 +702,36 @@ export default function GroupDetailsPage() {
 
       {/* Add Member Modal */}
       <Modal open={openAddMemberModal} onClose={() => setOpenAddMemberModal(false)}>
-        <Box sx={modalStyle}>
-          <TextField label="Enter Member ID" fullWidth value={newMemberId} onChange={(e) => setNewMemberId(e.target.value)} sx={{ mb: 2 }} />
-          <Button variant="contained" color="primary" onClick={handleAddMember} sx={{ fontWeight: 'bold' }}>
-            Add Member
-          </Button>
-        </Box>
+      <Box sx={ modalStyle}>
+        <TextField
+          label="Search Username"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        {isLoading && <div>Loading...</div>}
+        <List>
+          {suggestions.map((user) => (
+            <ListItem
+              key={user.id}
+              button
+              onClick={() => setSelectedUsername(user.id)}
+            >
+              <ListItemText primary={user.username} />
+            </ListItem>
+          ))}
+        </List>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleAddMember(selectedUsername)}
+          disabled={!selectedUsername}
+          sx={{ fontWeight: 'bold', mt: 2 }}
+        >
+          Add Member
+        </Button>
+      </Box>
       </Modal>
 
       

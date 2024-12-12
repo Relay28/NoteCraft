@@ -10,6 +10,13 @@
 }
 /* Global font usage */
 
+.ql-toolbar button {
+  color: var(--theme-icon-color);
+}
+
+.ql-toolbar button:hover {
+  color: var(--theme-icon-hover-color);
+}
 
 
 .logo {

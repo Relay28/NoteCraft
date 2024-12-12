@@ -155,6 +155,10 @@ public class UserService {
     	return urepo.findByUsername(username);    
     }
     
+    public List<UserEntity> searchUsersByUsername(String username) {
+        return urepo.findByUsernameContainingIgnoreCase(username);
+    }
+    
     
     public UserEntity findById2(int userId) {
         Optional<UserEntity> userOptional = urepo.findById(userId);

@@ -3,57 +3,210 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import {
     Box,
     Grid,
-    Paper,
     Typography,
     Button,
-    List,
-    ListItem,
-    ListItemText,
-    Divider,
-    useMediaQuery,
+    Paper,
+    IconButton,
+    Container,
+    Stack,
+    Fade,
 } from '@mui/material';
 import {
     AddTask as AddTaskIcon,
     StickyNote2 as NoteIcon,
+    Brightness4 as ThemeToggleIcon,
+    GroupWork as GroupWorkIcon,
+    Dashboard as DashboardIcon,
+    Check as CheckIcon,
+    NoteAdd as NoteAddIcon,
+    GroupAdd as GroupAddIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { PersonalInfoContext } from './PersonalInfoProvider';
-import { useTheme } from '@mui/material/styles';
+import { useTheme } from './ThemeProvider';
 
+// Custom Dashboard Card Component
+const DashboardCard = ({ 
+    title, 
+    items, 
+    icon: Icon, 
+    onViewAll, 
+    onAddNew, 
+    emptyMessage,
+    loading 
+}) => {
+    const { theme } = useTheme();
+
+    return (
+        <Paper 
+            elevation={6}
+            sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                background: theme.palette.mode === 'dark' 
+                    ? 'linear-gradient(145deg, #1e1e2f, #1a1a28)' 
+                    : 'linear-gradient(145deg, #f0f4f8, #ffffff)',
+                borderRadius: 3,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                    transform: 'translateY(-10px)',
+                    boxShadow: theme.shadows[12]
+                }
+            }}
+        >
+            {/* Header with Dynamic Actions */}
+            <Box 
+                sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    p: 2,
+                    borderBottom: `1px solid ${theme.palette.divider}`
+                }}
+            >
+                <Stack direction="row" alignItems="center" spacing={2}>
+                    <Icon 
+                        sx={{ 
+                            color: theme.palette.primary.main, 
+                            fontSize: 32 
+                        }} 
+                    />
+                    <Typography variant="h6" fontWeight="bold">
+                        {title}
+                    </Typography>
+                </Stack>
+                
+                <Stack direction="row" spacing={1}>
+                    
+                    <Button 
+                        onClick={onViewAll} 
+                        variant="outlined" 
+                        size="small"
+                    >
+                        View All
+                    </Button>
+                </Stack>
+            </Box>
+
+            {/* Content Area */}
+            <Box 
+                sx={{ 
+                    flexGrow: 1, 
+                    p: 2,
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+                {loading ? (
+                    <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        align="center"
+                    >
+                        Loading {title.toLowerCase()}...
+                    </Typography>
+                ) : items.length === 0 ? (
+                    <Fade in>
+                        <Box 
+                            sx={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                flexGrow: 1,
+                                textAlign: 'center',
+                                opacity: 0.7
+                            }}
+                        >
+                            <Icon 
+                                sx={{ 
+                                    fontSize: 64, 
+                                    color: theme.palette.text.secondary,
+                                    mb: 2 
+                                }} 
+                            />
+                            <Typography variant="body1" color="text.secondary">
+                                {emptyMessage}
+                            </Typography>
+                        </Box>
+                    </Fade>
+                ) : (
+                    <Stack spacing={2}>
+                        {items.slice(0, 3).map((item) => (
+                            <Paper 
+                                key={item.taskID || item.noteID || item.groupId}
+                                variant="outlined"
+                                sx={{
+                                    p: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                        transform: 'scale(1.02)',
+                                        boxShadow: theme.shadows[2]
+                                    }
+                                }}
+                            >
+                                <Box>
+                                    <Typography variant="subtitle1" fontWeight="bold">
+                                        {item.taskName || item.title || item.groupName}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {item.deadline || item.description || `${item.users?.length || 0} members`}
+                                    </Typography>
+                                </Box>
+                                <CheckIcon 
+                                    color="success" 
+                                    sx={{ opacity: 0.6 }} 
+                                />
+                            </Paper>
+                        ))}
+                    </Stack>
+                )}
+            </Box>
+        </Paper>
+    );
+};
+
+// Main Home Component
 export default function Home() {
     const { personalInfo } = useContext(PersonalInfoContext);
-    const u = personalInfo;
-    const theme = useTheme();
+    const { darkMode, toggleTheme, theme } = useTheme();
     const navigate = useNavigate();
-    const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
     const [tasks, setTasks] = useState([]);
     const [notes, setNotes] = useState([]);
+    const [studyGroups, setStudyGroups] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Redirect to login if no personal info
         if (!personalInfo.id) {
             navigate('/login');
             return;
         }
 
+        // Fetch data for dashboard
         const fetchData = async () => {
             try {
-                const [tasksResponse, notesResponse] = await Promise.all([
+                const [tasksResponse, notesResponse, groupsResponse] = await Promise.all([
                     axios.get('http://localhost:8081/api/todolist/getAllToDoList', {
                         params: { userId: personalInfo.id },
                     }),
                     axios.get('http://localhost:8081/api/note/getNotesByUser', {
                         params: { userId: personalInfo.id },
                     }),
+                    axios.get('http://localhost:8081/api/study-groups/getGroupsForUser/' + personalInfo.id)
                 ]);
 
+                // Safely set state with fallback to empty arrays
                 setTasks(Array.isArray(tasksResponse.data) ? tasksResponse.data : []);
                 setNotes(Array.isArray(notesResponse.data) ? notesResponse.data : []);
+                setStudyGroups(Array.isArray(groupsResponse.data) ? groupsResponse.data : []);
             } catch (error) {
                 console.error('Error fetching data:', error);
-                setTasks([]);
-                setNotes([]);
             } finally {
                 setLoading(false);
             }
@@ -63,159 +216,109 @@ export default function Home() {
     }, [personalInfo.id, navigate]);
 
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-                p: { xs: 2, sm: 3 },
-                backgroundColor: theme.palette.background.default,
+        <Box 
+            sx={{ 
+                minHeight: '100vh', 
+                marginLeft:-15,
+                mt:5,
+                background: theme.palette.mode=="Dark"
+              
             }}
         >
-            <Typography variant="h3" sx={{ mb: 3, fontWeight: 'bold' }}>
-                Welcome to Bubble Space
-            </Typography>
-            <Typography variant="subtitle1" sx={{ mb: 4, color: theme.palette.text.secondary }}>
-                Your centralized hub for tasks and notes.
-            </Typography>
-
-            <Grid container spacing={4} sx={{ width: '100%', maxWidth: '1200px' }}>
-                {/* Tasks Section */}
-                <Grid item xs={12} md={6}>
-                    <Paper
-                        sx={{
-                            p: 4,
-                            backgroundColor: 'blue',
-                            color: 'white',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            height: '100%',
-                        }}
-                        elevation={6}
-                    >
-                        <Typography variant="h5" sx={{ mb: 2 }}>
-                            Your Tasks
-                        </Typography>
-                        {loading ? (
-                            <Typography>Loading tasks...</Typography>
-                        ) : tasks.length === 0 ? (
-                            <Box textAlign="center">
-                                <AddTaskIcon fontSize="large" sx={{ mb: 2 }} />
-                                <Typography variant="body1" sx={{ mb: 2 }}>
-                                    No tasks available. Start by{' '}
-                                    <Button
-                                        variant="outlined"
-                                        onClick={() => navigate('/todolist', { state: { user: u } })}
-                                        sx={{
-                                            color: 'white',
-                                            borderColor: 'white',
-                                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                                        }}
-                                    >
-                                        creating one!
-                                    </Button>
-                                </Typography>
-                            </Box>
-                        ) : (
-                            <List sx={{ flexGrow: 1, overflow: 'auto', maxHeight: isSmallScreen ? '150px' : '200px' }}>
-                                {tasks.slice(0, 5).map((task) => (
-                                    <React.Fragment key={task.taskID}>
-                                        <ListItem>
-                                            <ListItemText
-                                                primary={task.taskName}
-                                                secondary={`Deadline: ${task.deadline}`}
-                                                primaryTypographyProps={{ style: { color: 'white' } }}
-                                                secondaryTypographyProps={{ style: { color: '#cfd8dc' } }}
-                                            />
-                                        </ListItem>
-                                        <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }} />
-                                    </React.Fragment>
-                                ))}
-                            </List>
-                        )}
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            sx={{ mt: 2 }}
-                            onClick={() => navigate('/todolist', { state: { user: u } })}
+            <Container maxWidth="lg">
+                {/* Header with Personalized Greeting and Theme Toggle */}
+                <Stack 
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between" 
+                    alignItems="center" 
+                    spacing={2}
+                    sx={{ mb: 4 }}
+                >
+                    <Box>
+                        <Typography 
+                            variant="h3" 
+                            fontWeight="bold"
+                            sx={{ 
+                                background: `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}
                         >
-                            View All Tasks
+                            Hello, {personalInfo.username || 'User'}
+                        </Typography>
+                        <Typography variant="subtitle1" color="text.secondary">
+                            Your productivity dashboard is ready
+                        </Typography>
+                    </Box>
+                    
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <IconButton 
+                            onClick={toggleTheme} 
+                            color="primary"
+                            sx={{ 
+                                border: `2px solid ${theme.palette.primary.main}`,
+                                p: 1
+                            }}
+                        >
+                            <ThemeToggleIcon />
+                        </IconButton>
+                        <Button 
+                            variant="contained" 
+                            startIcon={<DashboardIcon />}
+                            sx={{ 
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                boxShadow: theme.shadows[4]
+                            }}
+                        >
+                            Overview
                         </Button>
-                    </Paper>
+                    </Stack>
+                </Stack>
+
+                {/* Dashboard Grid */}
+                <Grid container spacing={4}>
+                    {/* Tasks Section */}
+                    <Grid item xs={12} md={4}>
+                        <DashboardCard
+                            title="Tasks"
+                            items={tasks}
+                            icon={AddTaskIcon}
+                            loading={loading}
+                            onViewAll={() => navigate('/todolist',{ state: { user: personalInfo } })}
+                            emptyMessage="No tasks created yet. Start planning!"
+                        />
+                    </Grid>
+                    
+                    {/* Notes Section */}
+                    <Grid item xs={12} md={4}>
+                        <DashboardCard
+                            title="Notes"
+                            items={notes}
+                            icon={NoteIcon}
+                            loading={loading}
+                            onViewAll={() => navigate('/notes',{ state: { user: personalInfo } })}
+                          
+                            emptyMessage="Your notebook is empty. Capture your thoughts!"
+                        />
+                    </Grid>
+
+                    {/* Study Groups/Notebooks Section */}
+                    <Grid item xs={12} md={4}>
+                        <DashboardCard
+                            title="Notebooks"
+                            items={studyGroups}
+                            icon={GroupWorkIcon}
+                            loading={loading}
+                            onViewAll={() => navigate('/group',{ state: { user: personalInfo } })}
+                            
+                            emptyMessage="No notebooks created. Collaborate and learn!"
+                        />
+                    </Grid>
                 </Grid>
 
-                {/* Notes Section */}
-                <Grid item xs={12} md={6}>
-                    <Paper
-                        sx={{
-                            p: 4,
-                            backgroundColor: 'green',
-                            color: 'white',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            height: '100%',
-                        }}
-                        elevation={6}
-                    >
-                        <Typography variant="h5" sx={{ mb: 2 }}>
-                            Your Notes
-                        </Typography>
-                        {loading ? (
-                            <Typography>Loading notes...</Typography>
-                        ) : notes.length === 0 ? (
-                            <Box textAlign="center">
-                                <NoteIcon fontSize="large" sx={{ mb: 2 }} />
-                                <Typography variant="body1" sx={{ mb: 2 }}>
-                                    No notes available. Start by{' '}
-                                    <Button
-                                        variant="outlined"
-                                        onClick={() => navigate('/notes', { state: { user: u } })}
-                                        sx={{
-                                            color: 'white',
-                                            borderColor: 'white',
-                                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                                        }}
-                                    >
-                                        adding one!
-                                    </Button>
-                                </Typography>
-                            </Box>
-                        ) : (
-                            <List sx={{ flexGrow: 1, overflow: 'auto', maxHeight: isSmallScreen ? '150px' : '200px' }}>
-                                {notes.slice(0, 5).map((note) => (
-                                    <React.Fragment key={note.noteID}>
-                                        <ListItem>
-                                            <ListItemText
-                                                primary={note.title}
-                                                secondary={note.description}
-                                                primaryTypographyProps={{ style: { color: 'white' } }}
-                                                secondaryTypographyProps={{ style: { color: '#cfd8dc' }, noWrap: true }}
-                                            />
-                                        </ListItem>
-                                        <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }} />
-                                    </React.Fragment>
-                                ))}
-                            </List>
-                        )}
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            sx={{ mt: 2 }}
-                            onClick={() => navigate('/notes', { state: { user: u } })}
-                        >
-                            View All Notes
-                        </Button>
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            <Outlet context={personalInfo} />
+                <Outlet context={personalInfo} />
+            </Container>
         </Box>
     );
 }

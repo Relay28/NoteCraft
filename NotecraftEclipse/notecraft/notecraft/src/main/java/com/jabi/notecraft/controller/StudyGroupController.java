@@ -120,44 +120,7 @@ public class StudyGroupController {
         return ResponseEntity.ok(uploadedFile);
     }
 
-    // Add a to-do list to a study group
-    @PostMapping("/{studyGroupId}/add-todo")
-    public ResponseEntity<ToDoListEntity> addToDoListWithGroup(
-            @PathVariable int studyGroupId,
-            @RequestParam int userId,
-            @RequestBody ToDoListEntity toDoList) {
-        ToDoListEntity createdToDoList = toDoListService.postToDoListWithGroup(toDoList, userId, studyGroupId);
-        return ResponseEntity.ok(createdToDoList);
-    }
-    
-    @GetMapping("/group/{studyGroupId}/user/{userId}")
-    public ResponseEntity<List<ToDoListEntity>> getAllToDoListsByGroup(
-            @PathVariable int studyGroupId, 
-            @PathVariable int userId) {
-        List<ToDoListEntity> toDoLists = toDoListService.getAllToDoListsWithGroup(studyGroupId, userId);
-        return ResponseEntity.ok(toDoLists);
-    }
-
-    // Edit To-Do List by Study Group
-    @PutMapping("/{id}/group/{studyGroupId}/user/{userId}")
-    public ResponseEntity<ToDoListEntity> editToDoListWithGroup(
-            @PathVariable int id,
-            @PathVariable int studyGroupId,
-            @PathVariable int userId,
-            @RequestBody ToDoListEntity updatedToDoListDetails) {
-        ToDoListEntity updatedToDoList = toDoListService.editToDoListWithGroup(id, updatedToDoListDetails, userId, studyGroupId);
-        return ResponseEntity.ok(updatedToDoList);
-    }
-
-    // Delete To-Do List by Study Group
-    @DeleteMapping("/{id}/group/{studyGroupId}/user/{userId}")
-    public ResponseEntity<String> deleteToDoListWithGroup(
-            @PathVariable int id,
-            @PathVariable int studyGroupId,
-            @PathVariable int userId) {
-        String response = toDoListService.deleteToDoListWithGroup(id, userId, studyGroupId);
-        return ResponseEntity.ok(response);
-    }
+ 
     
     @PostMapping("/createStudyGroup")
     public ResponseEntity<StudyGroupEntity> createStudyGroup(@RequestBody StudyGroupEntity studyGroup) {

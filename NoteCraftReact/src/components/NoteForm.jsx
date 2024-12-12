@@ -167,6 +167,7 @@ export default function NoteForm() {
         boxShadow: theme.shadows[2], // Use theme shadows
         display: "flex",
         marginTop:2,
+        marginRight:15,
         flexDirection: "column",
       }}
     >

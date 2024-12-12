@@ -51,6 +51,10 @@ public class UserController {
         }
     }
 
+    @GetMapping("/search")
+    public List<UserEntity> searchUsers(@RequestParam String username) {
+        return userv.searchUsersByUsername(username);
+    }
 
     @GetMapping("/checkAvailability")
     public ResponseEntity<?> checkAvailability(@RequestParam(required = false) String username, 

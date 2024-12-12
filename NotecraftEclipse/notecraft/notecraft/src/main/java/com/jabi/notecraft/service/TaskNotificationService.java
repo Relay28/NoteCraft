@@ -24,7 +24,7 @@ public class TaskNotificationService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    @Scheduled(cron = "0 * * * * *") // Run hourly
+    @Scheduled(cron = "1 * * * * *") // Run hourly
     public void sendDeadlineNotifications() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime tomorrow = now.plusDays(1);

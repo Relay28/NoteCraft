@@ -15,7 +15,7 @@ import MessageIcon from '@mui/icons-material/Message';
 import { PersonalInfoContext } from './PersonalInfoProvider';
 import Box from '@mui/material/Box';
 import profile from '/src/assets/profile.jpg';
-import { Group } from '@mui/icons-material';
+import { Book, BookSharp, Group } from '@mui/icons-material';
 import { useTheme } from './ThemeProvider';
 import logo from '/src/assets/Logo.png';
 
@@ -141,6 +141,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                 height: '36px',
                 backgroundImage: `url(${logo})`, // Replace with your logo's URL
                 backgroundSize: 'cover',
+                cursor:"pointer",
                 backgroundPosition: 'center',
                 
               }}
@@ -176,7 +177,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
             { label: 'Todo List', icon: <FormatListBulletedIcon />, onClick: handleTodolistClick },
             { label: 'Files', icon: <FolderIcon />, onClick: handleFileClick },
             { label: 'Messages', icon: <MessageIcon />, onClick: handleMessagesClick },
-            { label: 'Group', icon: <Group />, onClick: handleGroupClick },
+            { label: 'Notebooks', icon: <Book />, onClick: handleGroupClick },
           ].map((item, index) => (
             <ListItemButton
               key={index}
@@ -198,7 +199,7 @@ export default function NestedList({  open, toggleNestedList, setSidebarHovered}
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  color: '#579A59',
+                  color: '#fff',
                   minWidth: '48px', // Ensures consistent spacing between icons and text
                   width: '48px',
                   

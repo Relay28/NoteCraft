@@ -113,6 +113,8 @@ const AddTask = () => {
         console.log('Token:', token);
     
         const headers = { Authorization: `Bearer ${token}` };
+
+        console.log("Date:", taskWithDates);
     
         axios.post(
             `http://localhost:8081/api/todolist/postToDoListRecord?userId=${user.id}`, 

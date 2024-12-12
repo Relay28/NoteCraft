@@ -18,5 +18,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     boolean existsByEmail(String email);
     @Query("SELECT u.username FROM UserEntity u ORDER BY u.username ASC")
     List<String> findAllUsernames();
-    UserEntity findByUsername(String username);;
+    UserEntity findByUsername(String username);
+    List<UserEntity> findByUsernameContainingIgnoreCase(String username);
+    
 }
