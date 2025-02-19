@@ -2,7 +2,7 @@
 /NoteCraftReact/src/*.jsx
 /NoteCraftReact/src/components/*.jsx
 /NotecraftEclipse/notecraft/notecraft/src/main/java/com/jabi/notecraft/controller/*.java
-/NotecraftEclipse/notecraft/notecraft/src/main/java/com/jabi/notecraft/entity/*.java
+
 /NotecraftEclipse/notecraft/notecraft/src/main/java/com/jabi/notecraft/dto/*.java
 /NotecraftEclipse/notecraft/notecraft/src/main/java/com/jabi/notecraft/repository/*.java
 /NotecraftEclipse/notecraft/notecraft/src/main/java/com/jabi/notecraft/service/*.java
